@@ -181,6 +181,7 @@ pub struct EffectiveConfig {
     pub native_max_turns: Sourced<Option<String>>,
     pub native_timeout: Sourced<Option<String>>,
     pub native_tool_timeout: Sourced<Option<String>>,
+    pub native_output_bytes: Sourced<Option<String>>,
     pub native_profile: Sourced<String>,
     pub native_add_dirs: Sourced<Vec<String>>,
     pub native_allow_tools: Sourced<Vec<String>>,
@@ -459,6 +460,7 @@ impl EffectiveConfig {
             native_max_turns: Sourced {value:None,source:ConfigSource::default()},
             native_timeout: Sourced {value:None,source:ConfigSource::default()},
             native_tool_timeout: Sourced {value:None,source:ConfigSource::default()},
+            native_output_bytes: Sourced {value:None,source:ConfigSource::default()},
             native_profile: Sourced {value:"default".into(),source:ConfigSource::default()},
             native_add_dirs: Sourced {value:vec![],source:ConfigSource::default()},
             native_allow_tools: Sourced {value:vec![],source:ConfigSource::default()},
@@ -488,6 +490,7 @@ struct FileConfig {
     native_max_turns: Option<String>,
     native_timeout: Option<String>,
     native_tool_timeout: Option<String>,
+    native_output_bytes: Option<String>,
     native_profile: Option<String>,
     native_add_dirs: Option<Vec<String>>,
     native_allow_tools: Option<Vec<String>>,
@@ -513,6 +516,7 @@ const FILE_CONFIG_KEYS: &[&str] = &[
     "native_max_turns",
     "native_timeout",
     "native_tool_timeout",
+    "native_output_bytes",
     "native_profile",
     "native_add_dirs",
     "native_allow_tools",
@@ -811,6 +815,7 @@ pub fn resolve_config(
     }
     apply_environment(&mut config, &system.environment)?;
     apply_flags(&mut config, flags)?;
+    if config.native_output_bytes.value.is_some() && config.output_contract.value != "native" { return Err(RunnerError::config("Native output bytes require native output mode.")); }
     if config.harness.value != "agents-sdk" && (config.native_max_turns.value.is_some() || config.native_timeout.value.is_some() || config.native_tool_timeout.value.is_some()) {return Err(RunnerError::config("Native budgets require agents-sdk."));}
     if config.native_profile.value != "default" && config.harness.value != "claude" {return Err(RunnerError::config("Native workspace profile requires Claude."));}
     if config.native_profile.value == "default" && (!config.native_add_dirs.value.is_empty() || !config.native_allow_tools.value.is_empty()) {return Err(RunnerError::config("Native directory/tool options require claude-workspace-tools."));}
@@ -957,6 +962,7 @@ fn apply_file(
     if let Some(value)=source_values.native_max_turns { validate_native_turns(&value)?; target.native_max_turns.replace(Some(value),source.clone()); }
     if let Some(value)=source_values.native_timeout { validate_native_timeout(&value)?; target.native_timeout.replace(Some(value),source.clone()); }
     if let Some(value)=source_values.native_tool_timeout { validate_native_timeout(&value)?; target.native_tool_timeout.replace(Some(value),source.clone()); }
+    if let Some(value)=source_values.native_output_bytes { validate_native_output_bytes(&value)?; target.native_output_bytes.replace(Some(value),source.clone()); }
     if let Some(value)=source_values.native_profile {target.native_profile.replace(validate_native_profile(value)?,source.clone());}
     if let Some(value)=source_values.native_add_dirs {target.native_add_dirs.replace(validate_native_values(value)?,source.clone());}
     if let Some(value)=source_values.native_allow_tools {target.native_allow_tools.replace(validate_native_rules(value)?,source.clone());}
@@ -1030,6 +1036,7 @@ fn apply_environment(
     if let Some(value)=environment.get("PROSE_NATIVE_MAX_TURNS") { validate_native_turns(value)?; target.native_max_turns.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_MAX_TURNS")); }
     if let Some(value)=environment.get("PROSE_NATIVE_TIMEOUT") { validate_native_timeout(value)?; target.native_timeout.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_TIMEOUT")); }
     if let Some(value)=environment.get("PROSE_NATIVE_TOOL_TIMEOUT") { validate_native_timeout(value)?; target.native_tool_timeout.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_TOOL_TIMEOUT")); }
+    if let Some(value)=environment.get("PROSE_NATIVE_OUTPUT_BYTES") { validate_native_output_bytes(value)?; target.native_output_bytes.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_OUTPUT_BYTES")); }
     if let Some(value)=environment.get("PROSE_NATIVE_PROFILE") {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::environment("PROSE_NATIVE_PROFILE"));}
     if let Some(value)=environment.get("PROSE_NATIVE_LOG"){target.native_log.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_LOG"));}
     if let Some(value) = environment.get("PROSE_OUTPUT_CONTRACT") { target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::environment("PROSE_OUTPUT_CONTRACT")); }
@@ -1069,6 +1076,7 @@ fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), 
     if let Some(value)=&flags.native_max_turns { validate_native_turns(value)?; target.native_max_turns.replace(Some(value.clone()),ConfigSource::flag("--native-max-turns")); }
     if let Some(value)=&flags.native_timeout { validate_native_timeout(value)?; target.native_timeout.replace(Some(value.clone()),ConfigSource::flag("--native-timeout")); }
     if let Some(value)=&flags.native_tool_timeout { validate_native_timeout(value)?; target.native_tool_timeout.replace(Some(value.clone()),ConfigSource::flag("--native-tool-timeout")); }
+    if let Some(value)=&flags.native_output_bytes { validate_native_output_bytes(value)?; target.native_output_bytes.replace(Some(value.clone()),ConfigSource::flag("--native-output-bytes")); }
     if let Some(value)=&flags.native_profile {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::flag("--native-profile"));}
     if !flags.native_add_dirs.is_empty() {target.native_add_dirs.replace(validate_native_values(flags.native_add_dirs.clone())?,ConfigSource::flag("--native-add-dir"));}
     if !flags.native_allow_tools.is_empty() {target.native_allow_tools.replace(validate_native_rules(flags.native_allow_tools.clone())?,ConfigSource::flag("--native-allow-tool"));}
@@ -1190,6 +1198,24 @@ mod tests {
             environment: BTreeMap::new(),
             platform: Platform::Unix,
         }
+    }
+
+    #[test]
+    fn native_output_budget_shared_fixture_and_precedence() {
+        let f:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/native-output-budget.json")).unwrap();
+        for v in f["valid"].as_array().unwrap(){assert_eq!(validate_native_output_bytes(v.as_str().unwrap()).unwrap().to_string(),v.as_str().unwrap());}
+        for v in f["invalid"].as_array().unwrap(){assert!(validate_native_output_bytes(v.as_str().unwrap()).is_err(),"{v}");}
+        let temp=TempDir::new().unwrap();let home=temp.path().join("home");
+        fs::create_dir_all(temp.path().join(".prose")).unwrap();
+        fs::write(temp.path().join(".prose/cli.toml"),"output_contract='native'\nnative_output_bytes='1048576'\n").unwrap();
+        let mut sys=context(temp.path(),&home);let mut flags=GlobalFlags::default();
+        assert_eq!(native_output_bytes(&resolve_config(&flags,&sys).unwrap()),1048576);
+        sys.environment.insert("PROSE_NATIVE_OUTPUT_BYTES".into(),"134217728".into());
+        assert_eq!(native_output_bytes(&resolve_config(&flags,&sys).unwrap()),134217728);
+        flags.native_output_bytes=Some("268435456".into());
+        let c=resolve_config(&flags,&sys).unwrap();assert_eq!(native_output_bytes(&c),268435456);assert_eq!(c.native_output_bytes.source,ConfigSource::flag("--native-output-bytes"));
+        flags.output_contract=Some("structured".into());assert!(resolve_config(&flags,&sys).is_err());
+        let mut c=c;c.native_output_bytes.value=None;assert_eq!(native_output_bytes(&c),67108864);assert_eq!(native_output_limits(&c).unwrap()["captureEnabled"],false);
     }
 
     #[test]
@@ -1805,4 +1831,15 @@ pub(crate) fn native_limits(config: &EffectiveConfig)->Option<serde_json::Value>
  let tool_seconds=if tool_ms%1000==0 {serde_json::json!(tool_ms/1000)}else{serde_json::json!(tool_ms as f64/1000.0)};
  let seconds=if ms%1000==0 {serde_json::json!(ms/1000)}else{serde_json::json!(ms as f64/1000.0)};
  Some(serde_json::json!({"maxTurns":config.native_max_turns.value.as_deref().map(|v|validate_native_turns(v).expect("validated")).unwrap_or(20),"timeoutSeconds":seconds,"toolTimeoutSeconds":tool_seconds,"maxOutputTokens":12000}))
+}
+
+const DEFAULT_NATIVE_OUTPUT_BYTES: usize = 67_108_864;
+pub(crate) fn validate_native_output_bytes(value: &str) -> Result<usize, RunnerError> {
+ validate_native_turns(value).ok().filter(|n| (1_048_576..=268_435_456).contains(n)).map(|n| n as usize).ok_or_else(|| RunnerError::config("Native output bytes must be decimal bytes from 1048576 through 268435456."))
+}
+pub(crate) fn native_output_bytes(config: &EffectiveConfig) -> usize {
+ config.native_output_bytes.value.as_deref().map(|v| validate_native_output_bytes(v).expect("validated output budget")).unwrap_or(DEFAULT_NATIVE_OUTPUT_BYTES)
+}
+pub(crate) fn native_output_limits(config: &EffectiveConfig) -> Option<serde_json::Value> {
+ (config.output_contract.value == "native").then(|| serde_json::json!({"maxAggregateStdoutBytes":native_output_bytes(config),"maxNativeCaptureBytes":native_output_bytes(config),"captureEnabled":config.native_log.value.is_some()}))
 }

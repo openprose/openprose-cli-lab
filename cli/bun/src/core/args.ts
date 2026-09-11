@@ -11,6 +11,7 @@ const valueOptions: Record<string, keyof GlobalFlags> = {
   "--native-max-turns": "nativeMaxTurns",
   "--native-timeout": "nativeTimeout",
   "--native-tool-timeout": "nativeToolTimeout",
+  "--native-output-bytes": "nativeOutputBytes",
   "--native-add-dir": "nativeAddDirs",
   "--native-allow-tool": "nativeAllowTools",
   "--native-log": "nativeLog",
@@ -27,7 +28,7 @@ function invalid(message: string): never {
 function setValue(global: GlobalFlags, key: keyof GlobalFlags, value: string, option: string): void {
   if (value.length === 0) invalid(`${option} requires a non-empty value.`);
   if (key === "nativeAddDirs" || key === "nativeAllowTools") { (global[key] ??= []).push(value); return; }
-  if (key === "nativeMaxTurns" || key === "nativeTimeout" || key === "nativeToolTimeout") {global[key]=value;return;}
+  if (key === "nativeMaxTurns" || key === "nativeTimeout" || key === "nativeToolTimeout" || key === "nativeOutputBytes") {global[key]=value;return;}
   if (key === "nativeProfile") { global.nativeProfile=value; return; }
   if (key === "output") {
     if (value !== "human" && value !== "json" && value !== "jsonl") {
@@ -86,7 +87,7 @@ export function parseEntrypoint(args: readonly string[]): ParsedEntrypoint {
     if (key !== undefined) {
       const value = equals >= 0 ? token.slice(equals + 1) : args[index + 1];
       if (value === undefined) invalid(`${option} requires a value.`);
-      if ((key === "model" || key === "authProfile" || key === "nativeProfile" || key === "nativeMaxTurns" || key === "nativeTimeout" || key === "nativeToolTimeout") && global[key] !== undefined) {
+      if ((key === "model" || key === "authProfile" || key === "nativeProfile" || key === "nativeMaxTurns" || key === "nativeTimeout" || key === "nativeToolTimeout" || key === "nativeOutputBytes") && global[key] !== undefined) {
         invalid(`runner option ${option} was specified more than once`);
       }
       setValue(global, key, value, option);

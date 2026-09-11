@@ -1,3 +1,4 @@
+import {nativeOutputLimits} from "./adapters/output-budget";
 import {nativeLimits} from "./adapters/sdk-limits";
 import { nativeConfiguration } from "./adapters/native-profile";
 import { parseEntrypoint, inferOutputMode } from "./core/args";
@@ -500,6 +501,7 @@ async function runLanguage(
   const invocation: RunnerInvocation = {
     schema: "openprose.runner-invocation/1",
     ...(nativeLimits(config.values)?{nativeLimits:nativeLimits(config.values)!}:{}),
+    ...(nativeOutputLimits(config.values)?{nativeOutputLimits:nativeOutputLimits(config.values)!}:{}),
     ...(nativeConfiguration({...config.values,authProfile:config.values.authProfile??"claude-subscription"})?{nativeConfiguration:nativeConfiguration({...config.values,authProfile:config.values.authProfile??"claude-subscription"})!}:{}),
     invocationId,
     cwd: config.cwd,
@@ -1061,6 +1063,7 @@ async function runInstalledInvocation(
       ...(config.values.nativeMaxTurns===undefined?{}:{nativeMaxTurns:config.values.nativeMaxTurns}),
       ...(config.values.nativeTimeout===undefined?{}:{nativeTimeout:config.values.nativeTimeout}),
       ...(config.values.nativeToolTimeout===undefined?{}:{nativeToolTimeout:config.values.nativeToolTimeout}),
+      ...(config.values.nativeOutputBytes===undefined?{}:{nativeOutputBytes:config.values.nativeOutputBytes}),
       ...(config.values.nativeProfile===undefined?{}:{nativeProfile:config.values.nativeProfile}),
       ...(config.values.nativeAddDirs===undefined?{}:{nativeAddDirs:config.values.nativeAddDirs}),
       ...(config.values.nativeAllowTools===undefined?{}:{nativeAllowTools:config.values.nativeAllowTools}),
@@ -1351,6 +1354,7 @@ async function buildResult(input: ResultInput): Promise<Record<string, unknown>>
   return {
     schema: "openprose.runner-result/1",
     ...(input.invocation.nativeLimits?{nativeLimits:input.invocation.nativeLimits}:{}),
+    ...(input.invocation.nativeOutputLimits?{nativeOutputLimits:input.invocation.nativeOutputLimits}:{}),
     ...(input.invocation.nativeConfiguration?{nativeConfiguration:input.invocation.nativeConfiguration}:{}),
     invocationId: input.invocation.invocationId,
     runner: { name: RUNNER_NAME, version: RUNNER_VERSION, commit: RUNNER_BUILD_COMMIT },
@@ -1503,6 +1507,7 @@ function emitDryRun(
   const report = {
     schema: "openprose.runner-dry-run-report/1",
     ...(nativeLimits(config.values)?{nativeLimits:nativeLimits(config.values)!}:{}),
+    ...(nativeOutputLimits(config.values)?{nativeOutputLimits:nativeOutputLimits(config.values)!}:{}),
     wouldStartModel: false,
     ...(nativeConfiguration({...config.values,authProfile:readiness?.credentialGroup??config.values.authProfile}) ? {nativeConfiguration:nativeConfiguration({...config.values,authProfile:readiness?.credentialGroup??config.values.authProfile})}:{}),
     cwd: config.cwd,
@@ -1550,6 +1555,7 @@ function emitDryRun(
       `Harness: ${humanSafeScalar(harness.id)}`,
       `Transport: ${humanSafeScalar(transport)}`,
       ...(report.nativeLimits?[`Native limits: ${JSON.stringify(report.nativeLimits)}`]:[]),
+      ...(report.nativeOutputLimits?[`Native output limits: ${JSON.stringify(report.nativeOutputLimits)}`]:[]),
       ...(report.nativeConfiguration?[`Native profile: ${humanSafeScalar(config.values.nativeProfile??"default")} (requested; observed tools unavailable in dry run)`,`Native configuration: ${humanSafeScalar(JSON.stringify(report.nativeConfiguration))}`]:[]),
       `Working directory: ${humanSafeScalar(config.cwd)}`,
       `Prompt placement: ${humanSafeScalar(report.prompt.placement ?? "unavailable")} (${humanSafeScalar(report.prompt.strictness)})`,

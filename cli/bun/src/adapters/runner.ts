@@ -1,3 +1,5 @@
+import transportLimits from "../../../shared/capabilities/transport-limits.v1.json" with {type:"json"};
+import {nativeOutputBytes} from "./output-budget";
 import { nativeConfiguration, observeNativeInit, type NativeObservation } from "./native-profile";
 import { NativeCapture } from "./native-capture";
 import { failure } from "../core/errors";
@@ -150,7 +152,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     const assistantMessageSink = options.createAssistantMessageSink?.(protectedValues);
     const supervisedExecutable = options.fixtureInterpreter ?? options.executable;
     const supervisedArgv = options.fixtureInterpreter === undefined ? plan.argv.slice(1) : plan.argv;
-    const capture = new NativeCapture(options.nativeLog,protectedValues);
+    const capture = new NativeCapture(options.nativeLog,protectedValues,nativeOutputBytes(options));
     let observed: NativeObservation | null = null;
     const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, (options.adapterId === "omp/rpc" || options.adapterId === "prime/rpc") ? plan.stdinBytes : null, options.outputContract === "native");
     if(options.nativeProfile === "claude-workspace-tools") {
@@ -175,6 +177,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       graceMs: definition.recipe.cancellation.graceMs,
       hardKillAfterMs: definition.recipe.cancellation.hardKillAfterMs,
       onNativeRecord:record=>capture.write(record),
+      ...(options.outputContract === "native" ? {limits:{...transportLimits,maxAggregateStdoutBytes:nativeOutputBytes(options)}} : {}),
       protocol,
       ...(assistantMessageSink === undefined
         ? {}

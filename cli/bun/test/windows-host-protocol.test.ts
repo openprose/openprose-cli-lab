@@ -444,3 +444,10 @@ describe("Windows process-host event parser", () => {
     expect(() => acceptWindowsVersionProbe(failed.finish(0, new Uint8Array()), /./)).toThrow();
   });
 });
+
+test("native output budget expands only Windows stdout",()=>{
+ const r=request();r.limits.maxStdoutBytes=268_435_456;
+ expect(()=>encodeWindowsHostRequest(r)).not.toThrow();
+ r.limits.maxStdoutBytes+=1;expect(()=>encodeWindowsHostRequest(r)).toThrow();
+ r.limits.maxStdoutBytes=268_435_456;r.limits.maxStderrBytes=67_108_865;expect(()=>encodeWindowsHostRequest(r)).toThrow();
+});

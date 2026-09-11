@@ -971,7 +971,7 @@ pub fn validate_windows_version_probe(
 }
 
 fn validate_limits(limits: WindowsHostLimits) -> Result<(), ()> {
-    if !(1..=MAX_STREAM_BYTES).contains(&limits.max_stdout_bytes)
+    if !(1..=268_435_456).contains(&limits.max_stdout_bytes)
         || !(1..=MAX_STREAM_BYTES).contains(&limits.max_stderr_bytes)
         || !(1..=MAX_QUEUED_CHUNKS).contains(&limits.max_queued_chunks)
     {
@@ -1326,4 +1326,12 @@ const fn host_integrity() -> WindowsHostClientFailure {
         WindowsHostClientFailureKind::HostIntegrity,
         "compiled Windows process host failed integrity verification",
     )
+}
+
+#[test]
+fn output_budget_keeps_windows_stderr_boundary() {
+ let mut limits=WindowsHostLimits {max_stdout_bytes:268_435_456,max_stderr_bytes:67_108_864,max_queued_chunks:1};
+ assert!(validate_limits(limits).is_ok());
+ limits.max_stdout_bytes+=1;assert!(validate_limits(limits).is_err());
+ limits.max_stdout_bytes=268_435_456;limits.max_stderr_bytes+=1;assert!(validate_limits(limits).is_err());
 }

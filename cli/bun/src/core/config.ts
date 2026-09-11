@@ -1,3 +1,4 @@
+import {nativeOutputLimits,validateNativeOutputBytes} from "../adapters/output-budget";
 import {nativeLimits} from "../adapters/sdk-limits";
 import { access, chmod, lstat, mkdir, readFile, realpath, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -31,6 +32,7 @@ const fileKeyMap: Record<string, ConfigKey> = {
   native_max_turns: "nativeMaxTurns",
   native_timeout: "nativeTimeout",
   native_tool_timeout: "nativeToolTimeout",
+  native_output_bytes: "nativeOutputBytes",
   native_add_dirs: "nativeAddDirs",
   native_allow_tools: "nativeAllowTools",
   native_log: "nativeLog",
@@ -51,6 +53,7 @@ const environmentKeyMap: Record<string, ConfigKey> = {
   PROSE_NATIVE_MAX_TURNS: "nativeMaxTurns",
   PROSE_NATIVE_TIMEOUT: "nativeTimeout",
   PROSE_NATIVE_TOOL_TIMEOUT: "nativeToolTimeout",
+  PROSE_NATIVE_OUTPUT_BYTES: "nativeOutputBytes",
   PROSE_NATIVE_LOG: "nativeLog",
   PROSE_OUTPUT_CONTRACT: "outputContract",
   PROSE_PERMISSION_MODE: "permissionMode",
@@ -117,6 +120,7 @@ export async function resolveConfiguration(
   apply(values, sources, invocation.values, "flag", invocation.locations);
 
   nativeLimits(values);
+  nativeOutputLimits(values);
   if (values.nativeProfile !== undefined || values.nativeAddDirs !== undefined || values.nativeAllowTools !== undefined) {
     await validateNativeConfiguration(values, cwd);
   }
@@ -424,10 +428,10 @@ function parseEnvironment(env: Readonly<Record<string, string | undefined>>): Pa
 function parseFlags(flags: GlobalFlags): ParsedValues {
   const values: PartialValues = {};
   const locations: Partial<Record<ConfigKey, string>> = {};
-  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "nativeProfile", "nativeMaxTurns", "nativeTimeout", "nativeToolTimeout", "nativeAddDirs", "nativeAllowTools", "outputContract", "nativeLog", "timeout", "output", "color", "verbose"] as const) {
+  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "nativeProfile", "nativeMaxTurns", "nativeTimeout", "nativeToolTimeout", "nativeOutputBytes", "nativeAddDirs", "nativeAllowTools", "outputContract", "nativeLog", "timeout", "output", "color", "verbose"] as const) {
     const value = flags[key];
     if (value === undefined) continue;
-    const location = key === "outputContract" ? "--output-contract" : key === "nativeMaxTurns" ? "--native-max-turns" : key === "nativeTimeout" ? "--native-timeout" : key === "nativeToolTimeout" ? "--native-tool-timeout" : key === "nativeProfile" ? "--native-profile" : key === "nativeAddDirs" ? "--native-add-dir" : key === "nativeAllowTools" ? "--native-allow-tool" : key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
+    const location = key === "outputContract" ? "--output-contract" : key === "nativeMaxTurns" ? "--native-max-turns" : key === "nativeTimeout" ? "--native-timeout" : key === "nativeToolTimeout" ? "--native-tool-timeout" : key === "nativeOutputBytes" ? "--native-output-bytes" : key === "nativeProfile" ? "--native-profile" : key === "nativeAddDirs" ? "--native-add-dir" : key === "nativeAllowTools" ? "--native-allow-tool" : key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
     assignValidated(values, key, value, location);
     locations[key] = location;
   }
@@ -463,6 +467,7 @@ function assignValidated(values: PartialValues, key: ConfigKey, raw: string | bo
     values.harness = raw;
     return;
   }
+  if (key === "nativeOutputBytes") { validateNativeOutputBytes(raw); values[key]=raw; return; }
   if (key === "nativeMaxTurns" || key === "nativeTimeout" || key === "nativeToolTimeout") { values[key]=raw; nativeLimits({...values,harness:"agents-sdk"}); return; }
   if (key === "nativeProfile") {
     if (!["default","claude-workspace-tools"].includes(raw)) fail("Unknown native profile.",location);

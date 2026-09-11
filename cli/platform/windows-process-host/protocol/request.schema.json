@@ -60,7 +60,7 @@
       "additionalProperties": false,
       "required": ["maxStdoutBytes", "maxStderrBytes", "maxQueuedChunks"],
       "properties": {
-        "maxStdoutBytes": { "type": "integer", "minimum": 1, "maximum": 67108864 },
+        "maxStdoutBytes": { "type": "integer", "minimum": 1, "maximum": 268435456 },
         "maxStderrBytes": { "type": "integer", "minimum": 1, "maximum": 67108864 },
         "maxQueuedChunks": { "type": "integer", "minimum": 1, "maximum": 1024 }
       }

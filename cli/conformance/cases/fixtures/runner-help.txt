@@ -28,6 +28,7 @@ Runner options:
   --permission-mode <MODE>   Select a supported native permission mode
   --output-contract <MODE>   image-envelope (default) or native settlement
   --native-log <PATH>        Capture bounded native events (opt-in)
+  --native-output-bytes <N> Native stdout/capture ceiling each (default: 67108864)
   --timeout <DURATION>       Set the noninteractive run deadline
   --output <human|json|jsonl>
   --dry-run                  Probe and negotiate without starting a model run

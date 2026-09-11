@@ -111,6 +111,8 @@ struct ConfigValuesReport<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     native_tool_timeout: Option<&'a crate::config::Sourced<Option<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    native_output_bytes: Option<&'a crate::config::Sourced<Option<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     native_add_dirs: Option<&'a crate::config::Sourced<Vec<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     native_allow_tools: Option<&'a crate::config::Sourced<Vec<String>>>,
@@ -2091,7 +2093,8 @@ fn execute_installed_adapter(
     let omp_controller = launch
         .omp_prompt_bytes()
         .map(|bytes| OmpStagedController::new(&invocation_id, bytes.to_vec()));
-    let capture=match config.native_log.value.as_ref().map(|path|NativeCapture::open(path,secret_values.clone())).transpose(){
+    if config.output_contract.value == "native" { process_spec.limits.max_stdout_bytes = crate::config::native_output_bytes(config); }
+    let capture=match config.native_log.value.as_ref().map(|path|NativeCapture::open(path,secret_values.clone(),crate::config::native_output_bytes(config))).transpose(){
        Ok(value)=>value,Err(_)=>return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Native log must be a new writable absolute path"),argv,config,image,mode,clock,ids)
     };
     let mut run_observer = InstalledRunObserver {
@@ -2452,6 +2455,8 @@ fn installed_adapter_success_result(
         "runnerExitCode":0
     });
     if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,Some(&outcome.records)){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => {
@@ -2710,6 +2715,8 @@ fn render_installed_failure(
         "error":error
     });
     if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,native_records){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => CommandOutcome::human(
@@ -2772,6 +2779,7 @@ fn installed_invocation(
         "taskDigestSha256":task_digest
     });
     if let Some(limits)=crate::config::native_limits(config){value["nativeLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){value["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,None){value["nativeConfiguration"]=native;}
     value
 }
@@ -3537,6 +3545,7 @@ fn dry_run_outcome(
         "blockingError":blocking_error
     });
     if let Some(limits)=crate::config::native_limits(config){report["nativeLimits"]=limits;}
+    if let Some(limits)=crate::config::native_output_limits(config){report["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,None){report["nativeConfiguration"]=native;}
     if mode == OutputMode::Human {
         let human_readiness =
@@ -3596,7 +3605,7 @@ fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
         config_source_entry("verbose", &config.verbose.source, false),
         config_source_entry("authProfile", &config.auth_profile.source, true),
     ];
-    for (key,source) in [("outputContract",&config.output_contract.source),("permissionMode",&config.permission_mode.source),("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeToolTimeout",&config.native_tool_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
+    for (key,source) in [("outputContract",&config.output_contract.source),("permissionMode",&config.permission_mode.source),("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeToolTimeout",&config.native_tool_timeout.source),("nativeOutputBytes",&config.native_output_bytes.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
         if source.kind != ConfigSourceKind::Default {entries.push(config_source_entry(key,source,false));}
     }
     entries
@@ -4001,6 +4010,7 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
             native_max_turns:config.native_max_turns.value.as_ref().map(|_|&config.native_max_turns),
             native_timeout:config.native_timeout.value.as_ref().map(|_|&config.native_timeout),
             native_tool_timeout:config.native_tool_timeout.value.as_ref().map(|_|&config.native_tool_timeout),
+            native_output_bytes:config.native_output_bytes.value.as_ref().map(|_|&config.native_output_bytes),
             native_profile:(config.native_profile.source.kind!=ConfigSourceKind::Default).then_some(&config.native_profile),
             native_add_dirs:(config.native_add_dirs.source.kind!=ConfigSourceKind::Default).then_some(&config.native_add_dirs),
             native_allow_tools:(config.native_allow_tools.source.kind!=ConfigSourceKind::Default).then_some(&config.native_allow_tools),
@@ -4843,19 +4853,19 @@ fn native_output_requires_a_native_terminal_before_rendering(){
  assert!(installed_adapters::normalize_transport(installed_adapters::InstalledAdapter::CodexExecJson,&records,"fixture").is_err());
 }
 
-struct NativeCapture { file:std::fs::File, secrets:Vec<String>, bytes:usize }
+struct NativeCapture { file:std::fs::File, secrets:Vec<String>, bytes:usize, limit:usize }
 impl NativeCapture {
- fn open(path:&str,secrets:Vec<String>)->std::io::Result<Self>{
+ fn open(path:&str,secrets:Vec<String>,limit:usize)->std::io::Result<Self>{
    if !std::path::Path::new(path).is_absolute(){return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,"absolute path required"));}
    let mut options=std::fs::OpenOptions::new();options.write(true).create_new(true);
    #[cfg(unix)] {use std::os::unix::fs::OpenOptionsExt;options.mode(0o600);}
-   Ok(Self {file:options.open(path)?,secrets,bytes:0})
+   Ok(Self {file:options.open(path)?,secrets,bytes:0,limit})
  }
  fn write(&mut self,record:&Value)->Result<(),SupervisorFailure>{
    fn scrub(value:&mut Value,secrets:&[String]){match value {Value::String(text)=>{for secret in secrets{if !secret.is_empty(){*text=text.replace(secret,"[REDACTED]");}}},Value::Array(items)=>for item in items{scrub(item,secrets)},Value::Object(items)=>for item in items.values_mut(){scrub(item,secrets)},_=>{}}}
    let mut record=record.clone();scrub(&mut record,&self.secrets);
    let mut bytes=serde_json::to_vec(&record).expect("native JSON");bytes.push(b'\n');
-   if self.bytes+bytes.len()>64*1024*1024{return Err(stream_observer_failure(FailureKind::Internal,"native capture size exceeded"));}
+   if self.bytes.checked_add(bytes.len()).is_none_or(|n| n>self.limit){return Err(stream_observer_failure(FailureKind::Internal,"native capture size exceeded"));}
    self.file.write_all(&bytes).map_err(|_|stream_observer_failure(FailureKind::Internal,"native capture write failed"))?;self.bytes+=bytes.len();Ok(())
  }
 }
@@ -4863,9 +4873,9 @@ impl NativeCapture {
 #[test]
 fn native_capture_is_private_new_bounded_and_redacts_known_values(){
  let dir=tempfile::tempdir().unwrap();let path=dir.path().join("native.jsonl");
- let mut capture=NativeCapture::open(path.to_str().unwrap(),vec!["fixture-secret".into()]).unwrap();
+ let mut capture=NativeCapture::open(path.to_str().unwrap(),vec!["fixture-secret".into()],64*1024*1024).unwrap();
  capture.write(&json!({"type":"tool_call","text":"prefix fixture-secret suffix"})).unwrap();
- assert!(NativeCapture::open(path.to_str().unwrap(),vec![]).is_err());
+ assert!(NativeCapture::open(path.to_str().unwrap(),vec![],64*1024*1024).is_err());
  assert!(std::fs::read_to_string(&path).unwrap().contains("[REDACTED]"));
  #[cfg(unix)] {use std::os::unix::fs::PermissionsExt;assert_eq!(std::fs::metadata(path).unwrap().permissions().mode() & 0o777,0o600);}
  capture.bytes=64*1024*1024;assert!(capture.write(&json!({"type":"final"})).is_err());
@@ -4902,4 +4912,12 @@ fn sdk_limit_arguments(config: &EffectiveConfig) -> Vec<std::ffi::OsString> {
         args.extend([std::ffi::OsString::from("--tool-timeout"),(crate::config::validate_native_timeout(v).expect("validated") as f64/1000.0).to_string().into()]);
     }
     args
+}
+
+#[test]
+fn native_capture_exact_utf8_budget_after_redaction(){
+ let d=tempfile::tempdir().unwrap();let p=d.path().join("capture");let expected="{\"text\":\"é[REDACTED]\"}\n";
+ let mut c=NativeCapture::open(p.to_str().unwrap(),vec!["x".into()],expected.len()).unwrap();
+ c.write(&json!({"text":"éx"})).unwrap();assert!(c.write(&json!({"text":"next"})).is_err());drop(c);
+ assert_eq!(std::fs::read_to_string(p).unwrap(),expected);
 }

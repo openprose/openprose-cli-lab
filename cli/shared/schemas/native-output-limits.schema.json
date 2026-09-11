@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/native-output-limits.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "maxAggregateStdoutBytes",
+    "maxNativeCaptureBytes",
+    "captureEnabled"
+  ],
+  "properties": {
+    "maxAggregateStdoutBytes": {
+      "type": "integer",
+      "minimum": 1048576,
+      "maximum": 268435456
+    },
+    "maxNativeCaptureBytes": {
+      "type": "integer",
+      "minimum": 1048576,
+      "maximum": 268435456
+    },
+    "captureEnabled": {
+      "type": "boolean"
+    }
+  }
+}

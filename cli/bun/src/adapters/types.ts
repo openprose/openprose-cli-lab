@@ -163,6 +163,7 @@ export interface InstalledAdapterOptions {
   nativeMaxTurns?: string;
   nativeTimeout?: string;
   nativeToolTimeout?: string;
+  nativeOutputBytes?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   permissionMode?: string | null;

@@ -43,6 +43,7 @@ pub struct GlobalFlags {
     pub native_max_turns: Option<String>,
     pub native_timeout: Option<String>,
     pub native_tool_timeout: Option<String>,
+    pub native_output_bytes: Option<String>,
     pub native_add_dirs: Vec<String>,
     pub native_allow_tools: Vec<String>,
     pub timeout: Option<String>,
@@ -196,6 +197,7 @@ fn is_value_option(value: &str) -> bool {
             | "--native-max-turns"
             | "--native-timeout"
             | "--native-tool-timeout"
+            | "--native-output-bytes"
             | "--native-profile"
             | "--native-add-dir"
             | "--native-allow-tool"
@@ -232,6 +234,7 @@ fn set_value_option(globals: &mut GlobalFlags, name: &str, value: &str) -> Resul
         "--native-max-turns" => set_once(&mut globals.native_max_turns, name, value)?,
         "--native-timeout" => set_once(&mut globals.native_timeout, name, value)?,
         "--native-tool-timeout" => set_once(&mut globals.native_tool_timeout, name, value)?,
+        "--native-output-bytes" => set_once(&mut globals.native_output_bytes, name, value)?,
         "--native-profile" => set_once(&mut globals.native_profile, name, value)?,
         "--native-add-dir" => globals.native_add_dirs.push(value.to_owned()),
         "--native-allow-tool" => globals.native_allow_tools.push(value.to_owned()),
@@ -706,4 +709,11 @@ fn sdk_tool_timeout_flag_is_a_runner_option() {
     let p=parse_invocation(vec!["--native-tool-timeout=1ms","run"].into_iter().map(str::to_owned)).unwrap();
     assert_eq!(p.globals.native_tool_timeout.as_deref(),Some("1ms"));
     assert!(parse_invocation(vec!["--native-tool-timeout","1s","--native-tool-timeout","2s"].into_iter().map(str::to_owned)).is_err());
+}
+
+#[test]
+fn native_output_flag_is_single_valued(){
+ let p=parse_invocation(vec!["--native-output-bytes=134217728","task"].into_iter().map(str::to_owned)).unwrap();
+ assert_eq!(p.globals.native_output_bytes.as_deref(),Some("134217728"));
+ assert!(parse_invocation(vec!["--native-output-bytes","1048576","--native-output-bytes","2097152","task"].into_iter().map(str::to_owned)).is_err());
 }

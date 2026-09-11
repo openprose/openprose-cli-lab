@@ -697,7 +697,7 @@ function validateRequestShape(request: WindowsHostRequest): void {
 
 function validateHostLimits(limits: TransportLimits): void {
   boundedInteger(limits.maxRecordBytes, 1, MAX_STREAM_BYTES, "limits.maxRecordBytes");
-  boundedInteger(limits.maxAggregateStdoutBytes, 1, MAX_STREAM_BYTES, "limits.maxStdoutBytes");
+  boundedInteger(limits.maxAggregateStdoutBytes, 1, 268_435_456, "limits.maxStdoutBytes");
   boundedInteger(limits.maxAggregateStderrBytes, 1, MAX_STREAM_BYTES, "limits.maxStderrBytes");
   boundedInteger(limits.maxQueuedRecords, 1, MAX_QUEUED_CHUNKS, "limits.maxQueuedChunks");
 }
