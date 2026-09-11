@@ -1961,8 +1961,9 @@ fn execute_installed_adapter(
         }
     };
     if let Some(permission)=&config.permission_mode.value {
-        if adapter != installed_adapters::InstalledAdapter::ClaudePrintStreamJson {return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Explicit permission mode unsupported for this harness"),argv,config,image,mode,clock,ids);}
-        launch.argv.splice(0..0,["--permission-mode".into(),permission.into()]);
+        if adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && matches!(permission.as_str(),"default"|"acceptEdits") {launch.argv.splice(0..0,["--permission-mode".into(),permission.into()]);}
+        else if adapter == installed_adapters::InstalledAdapter::CodexExecJson && matches!(permission.as_str(),"workspace-write"|"read-only") {launch.argv.splice(1..1,["--sandbox".into(),permission.into()]);}
+        else {return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Explicit permission mode unsupported for this harness"),argv,config,image,mode,clock,ids);}
     }
     let rendered_payload_digest =
         matches!(adapter, installed_adapters::InstalledAdapter::CodexExecJson).then(|| {

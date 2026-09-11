@@ -21,3 +21,14 @@ test("only explicit API route uses bare mode without credential argv",async()=>{
  expect(p.argv.join(" ")).not.toContain("fixture-key");
  }
 });
+
+test("Codex API profile selects explicit env provider and workspace writes",async()=>{
+ const task={schema:"fixture",argv:["run"],interactionMode:"non-interactive"};
+ const invocation={task,taskDigestSha256:await sha256(canonicalJson(task)),cwd:"/tmp",invocationId:"fixture"} as RunnerInvocation;
+ const imageBytes=new TextEncoder().encode("fixture image");
+ const p=await buildInstalledLaunchPlan({adapterId:"codex/exec-json",executable:"/codex",invocation,imageBytes,expectedImageByteLength:imageBytes.length,expectedImageSha256:await sha256(imageBytes),framingTemplateBytes:new TextEncoder().encode("{{IMAGE_BYTES}} {{IMAGE_SHA256}} {{TASK_JSON}} {{TASK_SHA256}}"),imagePath:"/image",taskPath:"/task",credentialGroup:"openai-api-key",permissionMode:"workspace-write",platform:"darwin",arch:"arm64"});
+ expect(p.argv.slice(0,4)).toEqual(["/codex","exec","--sandbox","workspace-write"]);
+ expect(p.argv).toContain('model_provider="openai-env"');
+ expect(p.argv).toContain('model_providers.openai-env.env_key="OPENAI_API_KEY"');
+ expect(p.argv).toContain('model_providers.openai-env.requires_openai_auth=false');
+});

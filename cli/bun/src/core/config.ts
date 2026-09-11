@@ -448,7 +448,7 @@ function assignValidated(values: PartialValues, key: ConfigKey, raw: string | bo
     values.outputContract = raw;
   }
   else if (key === "permissionMode") {
-    if (raw !== "default" && raw !== "acceptEdits") fail("Permission mode must be default or acceptEdits.");
+    if (!["default","acceptEdits","workspace-write","read-only"].includes(raw)) fail("Permission mode must be default, acceptEdits, workspace-write, or read-only.");
     values.permissionMode = raw;
   }
   else if (key === "transport") values.transport = raw;

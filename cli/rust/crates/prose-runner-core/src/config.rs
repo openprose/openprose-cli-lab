@@ -1001,7 +1001,7 @@ fn validate_output_contract(value:String)->Result<String,RunnerError>{
 }
 
 fn validate_permission_mode(value:String)->Result<String,RunnerError>{
-    if matches!(value.as_str(),"default"|"acceptEdits") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Permission mode must be default or acceptEdits"))}
+    if matches!(value.as_str(),"default"|"acceptEdits"|"workspace-write"|"read-only") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Permission mode must be default, acceptEdits, workspace-write, or read-only"))}
 }
 
 fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), RunnerError> {

@@ -3057,6 +3057,10 @@ pub fn prepare_launch(
                 "--ignore-user-config".into(),
                 "--ignore-rules".into(),
             ];
+            if auth_group == "openai-api-key" {
+              let settings:Vec<String>=serde_json::from_str(include_str!("../../../../shared/capabilities/adapters/codex-env-route.v1.json")).expect("Codex API settings");
+              for setting in settings {argv.extend(["-c".into(),setting.into()]);}
+            }
             argv.extend(["--cd".into(), cwd.as_os_str().to_owned()]);
             append_model(&mut argv, model);
             argv.push("-".into());

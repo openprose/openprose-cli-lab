@@ -1,3 +1,4 @@
+import codexApiSettings from "../../../shared/capabilities/adapters/codex-env-route.v1.json";
 import { failure } from "../core/errors";
 import { canonicalJson, sha256 } from "../core/image";
 import type { RunnerInvocation } from "../core/types";
@@ -88,9 +89,11 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
   if (input.adapterId === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key") {
     argv.splice(1, 0, "--bare");
   }
+  if(input.adapterId === "codex/exec-json" && input.credentialGroup === "openai-api-key") argv.splice(2,0,...codexApiSettings.flatMap(setting=>["-c",setting]));
   if (input.permissionMode != null) {
-    if (input.adapterId !== "claude/print-stream-json" || !["default", "acceptEdits"].includes(input.permissionMode)) throw failure("CONFIG_INVALID", {reason:"Unsupported explicit permission mode for this harness."});
-    argv.splice(1, 0, "--permission-mode", input.permissionMode);
+    if(input.adapterId === "claude/print-stream-json" && ["default","acceptEdits"].includes(input.permissionMode)) argv.splice(1,0,"--permission-mode",input.permissionMode);
+    else if(input.adapterId === "codex/exec-json" && ["workspace-write","read-only"].includes(input.permissionMode)) argv.splice(2,0,"--sandbox",input.permissionMode);
+    else throw failure("CONFIG_INVALID", {reason:"Unsupported explicit permission mode for this harness."});
   }
   assertInstalledAdapterArgv(input.adapterId, argv, { platform: input.platform, arch: input.arch });
   let stdinBytes: Uint8Array | null = null;

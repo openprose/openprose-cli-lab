@@ -1,0 +1,8 @@
+[
+  "model_provider=\"openai-env\"",
+  "model_providers.openai-env.name=\"OpenAI API key\"",
+  "model_providers.openai-env.base_url=\"https://api.openai.com/v1\"",
+  "model_providers.openai-env.env_key=\"OPENAI_API_KEY\"",
+  "model_providers.openai-env.wire_api=\"responses\"",
+  "model_providers.openai-env.requires_openai_auth=false"
+]
