@@ -56,3 +56,33 @@ describe("bounded JSONL framing", () => {
     await expect(readBoundedJsonLines(stream, constrained, () => {})).rejects.toMatchObject({ code });
   });
 });
+
+import diagnosticCases from "../../shared/fixtures/transport-diagnostics.json";
+for (const fixture of diagnosticCases) test(`safe transport diagnostic: ${fixture.name}`, async()=>{
+ let caught:any;
+ try {await readBoundedJsonLines(chunks(fixture.input), {...limits,maxRecordBytes:fixture.recordLimit,maxAggregateStdoutBytes:fixture.aggregateLimit},()=>{});}catch(e){caught=e;}
+ expect(caught.code).toBe("PROTOCOL_MALFORMED");
+ expect(caught.details.transportDiagnostic.reason).toBe(fixture.reason);
+ if("limitBytes" in fixture)expect(caught.details.transportDiagnostic.limitBytes).toBe(fixture.limitBytes);
+ if("observedBytes" in fixture)expect(caught.details.transportDiagnostic.observedBytes).toBe(fixture.observedBytes);
+ expect(JSON.stringify(caught.details)).not.toContain("secret-invalid");
+});
+
+import {normalizeProtocolFailure} from "../src/supervision/jsonl";
+import {failure} from "../src/core/errors";
+test("lifecycle diagnostic preserves existing adapter evidence",()=>{
+ const adapterDiagnostic={stage:"prime-lifecycle",phase:"tool-turn-open"};
+ const error=normalizeProtocolFailure(failure("PROTOCOL_MALFORMED",{adapterDiagnostic}));
+ expect(error.details?.adapterDiagnostic).toEqual(adapterDiagnostic);
+ expect(error.details?.transportDiagnostic).toEqual({schema:"openprose.transport-diagnostic/1",reason:"lifecycle-rejection"});
+});
+
+import {installedProcessFailureDetails} from "../src/cli";
+test("invalid UTF8 is distinct and emitted CLI details retain safe diagnostics",async()=>{
+ const stream=new ReadableStream<Uint8Array>({start(c){c.enqueue(new Uint8Array([255,10]));c.close();}});
+ let error:any;try{await readBoundedJsonLines(stream,limits,()=>{});}catch(e){error=e;}
+ expect(error.details.transportDiagnostic.reason).toBe("invalid-utf8");
+ const details=installedProcessFailureDetails({error,exitCode:0,signal:null,terminalEventObserved:false} as any,"omp/rpc");
+ expect(details.transportDiagnostic).toEqual(error.details.transportDiagnostic);
+ expect(JSON.stringify(details)).not.toContain("255");
+});

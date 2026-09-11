@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/transport-diagnostic.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "reason"
+  ],
+  "properties": {
+    "schema": {
+      "const": "openprose.transport-diagnostic/1"
+    },
+    "reason": {
+      "enum": [
+        "aggregate-stdout-limit",
+        "record-byte-limit",
+        "invalid-json",
+        "invalid-utf8",
+        "empty-record",
+        "non-object-record",
+        "truncated-record",
+        "lifecycle-rejection"
+      ]
+    },
+    "observedBytes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "limitBytes": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4294967295
+    },
+    "saturated": {
+      "type": "boolean"
+    }
+  }
+}

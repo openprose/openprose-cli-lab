@@ -25,7 +25,7 @@ pub(crate) enum ReaderMessage {
     Record(Vec<u8>),
     StdoutEof,
     StdoutTruncated,
-    StdoutLimit,
+    StdoutLimit { record: bool, observed: usize, limit: usize },
     StdoutIo,
     Stderr(Vec<u8>),
     StderrEof,
@@ -61,7 +61,7 @@ pub(crate) fn read_jsonl(
         aggregate = match aggregate.checked_add(count) {
             Some(value) if value <= limits.max_stdout_bytes => value,
             _ => {
-                let _ = sender.send(ReaderMessage::StdoutLimit);
+                let _ = sender.send(ReaderMessage::StdoutLimit { record: false, observed: aggregate.saturating_add(count), limit: limits.max_stdout_bytes });
                 return;
             }
         };
@@ -76,7 +76,7 @@ pub(crate) fn read_jsonl(
                 record = Vec::new();
             } else {
                 if record.len() >= limits.max_record_bytes {
-                    let _ = sender.send(ReaderMessage::StdoutLimit);
+                    let _ = sender.send(ReaderMessage::StdoutLimit { record: true, observed: record.len().saturating_add(1), limit: limits.max_record_bytes });
                     return;
                 }
                 record.push(*byte);
@@ -141,6 +141,18 @@ mod tests {
     }
 
     #[test]
+    fn shared_output_diagnostic_limits() {
+        let cases: serde_json::Value=serde_json::from_str(include_str!("../../../../shared/fixtures/transport-diagnostics.json")).unwrap();
+        for case in cases.as_array().unwrap().iter().filter(|c|c["name"]!="json") {
+            let result=records(case["input"].as_str().unwrap().as_bytes(),StreamLimits{max_record_bytes:case["recordLimit"].as_u64().unwrap() as usize,max_stdout_bytes:case["aggregateLimit"].as_u64().unwrap() as usize,..StreamLimits::default()});
+            match result.last().unwrap() {
+                ReaderMessage::StdoutLimit{record,observed,limit} => {assert_eq!(*record,case["name"]=="record");assert!(*observed>*limit);assert_eq!(*limit,case["limitBytes"].as_u64().unwrap() as usize);},
+                other=>panic!("unexpected {other:?}"),
+            }
+        }
+    }
+
+    #[test]
     fn partial_eof_and_record_limit_are_distinct() {
         let truncated = records(b"{\"unfinished\"", StreamLimits::default());
         assert!(matches!(truncated[0], ReaderMessage::StdoutTruncated));
@@ -151,6 +163,6 @@ mod tests {
                 ..StreamLimits::default()
             },
         );
-        assert!(matches!(limited[0], ReaderMessage::StdoutLimit));
+        assert!(matches!(limited[0], ReaderMessage::StdoutLimit { record: true, observed: 5, limit: 4 }));
     }
 }

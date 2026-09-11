@@ -1,0 +1,26 @@
+[
+  {
+    "name": "aggregate",
+    "input": "{}\n{}\n",
+    "recordLimit": 4,
+    "aggregateLimit": 5,
+    "reason": "aggregate-stdout-limit",
+    "observedBytes": 6,
+    "limitBytes": 5
+  },
+  {
+    "name": "record",
+    "input": "{\"a\":1}\n",
+    "recordLimit": 4,
+    "aggregateLimit": 64,
+    "reason": "record-byte-limit",
+    "limitBytes": 4
+  },
+  {
+    "name": "json",
+    "input": "secret-invalid\n",
+    "recordLimit": 64,
+    "aggregateLimit": 64,
+    "reason": "invalid-json"
+  }
+]

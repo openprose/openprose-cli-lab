@@ -1230,11 +1230,12 @@ function processEvents(
   return records;
 }
 
-function installedProcessFailureDetails(
+export function installedProcessFailureDetails(
   process: ProcessSupervisionResult,
   adapterId: InstalledAdapterId,
 ): Record<string, unknown> {
   const adapterDiagnostic = process.error?.details?.adapterDiagnostic;
+  const transportDiagnostic = process.error?.details?.transportDiagnostic;
   const nonterminalReason = process.error?.details?.reason === "unsupported_nonterminal_settlement"
     ? "unsupported_nonterminal_settlement"
     : undefined;
@@ -1245,6 +1246,7 @@ function installedProcessFailureDetails(
     adapterId,
     fallbackAttempted: false,
     ...(adapterDiagnostic === undefined ? {} : { adapterDiagnostic }),
+    ...(transportDiagnostic === undefined ? {} : { transportDiagnostic }),
     ...(nonterminalReason === undefined ? {} : { reason: nonterminalReason }),
   };
 }

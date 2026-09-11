@@ -301,3 +301,5 @@ Documentation scope extension: docs/native-capture.md, clarifying existing captu
 Lease cli_recon: parsed native capture before admission, Rust supervisor/core tests and diagnostics, Bun capture parity test, docs/native-capture.md. Parent approved observability only; no admission relaxation.
 
 Lease cli_recon: native Claude candidate-turn settlement mode, cli/bun adapters/supervision/core integration and tests, cli/rust supervisor/core integration and tests, shared candidate fixture, docs/native-turn-settlement.md. Parent approves native-only behavior, conservative freshness, no language semantics.
+
+| W-DIAG-OUTPUT | coordination_library | `shared/schemas/transport-diagnostic.schema.json`, `shared/schemas/runner-error.schema.json`, `shared/fixtures/transport-diagnostics.json`, `shared/tests/test_contracts.py`, `bun/src/supervision/jsonl.ts`, `bun/src/cli.ts`, `bun/test/supervision-jsonl.test.ts`, `rust/crates/prose-process-supervisor/src/{framing,supervisor,windows_supervision}.rs`, `rust/crates/prose-runner-core/src/runner.rs` | isolated branch codex/output-limit-diagnostics | root-authorized safe framing/lifecycle diagnostic additions only | active |

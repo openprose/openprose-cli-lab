@@ -43,7 +43,7 @@ export class BoundedJsonLineDecoder {
     if (this.finished) malformed("Harness bytes arrived after structured EOF.");
     this.aggregate += value.byteLength;
     if (this.aggregate > this.limits.maxAggregateStdoutBytes) {
-      malformed("Harness stdout exceeded the aggregate structured-output limit.");
+      diagnosed("aggregate-stdout-limit", this.aggregate, this.limits.maxAggregateStdoutBytes);
     }
     this.pending = append(this.pending, value);
     let lineEnd = this.pending.indexOf(0x0a);
@@ -55,7 +55,7 @@ export class BoundedJsonLineDecoder {
       lineEnd = this.pending.indexOf(0x0a);
     }
     if (this.pending.byteLength > this.limits.maxRecordBytes) {
-      malformed("Harness emitted a structured record larger than the per-record limit.");
+      diagnosed("record-byte-limit", this.pending.byteLength, this.limits.maxRecordBytes);
     }
   }
 
@@ -63,7 +63,7 @@ export class BoundedJsonLineDecoder {
     if (this.finished) malformed("Structured EOF was finalized more than once.");
     this.finished = true;
     if (this.pending.byteLength !== 0) {
-      throw failure("PROTOCOL_TRUNCATED", { reason: "EOF occurred in the middle of a JSONL record." });
+      throw failure("PROTOCOL_TRUNCATED", { transportDiagnostic: diagnostic("truncated-record", this.pending.byteLength) });
     }
   }
 }
@@ -73,24 +73,24 @@ async function decodeRecord(
   maxRecordBytes: number,
   onRecord: (record: unknown) => void | Promise<void>,
 ): Promise<void> {
-  if (bytes.byteLength === 0) malformed("Harness emitted an empty JSONL record.");
+  if (bytes.byteLength === 0) diagnosed("empty-record", 0);
   if (bytes.byteLength > maxRecordBytes) {
-    malformed("Harness emitted a structured record larger than the per-record limit.");
+    diagnosed("record-byte-limit", bytes.byteLength, maxRecordBytes);
   }
   let text: string;
   try {
     text = decoder.decode(bytes);
   } catch {
-    malformed("Harness emitted a structured record that is not valid UTF-8.");
+    diagnosed("invalid-utf8", bytes.byteLength);
   }
   let record: unknown;
   try {
     record = JSON.parse(text);
   } catch {
-    malformed("Harness emitted invalid JSONL.");
+    diagnosed("invalid-json", bytes.byteLength);
   }
   if (record === null || typeof record !== "object" || Array.isArray(record)) {
-    malformed("Harness emitted a JSONL value that is not an object.");
+    diagnosed("non-object-record", bytes.byteLength);
   }
   // Awaiting the consumer before pulling again is the bounded queue: Bun's
   // ReadableStream applies natural backpressure and at most one record is in
@@ -119,8 +119,28 @@ function malformed(reason: string): never {
 }
 
 export function normalizeProtocolFailure(caught: unknown): RunnerFailure {
-  if (caught instanceof RunnerFailure) return caught;
+  if (caught instanceof RunnerFailure) {
+    if (caught.code === "PROTOCOL_MALFORMED" && caught.details?.transportDiagnostic === undefined) return failure(caught.code, {...caught.details, transportDiagnostic: diagnostic("lifecycle-rejection")});
+    return caught;
+  }
   return failure("PROTOCOL_MALFORMED", {
     reason: caught instanceof Error ? caught.message : "Unknown JSONL framing failure.",
   });
+}
+
+type DiagnosticReason = "aggregate-stdout-limit" | "record-byte-limit" | "invalid-json" | "invalid-utf8" | "empty-record" | "non-object-record" | "truncated-record" | "lifecycle-rejection";
+
+function diagnostic(reason: DiagnosticReason, observedBytes?: number, limitBytes?: number): Record<string, unknown> {
+  const maximum = 4294967295;
+  return {
+    schema: "openprose.transport-diagnostic/1",
+    reason,
+    ...(observedBytes === undefined ? {} : { observedBytes: Math.min(observedBytes, maximum) }),
+    ...(limitBytes === undefined ? {} : { limitBytes: Math.min(limitBytes, maximum) }),
+    ...((observedBytes ?? 0) > maximum || (limitBytes ?? 0) > maximum ? { saturated: true } : {}),
+  };
+}
+
+function diagnosed(reason: DiagnosticReason, observedBytes?: number, limitBytes?: number): never {
+  throw failure("PROTOCOL_MALFORMED", { transportDiagnostic: diagnostic(reason, observedBytes, limitBytes) });
 }

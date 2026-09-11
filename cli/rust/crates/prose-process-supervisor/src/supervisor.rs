@@ -48,6 +48,7 @@ pub struct SupervisorFailure {
     pub terminal_observed: bool,
     pub terminal_envelope: Option<Value>,
     pub records: Vec<Value>,
+    pub transport_diagnostic: Option<Value>,
 }
 
 impl SupervisorFailure {
@@ -62,7 +63,28 @@ impl SupervisorFailure {
             terminal_observed: false,
             terminal_envelope: None,
             records: Vec::new(),
+            transport_diagnostic: None,
         }
+    }
+
+    pub fn transport_diagnostic(&self) -> Option<Value> {
+        if let Some(value) = &self.transport_diagnostic { return Some(value.clone()); }
+        if !matches!(self.kind, FailureKind::ProtocolMalformed | FailureKind::ProtocolTruncated) { return None; }
+        let reason = match self.message.as_str() {
+            "harness emitted a malformed JSONL record" => "invalid-json",
+            "harness emitted a non-object JSONL record" => "non-object-record",
+            "harness emitted an empty structured record" => "empty-record",
+            "harness structured output exceeded a fixed record limit" => "record-byte-limit",
+            "harness structured output exceeded a fixed transport limit" => "aggregate-stdout-limit",
+            "harness stream ended in the middle of a structured record" => "truncated-record",
+            _ => "lifecycle-rejection",
+        };
+        Some(serde_json::json!({"schema":"openprose.transport-diagnostic/1","reason":reason}))
+    }
+
+    pub(crate) fn with_byte_diagnostic(mut self, record: bool, observed: usize, limit: usize) -> Self {
+        self.transport_diagnostic = Some(serde_json::json!({"schema":"openprose.transport-diagnostic/1","reason":if record {"record-byte-limit"} else {"aggregate-stdout-limit"},"observedBytes":observed.min(u32::MAX as usize),"limitBytes":limit.min(u32::MAX as usize),"saturated":observed > u32::MAX as usize || limit > u32::MAX as usize}));
+        self
     }
 
     #[must_use]
@@ -71,6 +93,7 @@ impl SupervisorFailure {
             FailureKind::ProtocolMalformed => matches!(
                 self.message.as_str(),
                 "harness emitted a malformed JSONL record"
+                    | "harness emitted invalid UTF-8 structured output"
                     | "harness emitted a non-object JSONL record"
                     | "harness emitted an empty structured record"
                     | "harness structured output exceeded a fixed record limit"
@@ -397,6 +420,11 @@ impl ProtocolState {
         bytes: &[u8],
         protocol: &JsonlProtocol,
     ) -> Result<(), SupervisorFailure> {
+        if std::str::from_utf8(bytes).is_err() {
+            let mut error=SupervisorFailure::new(FailureKind::ProtocolMalformed,"harness emitted invalid UTF-8 structured output");
+            error.transport_diagnostic=Some(serde_json::json!({"schema":"openprose.transport-diagnostic/1","reason":"invalid-utf8","observedBytes":bytes.len().min(u32::MAX as usize)}));
+            return Err(error);
+        }
         let value: Value = serde_json::from_slice(bytes).map_err(|_| {
             SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
@@ -932,6 +960,7 @@ fn supervise_direct(
         error.records.clone_from(&state.records);
         if cleanup.is_err() || !readers_settled || !stdin_settled {
             return Err(SupervisorFailure {
+                transport_diagnostic: None,
                 kind: FailureKind::CleanupFailed,
                 message: "process-group and pipe cleanup could not be verified".to_owned(),
                 stderr: error.stderr,
@@ -972,6 +1001,7 @@ fn supervise_direct(
     if !readers_settled || !stdin_settled {
         let _ = platform::terminate_original_process_group(&mut child, spec.termination_grace);
         return Err(SupervisorFailure {
+                transport_diagnostic: None,
             kind: FailureKind::CleanupFailed,
             message: "harness pipe cleanup could not be verified".to_owned(),
             stderr: diagnostic,
@@ -986,6 +1016,7 @@ fn supervise_direct(
     if !platform::original_process_group_is_empty(&child) {
         let _ = platform::terminate_original_process_group(&mut child, spec.termination_grace);
         return Err(SupervisorFailure {
+                transport_diagnostic: None,
             kind: FailureKind::CleanupFailed,
             message: "original process group remained after harness exit".to_owned(),
             stderr: diagnostic,
@@ -999,6 +1030,7 @@ fn supervise_direct(
     }
     if !stdin_ok {
         return Err(SupervisorFailure {
+                transport_diagnostic: None,
             kind: FailureKind::HarnessFailed,
             message: "adapter input could not be delivered to the harness".to_owned(),
             stderr: diagnostic,
@@ -1012,6 +1044,7 @@ fn supervise_direct(
     }
     let Some(terminal_envelope) = state.terminal else {
         return Err(SupervisorFailure {
+                transport_diagnostic: None,
             kind: FailureKind::ProtocolTruncated,
             message: "harness stream ended without its required terminal record".to_owned(),
             stderr: diagnostic,
@@ -1025,6 +1058,7 @@ fn supervise_direct(
     };
     if !status.success() {
         return Err(SupervisorFailure {
+                transport_diagnostic: None,
             kind: FailureKind::HarnessFailed,
             message: "harness exited unsuccessfully after a terminal record".to_owned(),
             stderr: diagnostic,
@@ -1952,10 +1986,10 @@ fn handle_message(
             FailureKind::ProtocolTruncated,
             "harness stream ended in the middle of a structured record",
         )),
-        ReaderMessage::StdoutLimit => Err(SupervisorFailure::new(
+        ReaderMessage::StdoutLimit { record, observed, limit } => Err(SupervisorFailure::new(
             FailureKind::ProtocolMalformed,
-            "harness structured output exceeded a fixed transport limit",
-        )),
+            if record { "harness structured output exceeded a fixed record limit" } else { "harness structured output exceeded a fixed transport limit" },
+        ).with_byte_diagnostic(record, observed, limit)),
         ReaderMessage::StdoutIo => Err(SupervisorFailure::new(
             FailureKind::ProtocolTruncated,
             "harness structured output could not be read to completion",
@@ -2119,6 +2153,24 @@ mod tests {
         assert!(diagnostic.iter().all(|byte| *byte == b'x'));
         assert!(!stdout_stop.load(Ordering::Acquire));
         assert!(!stderr_stop.load(Ordering::Acquire));
+    }
+
+    #[test]
+    fn diagnostic_reasons_are_closed_and_payload_free() {
+        let cases: Value=serde_json::from_str(include_str!("../../../../shared/fixtures/transport-diagnostics.json")).unwrap();
+        let mut state=ProtocolState::default();
+        let input=cases.as_array().unwrap().iter().find(|x|x["name"]=="json").unwrap()["input"].as_str().unwrap().trim();
+        let error=state.accept(input.as_bytes(),&JsonlProtocol::fake_harness()).unwrap_err();
+        let diagnostic=error.transport_diagnostic().unwrap();
+        assert_eq!(diagnostic["reason"],"invalid-json");
+        assert!(!diagnostic.to_string().contains("secret-invalid"));
+        let error=state.accept(&[255],&JsonlProtocol::fake_harness()).unwrap_err();
+        assert_eq!(error.transport_diagnostic().unwrap()["reason"],"invalid-utf8");
+        let error=SupervisorFailure::new(FailureKind::ProtocolMalformed,"untrusted raw payload");
+        assert_eq!(error.transport_diagnostic().unwrap()["reason"],"lifecycle-rejection");
+        let error=SupervisorFailure::new(FailureKind::ProtocolMalformed,"limit").with_byte_diagnostic(false,usize::MAX,8);
+        assert_eq!(error.transport_diagnostic().unwrap()["observedBytes"],u32::MAX);
+        assert_eq!(error.transport_diagnostic().unwrap()["saturated"],true);
     }
 
     #[test]

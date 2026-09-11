@@ -1405,6 +1405,7 @@ fn protected_crosses_message_boundary(candidates: &[String], protected: &[String
 
 fn stream_observer_failure(kind: FailureKind, message: &str) -> SupervisorFailure {
     SupervisorFailure {
+        transport_diagnostic: None,
         kind,
         message: message.to_owned(),
         stderr: String::new(),
@@ -3106,7 +3107,7 @@ fn map_supervisor_failure(failure: &SupervisorFailure) -> RunnerError {
         FailureKind::CleanupFailed => ErrorCode::ProcessCleanupFailed,
         FailureKind::Internal => ErrorCode::InternalRunnerFault,
     };
-    let error = RunnerError::catalog(code)
+    let mut error = RunnerError::catalog(code)
         .with_detail(
             "processExit",
             failure.process_exit.map_or(Value::Null, Value::from),
@@ -3119,6 +3120,9 @@ fn map_supervisor_failure(failure: &SupervisorFailure) -> RunnerError {
                 .map_or(Value::Null, |signal| Value::from(signal.clone())),
         )
         .with_detail("terminalEventObserved", failure.terminal_observed);
+    if let Some(diagnostic) = failure.transport_diagnostic() {
+        error = error.with_detail("transportDiagnostic", diagnostic);
+    }
     if matches!(failure.kind, FailureKind::ProtocolMalformed | FailureKind::ProtocolTruncated) {
         // Closed runner-authored reasons only; never echo native data or arbitrary observer errors.
         let reason=match failure.message.as_str() {
@@ -3295,6 +3299,7 @@ fn fake_process_result(
             task_digest,
             invocation_id,
             SupervisorFailure {
+                transport_diagnostic: None,
                 kind: FailureKind::ProtocolMalformed,
                 message: "harness terminal envelope does not match the closed image contract"
                     .to_owned(),
@@ -4741,4 +4746,12 @@ fn protocol_diagnostics_do_not_echo_native_or_observer_content(){
  assert_eq!(error.details.as_ref().unwrap().get("admittedRecordCount"),Some(&json!(0)));
  let failure=stream_observer_failure(FailureKind::ProtocolMalformed,"private arbitrary content");
  assert_eq!(map_supervisor_failure(&failure).details.as_ref().unwrap().get("reason"),Some(&json!("protocol_admission_rejected")));
+}
+
+#[test]
+fn rendered_error_keeps_safe_transport_diagnostic() {
+    let failure=stream_observer_failure(FailureKind::ProtocolMalformed,"harness emitted a malformed JSONL record");
+    let rendered=serde_json::to_value(map_supervisor_failure(&failure)).unwrap();
+    assert_eq!(rendered["details"]["transportDiagnostic"]["reason"],"invalid-json");
+    assert_eq!(rendered["exitCode"],22);
 }

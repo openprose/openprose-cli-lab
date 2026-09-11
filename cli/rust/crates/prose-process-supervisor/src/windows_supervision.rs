@@ -228,6 +228,7 @@ pub(crate) fn supervise_windows(
     let process_exit = native_exit_i32(execution.completion.process_exit_code);
     let Some(terminal_envelope) = state.terminal else {
         return Err(SupervisorFailure {
+            transport_diagnostic: None,
             kind: FailureKind::ProtocolTruncated,
             message: "harness stream ended without its required terminal record".to_owned(),
             stderr: diagnostic,
@@ -241,6 +242,7 @@ pub(crate) fn supervise_windows(
     };
     if process_exit != 0 {
         return Err(SupervisorFailure {
+            transport_diagnostic: None,
             kind: FailureKind::HarnessFailed,
             message: "harness exited unsuccessfully after a terminal record".to_owned(),
             stderr: diagnostic,
@@ -498,7 +500,7 @@ fn execute_host(
                     "Windows process host event channel ended incompletely",
                 ));
             }
-            Ok(ReaderMessage::StdoutLimit) if pending.is_none() => {
+            Ok(ReaderMessage::StdoutLimit { .. }) if pending.is_none() => {
                 pending = Some(SupervisorFailure::new(
                     FailureKind::ProtocolMalformed,
                     "Windows process host event channel exceeded a fixed bound",

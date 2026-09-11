@@ -64,6 +64,18 @@ class ContractsTest(unittest.TestCase):
         errors = sorted(self.validator(schema_name).iter_errors(instance), key=lambda error: list(error.path))
         self.assertEqual([], [f"{list(error.path)}: {error.message}" for error in errors])
 
+    def test_safe_transport_diagnostics(self):
+        validator = self.validator("transport-diagnostic.schema.json")
+        for fixture in load_json(FIXTURES / "transport-diagnostics.json"):
+            value = {"schema": "openprose.transport-diagnostic/1", "reason": fixture["reason"]}
+            for key in ("observedBytes", "limitBytes"):
+                if key in fixture:
+                    value[key] = fixture[key]
+            self.assertEqual(list(validator.iter_errors(value)), [])
+        for changes in ({"reason": "raw secret"}, {"observedBytes": -1}, {"observedBytes": 4294967296}, {"payload": "secret"}):
+            value = {"schema": "openprose.transport-diagnostic/1", "reason": "invalid-json", **changes}
+            self.assertTrue(list(validator.iter_errors(value)))
+
     def test_every_schema_is_valid_draft_2020_12_and_has_unique_id(self) -> None:
         self.assertGreaterEqual(len(self.schemas), 10)
         ids = []

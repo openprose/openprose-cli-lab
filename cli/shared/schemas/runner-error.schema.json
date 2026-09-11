@@ -32,6 +32,7 @@
       "type": "object",
       "properties": {
         "adapterDiagnostic": { "$ref": "adapter-diagnostic.schema.json" },
+        "transportDiagnostic": { "$ref": "transport-diagnostic.schema.json" },
         "cleanupHandle": {
           "type": "string",
           "minLength": 1,
