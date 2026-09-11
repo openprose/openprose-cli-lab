@@ -29,6 +29,7 @@ export interface BuildInstalledLaunchPlanInput {
 }
 
 export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanInput): Promise<InstalledLaunchPlan> {
+  if(input.adapterId === "agents-sdk/jsonl" && !input.model) throw failure("CONFIG_INVALID",{reason:"Agents SDK requires an explicit model"});
   const definition = installedAdapterDefinition(input.adapterId);
   assertInstalledAdapterPlatform(input.adapterId, { platform: input.platform, arch: input.arch });
   if (definition.credentialGroups[input.credentialGroup] === undefined) {

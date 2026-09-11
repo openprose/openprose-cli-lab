@@ -88,6 +88,28 @@ class CodexProtocol extends InstalledProtocol {
   }
 }
 
+class AgentsSdkProtocol extends InstalledProtocol {
+  accept(value: unknown): RawTransportEvent | null {
+    const record = this.record(value);
+    if (record.type === "start") {
+      if (typeof record.model !== "string" || typeof record.cwd !== "string") malformed("SDK start identity missing.");
+      return this.start();
+    }
+    if (!this.started) malformed("SDK event before start.");
+    if (record.type === "error") throw failure("HARNESS_FAILED", {reason:"SDK reported execution failure."});
+    if (record.type === "tool_call" || record.type === "tool_result") {
+      if (typeof record.name !== "string") malformed("SDK tool identity missing.");
+      return null;
+    }
+    if (record.type === "final") {
+      if (typeof record.output !== "string") malformed("SDK final output must be text.");
+      this.complete();
+      return this.message(record.output);
+    }
+    malformed("Unsupported SDK event.");
+  }
+}
+
 class ClaudeProtocol extends InstalledProtocol {
   private sessionId: string | null = null;
 
@@ -639,6 +661,7 @@ export function installedProtocol(
   ompPromptBytes: Uint8Array | null = null,
 ): StructuredProtocolState {
   if (adapterId === "codex/exec-json") return new CodexProtocol(harnessVersion);
+  if (adapterId === "agents-sdk/jsonl") return new AgentsSdkProtocol(harnessVersion);
   if (adapterId === "claude/print-stream-json") return new ClaudeProtocol(harnessVersion);
   if (adapterId === "omp/rpc") {
     if (ompPromptBytes === null) malformed("OMP staged prompt bytes are unavailable.");

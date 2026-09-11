@@ -19,7 +19,7 @@ import {
   resolveInstalledExecutable,
 } from "../src/adapters/executable";
 import { buildInstalledLaunchPlan } from "../src/adapters/plan";
-import { installedAdapterDefinition, installedAdapterIds } from "../src/adapters/recipes";
+import { installedAdapterDefinition, installedAdapterIds as allInstalledAdapterIds } from "../src/adapters/recipes";
 import { runProviderFreeInstalledAdapter } from "../src/adapters/runner";
 import { imageTerminalSchema, recoverImageTerminalEnvelope } from "../src/adapters/terminal";
 import type { InstalledAdapterId } from "../src/adapters/types";
@@ -37,12 +37,15 @@ const python = new TextDecoder().decode(Bun.spawnSync({
   stdout: "pipe",
   stderr: "pipe",
 }).stdout).trim();
+const installedAdapterIds = allInstalledAdapterIds.filter(id => id !== "agents-sdk/jsonl");
 const adapterCases: InstalledAdapterId[] = [...installedAdapterIds];
 const scenarioValues = [codexScenario, claudeScenario, primeScenario, ompScenario];
+// This suite replays the four historical scenario fixtures; SDK has a dedicated native suite.
 const scenarios = new Map(scenarioValues.map((scenario) => [scenario.adapterId as InstalledAdapterId, scenario]));
 const roots: string[] = [];
 const liveVersions: Record<InstalledAdapterId, string> = {
-  "codex/exec-json": "codex-cli 0.149.0-alpha.4.1",
+  "agents-sdk/jsonl":"prose-agents-sdk 0.1.0",
+    "codex/exec-json": "codex-cli 0.149.0-alpha.4.1",
   "claude/print-stream-json": "2.1.243 (Claude Code)",
   "prime/rpc": "prime-agent 0.7.0",
   "omp/rpc": "omp/18.0.9",
@@ -1438,6 +1441,7 @@ describe("provider-free installed adapter execution", () => {
 
 describe("installed executable discovery and version probes", () => {
   const versions: Record<InstalledAdapterId, string> = {
+    "agents-sdk/jsonl":"prose-agents-sdk 0.1.0",
     "codex/exec-json": "codex-cli 0.149.0-alpha.4.1",
     "claude/print-stream-json": "2.1.243 (Claude Code)",
     "prime/rpc": "prime-agent 0.8.1",

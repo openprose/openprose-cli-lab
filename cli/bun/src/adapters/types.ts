@@ -2,6 +2,7 @@ import type { RunnerInvocation, RuntimePrerequisiteObservation, VerifiedRuntimeI
 import type { ProcessSupervisionResult, RawTransportEvent } from "../supervision/types";
 
 export type InstalledAdapterId =
+  | "agents-sdk/jsonl"
   | "codex/exec-json"
   | "claude/print-stream-json"
   | "prime/rpc"

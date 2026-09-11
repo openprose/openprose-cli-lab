@@ -95,6 +95,7 @@ const VERSION_PROBE_ENVIRONMENT: &[&str] = &[
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InstalledAdapter {
+    AgentsSdkJsonl,
     CodexExecJson,
     ClaudePrintStreamJson,
     PrimeRpc,
@@ -123,6 +124,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn harness(self) -> &'static str {
         match self {
+            Self::AgentsSdkJsonl => "agents-sdk",
             Self::CodexExecJson => "codex",
             Self::ClaudePrintStreamJson => "claude",
             Self::PrimeRpc => "prime",
@@ -133,6 +135,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn transport(self) -> &'static str {
         match self {
+            Self::AgentsSdkJsonl => "jsonl",
             Self::CodexExecJson => "exec-json",
             Self::ClaudePrintStreamJson => "print-stream-json",
             Self::PrimeRpc | Self::OmpRpc => "rpc",
@@ -142,6 +145,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn id(self) -> &'static str {
         match self {
+            Self::AgentsSdkJsonl => "agents-sdk/jsonl",
             Self::CodexExecJson => "codex/exec-json",
             Self::ClaudePrintStreamJson => "claude/print-stream-json",
             Self::PrimeRpc => "prime/rpc",
@@ -152,6 +156,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn executable_names(self) -> &'static [&'static str] {
         match self {
+            Self::AgentsSdkJsonl => &["prose-agents-sdk"],
             Self::CodexExecJson => &["codex"],
             Self::ClaudePrintStreamJson => &["claude"],
             Self::PrimeRpc => &["prime-agent"],
@@ -162,6 +167,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn default_probe_auth_group(self) -> &'static str {
         match self {
+            Self::AgentsSdkJsonl => "openai-api-key",
             Self::CodexExecJson => "cached-chatgpt-login",
             Self::ClaudePrintStreamJson => "claude-subscription",
             Self::PrimeRpc => "prime-harness-login",
@@ -172,6 +178,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn auth_profiles(self) -> &'static [&'static str] {
         match self {
+            Self::AgentsSdkJsonl => &["openai-api-key"],
             Self::CodexExecJson => &[
                 "cached-chatgpt-login",
                 "openai-api-key",
@@ -203,7 +210,7 @@ impl InstalledAdapter {
     pub const fn prompt_placement(self) -> &'static str {
         match self {
             Self::CodexExecJson => "user-prefix-framed",
-            Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "system-append",
+            Self::AgentsSdkJsonl | Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "system-append",
         }
     }
 
@@ -211,7 +218,7 @@ impl InstalledAdapter {
     pub const fn prompt_strictness(self) -> &'static str {
         match self {
             Self::CodexExecJson => "degraded",
-            Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "strict",
+            Self::AgentsSdkJsonl | Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "strict",
         }
     }
 
@@ -219,13 +226,14 @@ impl InstalledAdapter {
     pub const fn isolation_guarantee(self) -> &'static str {
         match self {
             Self::CodexExecJson | Self::OmpRpc => "unsupported",
-            Self::ClaudePrintStreamJson | Self::PrimeRpc => "advisory",
+            Self::AgentsSdkJsonl | Self::ClaudePrintStreamJson | Self::PrimeRpc => "advisory",
         }
     }
 
     #[must_use]
     pub fn protocol(self) -> JsonlProtocol {
         match self {
+            Self::AgentsSdkJsonl => JsonlProtocol::installed("start","final",["tool_call","tool_result"]).with_failure_events(["error"]),
             Self::CodexExecJson => JsonlProtocol::installed(
                 "thread.started",
                 "turn.completed",
@@ -325,7 +333,7 @@ impl InstalledAdapter {
             Self::ClaudePrintStreamJson => {
                 Some(vec!["auth".into(), "status".into(), "--json".into()])
             }
-            Self::PrimeRpc | Self::OmpRpc => None,
+            Self::AgentsSdkJsonl | Self::PrimeRpc | Self::OmpRpc => None,
         }?;
         Some(CommandProbe {
             argv,
@@ -361,7 +369,7 @@ impl InstalledAdapter {
                         .and_then(|value| value.get("loggedIn").and_then(Value::as_bool))
                         == Some(true)
             }
-            Self::PrimeRpc | Self::OmpRpc => {
+            Self::AgentsSdkJsonl | Self::PrimeRpc | Self::OmpRpc => {
                 if outcome.exit_code == 0
                     && (!outcome.stdout.trim().is_empty() || !outcome.stderr.trim().is_empty())
                 {
@@ -381,6 +389,7 @@ impl InstalledAdapter {
     pub fn version_is_supported(self, observed: &str) -> bool {
         let observed = observed.trim();
         let candidate = match self {
+            Self::AgentsSdkJsonl => observed.strip_prefix("prose-agents-sdk "),
             Self::CodexExecJson => observed.strip_prefix("codex-cli "),
             Self::ClaudePrintStreamJson => {
                 Some(observed.strip_suffix(" (Claude Code)").unwrap_or(observed))
@@ -501,6 +510,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn recipe_json(self) -> &'static str {
         match self {
+            Self::AgentsSdkJsonl => include_str!("../../../../shared/capabilities/adapters/recipes/agents-sdk-jsonl.v1.json"),
             Self::CodexExecJson => include_str!(
                 "../../../../shared/capabilities/adapters/recipes/codex-exec-json.v1.json"
             ),
@@ -755,6 +765,10 @@ pub(crate) fn admitted_assistant_messages(
         return Ok(Vec::new());
     };
     match adapter {
+        InstalledAdapter::AgentsSdkJsonl => {
+            if record_type(record) != Some("final") { return Ok(Vec::new()); }
+            Ok(normalize_transport(adapter, records, expected_rpc_id)?.assistant_messages)
+        }
         InstalledAdapter::CodexExecJson => {
             if record_type(record) != Some("item.completed") {
                 return Ok(Vec::new());
@@ -968,6 +982,17 @@ pub fn normalize_transport(
                 terminal_event: "turn.completed",
                 assistant_messages,
             })
+        }
+        InstalledAdapter::AgentsSdkJsonl => {
+            if records.first().and_then(record_type) != Some("start") || records.first().and_then(|r|r.get("model")).and_then(Value::as_str).is_none() || records.first().and_then(|r|r.get("cwd")).and_then(Value::as_str).is_none() {return Err(malformed());}
+            for r in records.iter().skip(1).take(records.len().saturating_sub(2)) {
+                if !matches!(record_type(r),Some("tool_call"|"tool_result")) || r.get("name").and_then(Value::as_str).is_none() {return Err(malformed());}
+            }
+            let last=records.last().ok_or_else(malformed)?;
+            if record_type(last)==Some("error") {return Err(failed());}
+            if records.len()<2 || record_type(last)!=Some("final") {return Err(malformed());}
+            let output=last.get("output").and_then(Value::as_str).ok_or_else(malformed)?;
+            Ok(TransportNormalization{terminal_event:"final",assistant_messages:vec![output.to_owned()]})
         }
         InstalledAdapter::ClaudePrintStreamJson => {
             let Some(session_id) = records
@@ -2652,7 +2677,8 @@ fn validate_supported_schema(schema: &Value) -> Result<(), ()> {
     }
 }
 
-pub const ALL: [InstalledAdapter; 4] = [
+pub const ALL: [InstalledAdapter; 5] = [
+    InstalledAdapter::AgentsSdkJsonl,
     InstalledAdapter::CodexExecJson,
     InstalledAdapter::ClaudePrintStreamJson,
     InstalledAdapter::PrimeRpc,
@@ -2926,6 +2952,7 @@ fn credential_names(
     auth_group: &str,
 ) -> Option<&'static [&'static str]> {
     match (adapter, auth_group) {
+        (InstalledAdapter::AgentsSdkJsonl, "openai-api-key") => Some(&["OPENAI_API_KEY"]),
         (InstalledAdapter::CodexExecJson, "cached-chatgpt-login") => {
             Some(&["CODEX_HOME", "CODEX_SQLITE_HOME"])
         }
@@ -3030,6 +3057,12 @@ pub fn prepare_launch(
                     task_bytes,
                 )?),
             )
+        }
+        InstalledAdapter::AgentsSdkJsonl => {
+            let files=private_files(adapter,image_bytes,task_bytes)?;
+            let image_path=files.image_path().as_os_str().to_owned();prompt_files=Some(files);
+            let selected=model.ok_or_else(||RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Agents SDK requires an explicit model"))?;
+            (vec!["--cwd".into(),cwd.as_os_str().to_owned(),"--instructions".into(),image_path,"--model".into(),selected.into(),"--prompt".into(),task_json.into()],None)
         }
         InstalledAdapter::ClaudePrintStreamJson => {
             let files = private_files(adapter, image_bytes, task_bytes)?;
@@ -3467,6 +3500,7 @@ mod tests {
 
     fn empty_environment(adapter: InstalledAdapter) -> EnvironmentPolicy {
         let ambient = match adapter {
+            InstalledAdapter::AgentsSdkJsonl => vec![("OPENAI_API_KEY".into(),"fixture-secret".into())],
             InstalledAdapter::PrimeRpc | InstalledAdapter::OmpRpc => {
                 vec![("OPENROUTER_API_KEY".into(), "fixture-secret".into())]
             }
@@ -3659,7 +3693,7 @@ mod tests {
         );
         let executable = root.path().join("adapter-probe");
         let invocation_id = "fixture-invocation-0001";
-        for adapter in ALL {
+        for adapter in ALL.into_iter().filter(|adapter| *adapter != InstalledAdapter::AgentsSdkJsonl) {
             let launch = prepare_launch(
                 adapter,
                 executable.clone(),
@@ -3676,6 +3710,7 @@ mod tests {
             assert_eq!(launch.adapter, adapter);
             assert_eq!(launch.executable, executable);
             match adapter {
+                InstalledAdapter::AgentsSdkJsonl => unreachable!("SDK has separate native tests"),
                 InstalledAdapter::CodexExecJson => assert_eq!(
                     launch.stdin.as_deref(),
                     Some(
@@ -4749,6 +4784,7 @@ mod tests {
             let candidate_index = records
                 .iter()
                 .position(|record| match adapter {
+                    InstalledAdapter::AgentsSdkJsonl => unreachable!("historical scenario suite"),
                     InstalledAdapter::CodexExecJson => {
                         record_type(record) == Some("item.completed")
                             && record.pointer("/item/type").and_then(Value::as_str)
@@ -4781,6 +4817,7 @@ mod tests {
 
             let mut invalid_prefix = records[..=candidate_index].to_vec();
             match adapter {
+                InstalledAdapter::AgentsSdkJsonl => unreachable!("historical scenario suite"),
                 InstalledAdapter::CodexExecJson => {
                     invalid_prefix[candidate_index]["thread_id"] = json!("wrong-thread");
                 }
@@ -6349,4 +6386,15 @@ mod tests {
         assert!(normalize_transport(adapter,&[init,invalid,final_record],"unused").is_err());
     }
 
+}
+
+#[test]
+fn agents_sdk_native_transport_requires_start_and_terminal(){
+ let start=serde_json::json!({"type":"start","model":"fixture","cwd":"/tmp"});
+ let mut records=vec![start,serde_json::json!({"type":"tool_call","name":"execute_shell"}),serde_json::json!({"type":"tool_result","name":"execute_shell"})];
+ assert!(normalize_transport(InstalledAdapter::AgentsSdkJsonl,&records,"fixture").is_err());
+ records.push(serde_json::json!({"type":"final","output":"All done, no JSON."}));
+ assert_eq!(normalize_transport(InstalledAdapter::AgentsSdkJsonl,&records,"fixture").unwrap().assistant_messages,vec!["All done, no JSON."]);
+ records.push(serde_json::json!({"type":"final","output":"duplicate"}));
+ assert!(normalize_transport(InstalledAdapter::AgentsSdkJsonl,&records,"fixture").is_err());
 }

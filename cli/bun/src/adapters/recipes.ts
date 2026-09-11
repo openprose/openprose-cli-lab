@@ -1,3 +1,4 @@
+import sdkJson from "../../../shared/capabilities/adapters/recipes/agents-sdk-jsonl.v1.json" with { type: "json" };
 import oracleJson from "../../../shared/capabilities/adapters/oracle.v1.json" with { type: "json" };
 import claudeJson from "../../../shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json" with { type: "json" };
 import codexJson from "../../../shared/capabilities/adapters/recipes/codex-exec-json.v1.json" with { type: "json" };
@@ -12,8 +13,9 @@ import type {
   RuntimePrerequisiteRequirement,
 } from "./types";
 
-const recipeValues = [codexJson, claudeJson, primeJson, ompJson] as unknown as InstalledAdapterRecipe[];
+const recipeValues = [codexJson, claudeJson, primeJson, ompJson, sdkJson] as unknown as InstalledAdapterRecipe[];
 const recipeDigests: Record<InstalledAdapterId, string> = {
+  "agents-sdk/jsonl": "1141c7ed0040d8f0783e5f8870f174c1b66a0eb3299d12e4edebfa98c29228e6",
   "codex/exec-json": "41c1fd72796defe256a338f92f5ebf850e6522d2eb265c8746512a40a2a03f82",
   "claude/print-stream-json": "491790b0857f9db771c4cb72ad3f852586d41bb3b8362d2467b0272c212e4afd",
   "prime/rpc": "d961da049ec9ea1b2d3d1c40fd4569cb41713850130841d88fd566d1e970f9b9",

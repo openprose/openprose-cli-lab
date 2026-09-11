@@ -274,3 +274,4 @@ Lease cli_recon: permission-mode flag/config/launch plumbing and tests across Ru
 
 ## Native output mode lease
 cli_recon owns generic native-output configuration, settlement, tests and documentation in both runners; no language semantics.
+Lease cli_recon: SDK registry and transport additions across Rust/Bun/shared schema, harnesses/agents-sdk; existing Prime/OMP methods belong separate worktree worker. No language semantics.

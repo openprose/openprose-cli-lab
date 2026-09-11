@@ -55,7 +55,7 @@ const defaults: EffectiveValues = {
   permissionMode: null,
 };
 
-const supportedHarnesses = new Set(["openprose", "prime", "omp", "codex", "claude", "mock"]);
+const supportedHarnesses = new Set(["openprose", "agents-sdk", "prime", "omp", "codex", "claude", "mock"]);
 
 function fail(message: string, source?: string): never {
   throw failure("CONFIG_INVALID", {

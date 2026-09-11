@@ -50,17 +50,27 @@
     "credentialPresence": "An explicitly selected token/key group must contain a non-empty credential before any harness launch. AWS Bedrock requires either AWS_PROFILE or both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY; region and session-token values are routing metadata and never credentials. Google requires GEMINI_API_KEY or GOOGLE_APPLICATION_CREDENTIALS. Every Prime and OMP profile skips installed auth probes and retains unknown readiness; harness-login keeps the ordinary HOME-backed store, while environment-key routes receive a fresh runner-owned private config directory, never inherit ambient config-directory overrides, and never fall back to another credential route. Every OMP run strips ambient PI_CONFIG_FILES and uses a final wrapper-owned --config overlay that disables retry and the exact MCP-capable discovery-provider set without mutating user, global, or project configuration.",
     "additionalNames": "Only names explicitly configured by the user for this adapter invocation; values are never emitted.",
     "adapterOwnedControls": {
-      "prime/rpc": { "PRIME_AGENT_TELEMETRY": "0" }
+      "prime/rpc": {
+        "PRIME_AGENT_TELEMETRY": "0"
+      }
     },
     "adapterOwnedControlPolicy": "Adapter-owned controls are exact non-credential child settings, never selected from ambient input. PRIME_AGENT_TELEMETRY=0 overwrites any ambient conflicting value for every actual Prime run; it is absent from OMP, Codex, and Claude run children and does not alter the selected credential group. Closed version inventory does not require this run-only control.",
-    "alwaysStrip": ["OPENPROSE_TOKEN", "PROSE_TOKEN", "PROSE_BILLING_TOKEN"],
+    "alwaysStrip": [
+      "OPENPROSE_TOKEN",
+      "PROSE_TOKEN",
+      "PROSE_BILLING_TOKEN"
+    ],
     "secretHandling": "Secret values never enter argv, reports, diagnostics, observations, or benchmark artifacts. Tests compare names and redacted presence only.",
     "unknownNames": "strip"
   },
   "proposedRecipeSchemaExtension": {
     "status": "applied",
     "reason": "Codex developer_instructions and Prime --append-system-prompt accept inline UTF-8, while argvTemplate currently represents only image-path.",
-    "newArgvValues": ["image-utf8", "rendered-config-path", "daemon-socket-path"],
+    "newArgvValues": [
+      "image-utf8",
+      "rendered-config-path",
+      "daemon-socket-path"
+    ],
     "constraints": [
       "image-utf8 expands to exactly one argv element without shell parsing",
       "image-utf8 is allowed only for a digest-verified non-secret image payload",
@@ -324,29 +334,88 @@
       "recipe": "cli/shared/capabilities/adapters/recipes/codex-exec-json.v1.json",
       "scenario": "cli/shared/fixtures/adapters/scenarios/codex-exec-json.v1.json",
       "auditTarget": {
-      "version": "=0.149.0-alpha.4.1",
+        "version": "=0.149.0-alpha.4.1",
         "sourceRevision": "035295b46ee4a5962d0e01a66a888d5bf5da4de4",
         "localObservedVersion": "0.149.0-alpha.4.1"
       },
       "credentialGroups": {
-        "cached-chatgpt-login": ["CODEX_HOME", "CODEX_SQLITE_HOME"],
-        "openai-api-key": ["CODEX_HOME", "CODEX_SQLITE_HOME", "OPENAI_API_KEY"],
-        "codex-access-token": ["CODEX_HOME", "CODEX_SQLITE_HOME", "CODEX_ACCESS_TOKEN"]
+        "cached-chatgpt-login": [
+          "CODEX_HOME",
+          "CODEX_SQLITE_HOME"
+        ],
+        "openai-api-key": [
+          "CODEX_HOME",
+          "CODEX_SQLITE_HOME",
+          "OPENAI_API_KEY"
+        ],
+        "codex-access-token": [
+          "CODEX_HOME",
+          "CODEX_SQLITE_HOME",
+          "CODEX_ACCESS_TOKEN"
+        ]
       },
       "credentialRequirements": {
-        "cached-chatgpt-login": { "kind": "probe-owned" },
-        "openai-api-key": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
-        "codex-access-token": { "kind": "any-nonempty", "alternatives": [["CODEX_ACCESS_TOKEN"]] }
+        "cached-chatgpt-login": {
+          "kind": "probe-owned"
+        },
+        "openai-api-key": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENAI_API_KEY"
+            ]
+          ]
+        },
+        "codex-access-token": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "CODEX_ACCESS_TOKEN"
+            ]
+          ]
+        }
       },
       "facts": [
-        { "id": "noninteractive-jsonl", "status": "documented", "sources": ["codex.local-help-0.149.0-alpha.4.1", "codex.exec-events-source"] },
-        { "id": "developer-role-injection-exists", "status": "documented", "sources": ["codex.config-source"] },
-        { "id": "developer-role-image-representable-by-recipe-schema", "status": "unknown", "sources": [] },
-        { "id": "all-ambient-customizations-disabled", "status": "unknown", "sources": [] },
-        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
-        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+        {
+          "id": "noninteractive-jsonl",
+          "status": "documented",
+          "sources": [
+            "codex.local-help-0.149.0-alpha.4.1",
+            "codex.exec-events-source"
+          ]
+        },
+        {
+          "id": "developer-role-injection-exists",
+          "status": "documented",
+          "sources": [
+            "codex.config-source"
+          ]
+        },
+        {
+          "id": "developer-role-image-representable-by-recipe-schema",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "all-ambient-customizations-disabled",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "language-terminal-envelope-reliably-recovered",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "cross-platform-owned-tree-cleanup",
+          "status": "unknown",
+          "sources": []
+        }
       ],
-      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "baseAdmission": {
+        "status": "functional-alpha",
+        "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim"
+      },
       "strictAdmission": {
         "status": "blocked",
         "blockers": [
@@ -363,17 +432,28 @@
       "recipe": "cli/shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json",
       "scenario": "cli/shared/fixtures/adapters/scenarios/claude-print-stream-json.v1.json",
       "auditTarget": {
-      "version": "=2.1.243",
+        "version": "=2.1.243",
         "sourceRevision": "cad6304e85e2767eac20044e752b010fff1bb4c3",
         "localObservedVersion": "2.1.243"
       },
       "credentialGroups": {
         "claude-subscription": [],
-        "anthropic-api-key": ["ANTHROPIC_API_KEY"]
+        "anthropic-api-key": [
+          "ANTHROPIC_API_KEY"
+        ]
       },
       "credentialRequirements": {
-        "claude-subscription": { "kind": "probe-owned" },
-        "anthropic-api-key": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"]] }
+        "claude-subscription": {
+          "kind": "probe-owned"
+        },
+        "anthropic-api-key": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "ANTHROPIC_API_KEY"
+            ]
+          ]
+        }
       },
       "subscriptionOnlyStrips": [
         "ANTHROPIC_API_KEY",
@@ -384,14 +464,48 @@
         "CLAUDE_CODE_USE_FOUNDRY"
       ],
       "facts": [
-        { "id": "noninteractive-jsonl", "status": "documented", "sources": ["claude.cli-reference", "claude.headless-reference"] },
-        { "id": "system-append-file-preserves-base-prompt", "status": "documented", "sources": ["claude.cli-reference"] },
-        { "id": "safe-mode-disables-ambient-and-preserves-normal-auth", "status": "observed", "sources": ["claude.local-help-2.1.243"] },
-        { "id": "safe-mode-subscription-behavior-primary-doc-guarantee", "status": "unknown", "sources": [] },
-        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
-        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+        {
+          "id": "noninteractive-jsonl",
+          "status": "documented",
+          "sources": [
+            "claude.cli-reference",
+            "claude.headless-reference"
+          ]
+        },
+        {
+          "id": "system-append-file-preserves-base-prompt",
+          "status": "documented",
+          "sources": [
+            "claude.cli-reference"
+          ]
+        },
+        {
+          "id": "safe-mode-disables-ambient-and-preserves-normal-auth",
+          "status": "observed",
+          "sources": [
+            "claude.local-help-2.1.243"
+          ]
+        },
+        {
+          "id": "safe-mode-subscription-behavior-primary-doc-guarantee",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "language-terminal-envelope-reliably-recovered",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "cross-platform-owned-tree-cleanup",
+          "status": "unknown",
+          "sources": []
+        }
       ],
-      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "baseAdmission": {
+        "status": "functional-alpha",
+        "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim"
+      },
       "strictAdmission": {
         "status": "blocked",
         "blockers": [
@@ -408,47 +522,218 @@
       "recipe": "cli/shared/capabilities/adapters/recipes/prime-rpc.v1.json",
       "scenario": "cli/shared/fixtures/adapters/scenarios/prime-rpc.v1.json",
       "auditTarget": {
-      "version": "=0.7.0 || =0.8.1",
+        "version": "=0.7.0 || =0.8.1",
         "sourceRevision": "bc0fa7606abb3b7af0f765319518d255e6ae553d",
         "localObservedVersion": "0.7.0 (functional-alpha compatible; strict source pin remains 0.8.1)"
       },
       "credentialGroups": {
         "prime-harness-login": [],
-        "anthropic": ["ANTHROPIC_API_KEY"],
-        "openai": ["OPENAI_API_KEY"],
-        "openrouter": ["OPENROUTER_API_KEY"],
-        "google": ["GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION"],
-        "github-copilot": ["GITHUB_TOKEN", "GH_TOKEN", "COPILOT_GITHUB_TOKEN"],
-        "aws-bedrock": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE", "AWS_REGION", "AWS_DEFAULT_REGION"]
+        "anthropic": [
+          "ANTHROPIC_API_KEY"
+        ],
+        "openai": [
+          "OPENAI_API_KEY"
+        ],
+        "openrouter": [
+          "OPENROUTER_API_KEY"
+        ],
+        "google": [
+          "GEMINI_API_KEY",
+          "GOOGLE_APPLICATION_CREDENTIALS",
+          "GOOGLE_CLOUD_PROJECT",
+          "GOOGLE_CLOUD_LOCATION"
+        ],
+        "github-copilot": [
+          "GITHUB_TOKEN",
+          "GH_TOKEN",
+          "COPILOT_GITHUB_TOKEN"
+        ],
+        "aws-bedrock": [
+          "AWS_ACCESS_KEY_ID",
+          "AWS_SECRET_ACCESS_KEY",
+          "AWS_SESSION_TOKEN",
+          "AWS_PROFILE",
+          "AWS_REGION",
+          "AWS_DEFAULT_REGION"
+        ]
       },
       "credentialRequirements": {
-        "prime-harness-login": { "kind": "probe-owned" },
-        "anthropic": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"]] },
-        "openai": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
-        "openrouter": { "kind": "any-nonempty", "alternatives": [["OPENROUTER_API_KEY"]] },
-        "google": { "kind": "any-nonempty", "alternatives": [["GEMINI_API_KEY"], ["GOOGLE_APPLICATION_CREDENTIALS"]] },
-        "github-copilot": { "kind": "any-nonempty", "alternatives": [["GITHUB_TOKEN"], ["GH_TOKEN"], ["COPILOT_GITHUB_TOKEN"]] },
-        "aws-bedrock": { "kind": "any-nonempty", "alternatives": [["AWS_PROFILE"], ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]] }
+        "prime-harness-login": {
+          "kind": "probe-owned"
+        },
+        "anthropic": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "ANTHROPIC_API_KEY"
+            ]
+          ]
+        },
+        "openai": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENAI_API_KEY"
+            ]
+          ]
+        },
+        "openrouter": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENROUTER_API_KEY"
+            ]
+          ]
+        },
+        "google": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "GEMINI_API_KEY"
+            ],
+            [
+              "GOOGLE_APPLICATION_CREDENTIALS"
+            ]
+          ]
+        },
+        "github-copilot": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "GITHUB_TOKEN"
+            ],
+            [
+              "GH_TOKEN"
+            ],
+            [
+              "COPILOT_GITHUB_TOKEN"
+            ]
+          ]
+        },
+        "aws-bedrock": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "AWS_PROFILE"
+            ],
+            [
+              "AWS_ACCESS_KEY_ID",
+              "AWS_SECRET_ACCESS_KEY"
+            ]
+          ]
+        }
       },
       "facts": [
-        { "id": "noninteractive-json-rpc", "status": "documented", "sources": ["prime.rpc-reference"] },
-        { "id": "abort-command", "status": "documented", "sources": ["prime.rpc-reference"] },
-        { "id": "resource-flags-disable-skills-extensions-prompts-context", "status": "documented", "sources": ["prime.usage-reference"] },
-        { "id": "inline-system-append-exists", "status": "documented", "sources": ["prime.usage-reference"] },
-        { "id": "inline-system-append-representable-by-recipe-schema", "status": "observed", "sources": ["prime.local-help-0.7.0", "prime.usage-reference"] },
-        { "id": "private-daemon-socket-path", "status": "observed", "sources": ["prime.local-help-0.7.0"] },
-        { "id": "private-daemon-protocol-v7-shutdown-settlement", "status": "observed", "sources": ["prime.daemon-protocol-0.7.0"] },
-        { "id": "no-tool-rpc-lifecycle", "status": "documented", "sources": ["prime.rpc-reference", "prime.agent-event-source-0.7.0"] },
-        { "id": "text-only-index-zero-no-tool-rpc-lifecycle", "status": "observed", "sources": ["prime.rpc-reference", "prime.text-only-stream-source-0.8.1"] },
-        { "id": "harness-login-provider-account-and-billing-identity", "status": "unknown", "sources": [] },
-        { "id": "harness-login-cache-readiness", "status": "unknown", "sources": [] },
-        { "id": "environment-key-private-config-isolation", "status": "documented", "sources": ["openprose.decision-0007"] },
-        { "id": "pseudonymous-telemetry-disabled", "status": "observed", "sources": ["prime.telemetry-control-0.8.1"] },
-        { "id": "mcp-memory-package-daemon-ambient-disabled", "status": "unknown", "sources": [] },
-        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
-        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+        {
+          "id": "noninteractive-json-rpc",
+          "status": "documented",
+          "sources": [
+            "prime.rpc-reference"
+          ]
+        },
+        {
+          "id": "abort-command",
+          "status": "documented",
+          "sources": [
+            "prime.rpc-reference"
+          ]
+        },
+        {
+          "id": "resource-flags-disable-skills-extensions-prompts-context",
+          "status": "documented",
+          "sources": [
+            "prime.usage-reference"
+          ]
+        },
+        {
+          "id": "inline-system-append-exists",
+          "status": "documented",
+          "sources": [
+            "prime.usage-reference"
+          ]
+        },
+        {
+          "id": "inline-system-append-representable-by-recipe-schema",
+          "status": "observed",
+          "sources": [
+            "prime.local-help-0.7.0",
+            "prime.usage-reference"
+          ]
+        },
+        {
+          "id": "private-daemon-socket-path",
+          "status": "observed",
+          "sources": [
+            "prime.local-help-0.7.0"
+          ]
+        },
+        {
+          "id": "private-daemon-protocol-v7-shutdown-settlement",
+          "status": "observed",
+          "sources": [
+            "prime.daemon-protocol-0.7.0"
+          ]
+        },
+        {
+          "id": "no-tool-rpc-lifecycle",
+          "status": "documented",
+          "sources": [
+            "prime.rpc-reference",
+            "prime.agent-event-source-0.7.0"
+          ]
+        },
+        {
+          "id": "text-only-index-zero-no-tool-rpc-lifecycle",
+          "status": "observed",
+          "sources": [
+            "prime.rpc-reference",
+            "prime.text-only-stream-source-0.8.1"
+          ]
+        },
+        {
+          "id": "harness-login-provider-account-and-billing-identity",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "harness-login-cache-readiness",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "environment-key-private-config-isolation",
+          "status": "documented",
+          "sources": [
+            "openprose.decision-0007"
+          ]
+        },
+        {
+          "id": "pseudonymous-telemetry-disabled",
+          "status": "observed",
+          "sources": [
+            "prime.telemetry-control-0.8.1"
+          ]
+        },
+        {
+          "id": "mcp-memory-package-daemon-ambient-disabled",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "language-terminal-envelope-reliably-recovered",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "cross-platform-owned-tree-cleanup",
+          "status": "unknown",
+          "sources": []
+        }
       ],
-      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "baseAdmission": {
+        "status": "functional-alpha",
+        "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim"
+      },
       "strictAdmission": {
         "status": "blocked",
         "blockers": [
@@ -475,43 +760,232 @@
       },
       "credentialGroups": {
         "omp-harness-login": [],
-        "anthropic": ["ANTHROPIC_API_KEY", "ANTHROPIC_OAUTH_TOKEN"],
-        "openai": ["OPENAI_API_KEY"],
-        "openrouter": ["OPENROUTER_API_KEY"],
-        "google": ["GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION"],
-        "github-copilot": ["GITHUB_TOKEN", "GH_TOKEN", "COPILOT_GITHUB_TOKEN"],
-        "aws-bedrock": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE", "AWS_REGION", "AWS_DEFAULT_REGION"]
+        "anthropic": [
+          "ANTHROPIC_API_KEY",
+          "ANTHROPIC_OAUTH_TOKEN"
+        ],
+        "openai": [
+          "OPENAI_API_KEY"
+        ],
+        "openrouter": [
+          "OPENROUTER_API_KEY"
+        ],
+        "google": [
+          "GEMINI_API_KEY",
+          "GOOGLE_APPLICATION_CREDENTIALS",
+          "GOOGLE_CLOUD_PROJECT",
+          "GOOGLE_CLOUD_LOCATION"
+        ],
+        "github-copilot": [
+          "GITHUB_TOKEN",
+          "GH_TOKEN",
+          "COPILOT_GITHUB_TOKEN"
+        ],
+        "aws-bedrock": [
+          "AWS_ACCESS_KEY_ID",
+          "AWS_SECRET_ACCESS_KEY",
+          "AWS_SESSION_TOKEN",
+          "AWS_PROFILE",
+          "AWS_REGION",
+          "AWS_DEFAULT_REGION"
+        ]
       },
       "credentialRequirements": {
-        "omp-harness-login": { "kind": "probe-owned" },
-        "anthropic": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"], ["ANTHROPIC_OAUTH_TOKEN"]] },
-        "openai": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
-        "openrouter": { "kind": "any-nonempty", "alternatives": [["OPENROUTER_API_KEY"]] },
-        "google": { "kind": "any-nonempty", "alternatives": [["GEMINI_API_KEY"], ["GOOGLE_APPLICATION_CREDENTIALS"]] },
-        "github-copilot": { "kind": "any-nonempty", "alternatives": [["GITHUB_TOKEN"], ["GH_TOKEN"], ["COPILOT_GITHUB_TOKEN"]] },
-        "aws-bedrock": { "kind": "any-nonempty", "alternatives": [["AWS_PROFILE"], ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]] }
+        "omp-harness-login": {
+          "kind": "probe-owned"
+        },
+        "anthropic": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "ANTHROPIC_API_KEY"
+            ],
+            [
+              "ANTHROPIC_OAUTH_TOKEN"
+            ]
+          ]
+        },
+        "openai": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENAI_API_KEY"
+            ]
+          ]
+        },
+        "openrouter": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENROUTER_API_KEY"
+            ]
+          ]
+        },
+        "google": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "GEMINI_API_KEY"
+            ],
+            [
+              "GOOGLE_APPLICATION_CREDENTIALS"
+            ]
+          ]
+        },
+        "github-copilot": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "GITHUB_TOKEN"
+            ],
+            [
+              "GH_TOKEN"
+            ],
+            [
+              "COPILOT_GITHUB_TOKEN"
+            ]
+          ]
+        },
+        "aws-bedrock": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "AWS_PROFILE"
+            ],
+            [
+              "AWS_ACCESS_KEY_ID",
+              "AWS_SECRET_ACCESS_KEY"
+            ]
+          ]
+        }
       },
       "facts": [
-        { "id": "ordinary-package-and-executable", "status": "observed", "sources": ["omp.local-package-18.0.9", "omp.package-18.0.9"] },
-        { "id": "noninteractive-json-rpc", "status": "documented", "sources": ["omp.rpc-reference", "omp.rpc-source"] },
-        { "id": "set-widget-fire-and-forget-presentation", "status": "documented", "sources": ["omp.rpc-source", "omp.rpc-ui-types-source-18.0.9"] },
-        { "id": "closed-terminal-frame-shape", "status": "documented", "sources": ["omp.rpc-reference", "omp.agent-end-core-source-18.0.9", "omp.agent-end-session-source-18.0.9", "omp.rpc-frame-source-18.0.9"] },
-        { "id": "abort-command", "status": "documented", "sources": ["omp.rpc-reference"] },
-        { "id": "system-append-file", "status": "documented", "sources": ["omp.prompt-source"] },
-        { "id": "skills-rules-extensions-disabled", "status": "documented", "sources": ["omp.cli-source", "omp.prompt-source"] },
-        { "id": "wrapper-owned-retry-and-mcp-provider-disabled-final-config-overlay", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
-        { "id": "ambient-mcp-discovery-disabled", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
-        { "id": "no-tools-launch-and-preprompt-empty-tool-state", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
-        { "id": "nonterminal-agent-end-fails-closed", "status": "observed", "sources": ["omp.nonterminal-settlement-source-18.0.9"] },
-        { "id": "harness-login-provider-account-and-billing-identity", "status": "unknown", "sources": [] },
-        { "id": "harness-login-cache-readiness", "status": "unknown", "sources": [] },
-        { "id": "environment-key-private-config-isolation", "status": "documented", "sources": ["openprose.decision-0007"] },
-        { "id": "mcp-memory-plugins-context-files-agents-disabled", "status": "unknown", "sources": [] },
-        { "id": "extension-ui-unresolved-input-fails-closed", "status": "unknown", "sources": [] },
-        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
-        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+        {
+          "id": "ordinary-package-and-executable",
+          "status": "observed",
+          "sources": [
+            "omp.local-package-18.0.9",
+            "omp.package-18.0.9"
+          ]
+        },
+        {
+          "id": "noninteractive-json-rpc",
+          "status": "documented",
+          "sources": [
+            "omp.rpc-reference",
+            "omp.rpc-source"
+          ]
+        },
+        {
+          "id": "set-widget-fire-and-forget-presentation",
+          "status": "documented",
+          "sources": [
+            "omp.rpc-source",
+            "omp.rpc-ui-types-source-18.0.9"
+          ]
+        },
+        {
+          "id": "closed-terminal-frame-shape",
+          "status": "documented",
+          "sources": [
+            "omp.rpc-reference",
+            "omp.agent-end-core-source-18.0.9",
+            "omp.agent-end-session-source-18.0.9",
+            "omp.rpc-frame-source-18.0.9"
+          ]
+        },
+        {
+          "id": "abort-command",
+          "status": "documented",
+          "sources": [
+            "omp.rpc-reference"
+          ]
+        },
+        {
+          "id": "system-append-file",
+          "status": "documented",
+          "sources": [
+            "omp.prompt-source"
+          ]
+        },
+        {
+          "id": "skills-rules-extensions-disabled",
+          "status": "documented",
+          "sources": [
+            "omp.cli-source",
+            "omp.prompt-source"
+          ]
+        },
+        {
+          "id": "wrapper-owned-retry-and-mcp-provider-disabled-final-config-overlay",
+          "status": "observed",
+          "sources": [
+            "omp.deterministic-launch-source-18.0.9"
+          ]
+        },
+        {
+          "id": "ambient-mcp-discovery-disabled",
+          "status": "observed",
+          "sources": [
+            "omp.deterministic-launch-source-18.0.9"
+          ]
+        },
+        {
+          "id": "no-tools-launch-and-preprompt-empty-tool-state",
+          "status": "observed",
+          "sources": [
+            "omp.deterministic-launch-source-18.0.9"
+          ]
+        },
+        {
+          "id": "nonterminal-agent-end-fails-closed",
+          "status": "observed",
+          "sources": [
+            "omp.nonterminal-settlement-source-18.0.9"
+          ]
+        },
+        {
+          "id": "harness-login-provider-account-and-billing-identity",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "harness-login-cache-readiness",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "environment-key-private-config-isolation",
+          "status": "documented",
+          "sources": [
+            "openprose.decision-0007"
+          ]
+        },
+        {
+          "id": "mcp-memory-plugins-context-files-agents-disabled",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "extension-ui-unresolved-input-fails-closed",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "language-terminal-envelope-reliably-recovered",
+          "status": "unknown",
+          "sources": []
+        },
+        {
+          "id": "cross-platform-owned-tree-cleanup",
+          "status": "unknown",
+          "sources": []
+        }
       ],
-      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "baseAdmission": {
+        "status": "functional-alpha",
+        "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim"
+      },
       "strictAdmission": {
         "status": "blocked",
         "blockers": [
@@ -522,6 +996,30 @@
           "No provider-free evidence proves exact language terminal-envelope carriage through agent_end messages.",
           "No audited Unix process-group and race-free Windows Job containment result exists for this adapter.",
           "The local package/help probe and provider-free protocol fixtures do not substitute for a versioned real-model carriage and auth-route admission run."
+        ]
+      }
+    },
+    {
+      "adapterId": "agents-sdk/jsonl",
+      "credentialGroups": {
+        "openai-api-key": [
+          "OPENAI_API_KEY"
+        ]
+      },
+      "credentialRequirements": {
+        "openai-api-key": {
+          "kind": "any-nonempty",
+          "alternatives": [
+            [
+              "OPENAI_API_KEY"
+            ]
+          ]
+        }
+      },
+      "strictAdmission": {
+        "status": "blocked",
+        "blockers": [
+          "Experimental generic harness; not a semantic conformance claim."
         ]
       }
     }

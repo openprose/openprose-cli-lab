@@ -727,6 +727,7 @@ fn supported_transports(harness: &str) -> Option<&'static [&'static str]> {
         "openprose" => Some(&["hosted"]),
         "mock" => Some(&["deterministic", "fake-process"]),
         _ => installed_adapters::for_harness(harness).map(|adapter| match adapter {
+            installed_adapters::InstalledAdapter::AgentsSdkJsonl => &["jsonl"][..],
             installed_adapters::InstalledAdapter::CodexExecJson => &["exec-json"][..],
             installed_adapters::InstalledAdapter::ClaudePrintStreamJson => {
                 &["print-stream-json"][..]
@@ -2349,7 +2350,7 @@ fn installed_adapter_success_result(
         "cwd":{"path":config.cwd.display().to_string(),"identitySha256":sha256_hex(config.cwd.as_os_str().to_string_lossy().as_bytes())},
         "timing":{"startedAt":timestamp,"firstEventAt":timestamp,"cancellationAt":null,"terminalAt":timestamp,"durationMs":u64::try_from(outcome.duration.as_millis()).unwrap_or(u64::MAX)},
         "terminal":{"classification":"success","transportCompleted":true,"terminalEventObserved":true,"exitCode":outcome.process_exit,"signal":outcome.process_signal},
-        "semantic":{"status":"not-applicable","terminalSchemaSha256":image.manifest.terminal_envelope.sha256,"terminalEnvelopeDigestSha256":terminal_digest},
+        "semantic":{"status":if terminal.envelope.is_null() {"not-applicable"} else {terminal.envelope.get("semanticStatus").and_then(Value::as_str).unwrap_or("unknown")},"terminalSchemaSha256":image.manifest.terminal_envelope.sha256,"terminalEnvelopeDigestSha256":terminal_digest},
         "usage":{"status":"unavailable"},
         "billing":{"owner":"user-provider","authCategory":"harness-managed"},
         "diagnosticRefs":[],
@@ -3926,6 +3927,7 @@ fn harness_statuses(
         installed_adapters::InstalledAdapter::OmpRpc,
         installed_adapters::InstalledAdapter::CodexExecJson,
         installed_adapters::InstalledAdapter::ClaudePrintStreamJson,
+        installed_adapters::InstalledAdapter::AgentsSdkJsonl,
     ] {
         let (availability, detected_version, runtime_prerequisites) =
             inspect_installed_binary(adapter, config)?;
@@ -3944,6 +3946,7 @@ fn harness_statuses(
             admission_block: None,
         };
         let index = match adapter {
+            installed_adapters::InstalledAdapter::AgentsSdkJsonl => 5,
             installed_adapters::InstalledAdapter::PrimeRpc => 1,
             installed_adapters::InstalledAdapter::OmpRpc => 2,
             installed_adapters::InstalledAdapter::CodexExecJson => 3,

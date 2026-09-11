@@ -199,7 +199,7 @@ pub fn write_user_harness(
     model: Option<&str>,
     auth_profile: Option<&str>,
 ) -> Result<UserHarnessSelection, RunnerError> {
-    if !matches!(harness, "openprose" | "prime" | "omp" | "codex" | "claude") {
+    if !matches!(harness, "openprose" | "agents-sdk" | "prime" | "omp" | "codex" | "claude") {
         return Err(RunnerError::config(format!(
             "unsupported default harness {harness:?}; expected openprose, prime, omp, codex, or claude"
         )));
@@ -1058,7 +1058,7 @@ fn nonempty(name: &str, value: String) -> Result<String, RunnerError> {
 fn validate_harness(name: &str, value: String) -> Result<String, RunnerError> {
     if matches!(
         value.as_str(),
-        "openprose" | "prime" | "omp" | "codex" | "claude" | "mock"
+        "openprose" | "agents-sdk" | "prime" | "omp" | "codex" | "claude" | "mock"
     ) {
         Ok(value)
     } else {

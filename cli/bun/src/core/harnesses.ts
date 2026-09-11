@@ -83,6 +83,7 @@ export const harnesses: readonly HarnessDescriptor[] = [
     strictWrapperConformant: false,
     testOnly: false,
   },
+  { id:"agents-sdk",runtime:"installed-process",availability:"missing",detectedVersion:null,transports:["jsonl"],authCategory:"harness-managed",billingOwner:"user-provider",strictWrapperConformant:false,testOnly:false },
   {
     id: "mock",
     runtime: "deterministic-mock",

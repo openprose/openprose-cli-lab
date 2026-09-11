@@ -1,0 +1,132 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "agents-sdk-jsonl-v1",
+  "adapterId": "agents-sdk/jsonl",
+  "state": "frozen",
+  "runtime": "installed-process",
+  "identity": {
+    "kind": "executable",
+    "executableNames": [
+      "prose-agents-sdk"
+    ],
+    "packageIdentity": "OpenProse generic Agents SDK harness 0.1.0"
+  },
+  "support": {
+    "versionRange": "=0.1.0",
+    "admittedVersions": [
+      "0.1.0"
+    ],
+    "repairCommand": "Install harnesses/agents-sdk requirements and expose prose-agents-sdk on PATH",
+    "platforms": [
+      "darwin-arm64"
+    ]
+  },
+  "probe": {
+    "argv": [
+      {
+        "value": "executable"
+      },
+      {
+        "literal": "--version"
+      }
+    ],
+    "timeoutMs": 5000,
+    "versionPattern": "^prose-agents-sdk 0\\.1\\.0$",
+    "versionStream": "stdout"
+  },
+  "launch": {
+    "argv": [
+      {
+        "value": "executable"
+      },
+      {
+        "literal": "--cwd"
+      },
+      {
+        "value": "cwd"
+      },
+      {
+        "literal": "--instructions"
+      },
+      {
+        "value": "image-path"
+      },
+      {
+        "literal": "--prompt"
+      },
+      {
+        "value": "task-json"
+      }
+    ],
+    "optionalArgv": [
+      {
+        "when": "model-present",
+        "placement": "before-final-pair",
+        "argv": [
+          {
+            "literal": "--model"
+          },
+          {
+            "value": "model"
+          }
+        ]
+      }
+    ],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "closed",
+    "stdinLifecycle": "close-after-write",
+    "stdoutProtocol": "jsonl",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    "imageDelivery": {
+      "mechanism": "file",
+      "field": "--instructions",
+      "encoding": "raw-bytes"
+    },
+    "taskDelivery": {
+      "mechanism": "argv",
+      "field": "prompt",
+      "encoding": "json-utf8"
+    }
+  },
+  "isolation": {
+    "guarantee": "advisory",
+    "ambientDisabled": [
+      "skills",
+      "plugins",
+      "context-files"
+    ],
+    "preserved": [
+      "native-safety-prompt",
+      "managed-policy",
+      "selected-permissions",
+      "harness-auth"
+    ]
+  },
+  "cancellation": {
+    "protocol": "signal",
+    "containment": "unsupported",
+    "graceMs": 2000,
+    "hardKillAfterMs": 5000
+  },
+  "auth": {
+    "category": "harness-managed",
+    "readinessProbe": "none; API key presence only",
+    "secretsInArgv": false
+  },
+  "billingOwner": "user-provider",
+  "requiredTerminal": {
+    "event": "final with string output then exit 0",
+    "acceptableExitCodes": [
+      0
+    ],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": []
+}

@@ -240,6 +240,7 @@ export async function probeInstalledAdapterVersion(input: {
 
 function observedVersion(adapterId: InstalledAdapterId, output: string): string | null {
   const patterns: Record<InstalledAdapterId, RegExp> = {
+    "agents-sdk/jsonl": /^prose-agents-sdk ([0-9]+\.[0-9]+\.[0-9]+)$/,
     "codex/exec-json": /^codex-cli ([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)$/u,
     "claude/print-stream-json": /^([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)(?: \(Claude Code\))?$/u,
     "prime/rpc": /^(?:prime-agent )?([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)$/u,
@@ -265,6 +266,7 @@ export async function probeInstalledAdapterAuth(input: {
       reason: "Actual execution is the first authentication authority for this adapter.",
     });
   }
+  if (input.adapterId === "agents-sdk/jsonl") return "unknown";
   if (input.adapterId === "codex/exec-json") {
     if (input.credentialGroup === "openai-api-key" || input.credentialGroup === "codex-access-token") {
       return "unknown";

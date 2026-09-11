@@ -47,7 +47,7 @@ async def run(args):
     instructions += '\nYour working directory is: ' + cwd
     start = time.monotonic()
     def emit(kind, **data):
-        print(json.dumps({'event': kind, 'elapsed_seconds': round(time.monotonic()-start, 3), **data}), flush=True)
+        print(json.dumps({'type': kind, 'event': kind, 'elapsed_seconds': round(time.monotonic()-start, 3), **data}), flush=True)
 
     @function_tool
     async def execute_shell(command: str) -> str:
@@ -81,6 +81,7 @@ async def run(args):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--version', action='version', version='prose-agents-sdk 0.1.0')
     parser.add_argument('--model', required=True)
     parser.add_argument('--cwd', required=True)
     parser.add_argument('--instructions', help='Opaque text appended to generic instructions')
