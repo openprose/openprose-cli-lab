@@ -17,6 +17,21 @@ export function nativeArgsMatch(actual: unknown, declared: unknown, omp:boolean)
  return same(actual,declared);
 }
 
+// Source-defined OMP input messages; content is opaque to the runner.
+function validCustom(m: Record<string, any>): boolean {
+ const keys=["role","customType","content","display","details","attribution","timestamp"];
+ if(Object.keys(m).some(k=>!keys.includes(k))||m.role!=="custom"||typeof m.customType!=="string"||typeof m.display!=="boolean"||typeof m.timestamp!=="number"||!Number.isFinite(m.timestamp)||m.timestamp<0||("attribution" in m&&!["user","agent"].includes(m.attribution)))return false;
+ const serial=(v:any):boolean=>v===null||typeof v==="string"||typeof v==="boolean"||(typeof v==="number"&&Number.isFinite(v))||(Array.isArray(v)?v.every(serial):v&&typeof v==="object"&&Object.values(v).every(serial));
+ if("details" in m&&!serial(m.details))return false;
+ return typeof m.content==="string"||(Array.isArray(m.content)&&m.content.every((b:any)=>{
+  if(!b||typeof b!=="object"||Array.isArray(b))return false;
+  if(b.type==="text")return Object.keys(b).every(k=>["type","text","textSignature"].includes(k))&&typeof b.text==="string"&&(!("textSignature" in b)||typeof b.textSignature==="string");
+  if(b.type!=="image"||Object.keys(b).some(k=>!["type","data","mimeType","detail","providerFile","url"].includes(k))||typeof b.data!=="string"||typeof b.mimeType!=="string"||("url" in b&&typeof b.url!=="string")||("detail" in b&&!["auto","low","high","original"].includes(b.detail)))return false;
+  if("providerFile" in b){const f=b.providerFile;if(!f||typeof f!=="object"||Array.isArray(f)||Object.keys(f).some(k=>!["provider","id","uri","expiresAt"].includes(k))||!["openai","anthropic","google"].includes(f.provider)||["id","uri"].some(k=>k in f&&typeof f[k]!=="string")||("expiresAt" in f&&(typeof f.expiresAt!=="number"||!Number.isFinite(f.expiresAt))))return false;}
+  return true;
+ }));
+}
+
 function validPrimeQueue(r: Record<string, any>): boolean {
  if(Object.keys(r).some(k=>!["type","actions"].includes(k)))return false;
  const a=r.actions;if(!a||typeof a!=="object"||Array.isArray(a)||Object.keys(a).some(k=>!["queuedCount","steering","followUps","active"].includes(k)))return false;
@@ -61,7 +76,7 @@ export class NativeToolLifecycle {
   }
 
   private sameMessage(a: any,b: any): boolean {
-    if (!this.omp) return same(a,b);
+    if (!this.omp || a?.role === "custom" || b?.role === "custom") return same(a,b);
     const x={...a},y={...b};delete x.completedAt;delete y.completedAt;
     if(x.role==="toolResult" && typeof x.prunedAt==="number" && Number.isFinite(x.prunedAt) && x.prunedAt>=0 && ["[Superseded by a newer read of this file]","[Uneventful result elided]"].some(text=>same(x.content,[{type:"text",text}]))) {delete x.prunedAt;x.content=y.content;}
     return same(x,y);
@@ -100,6 +115,7 @@ export class NativeToolLifecycle {
         }
         if (!this.turn || this.open) bad();
         if (m.role === "user") { if (this.user || this.assistant) bad(); }
+        else if (m.role === "custom") { if (!this.omp || this.assistant || !validCustom(m)) bad(); }
         else if (m.role === "assistant") { if (!this.user || this.assistant) bad(); this.blockTypes.clear(); }
         else if (m.role === "toolResult") {
           const c = this.calls.get(m.toolCallId) ?? bad();
@@ -121,8 +137,9 @@ export class NativeToolLifecycle {
       }
       case "message_end": {
         const m = object(r.message);
-        if (!this.open || m.role !== this.open.role || !Array.isArray(m.content)) bad();
+        if (!this.open || m.role !== this.open.role || (m.role !== "custom" && !Array.isArray(m.content))) bad();
         if (m.role === "user") { if (!same(m,this.open)) bad(); this.user = true; }
+        else if (m.role === "custom") { if (!this.omp || !validCustom(m) || !same(m,this.open)) bad(); }
         else if (m.role === "assistant") {
           if ([...this.blockTypes].some(([i,t])=>m.content[i]?.type!==t)) bad();
           if (!["stop","toolUse"].includes(m.stopReason)) throw failure("HARNESS_FAILED", { reason: "Native assistant did not finish normally." });

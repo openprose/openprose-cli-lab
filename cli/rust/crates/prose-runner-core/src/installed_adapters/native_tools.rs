@@ -67,8 +67,21 @@ fn valid_prime_child_update(record: &Value) -> bool {
     true
 }
 
+fn valid_custom(m: &Value) -> bool {
+ let Some(o)=m.as_object() else{return false;};
+ if o.keys().any(|k|!["role","customType","content","display","details","attribution","timestamp"].contains(&k.as_str())) || m["role"]!="custom" || !m["customType"].is_string() || !m["display"].is_boolean() || m["timestamp"].as_f64().is_none_or(|n|!n.is_finite()||n<0.0) || o.get("attribution").is_some_and(|v|!matches!(v.as_str(),Some("user"|"agent"))) {return false;}
+ if m["content"].is_string(){return true;}
+ m["content"].as_array().is_some_and(|xs|xs.iter().all(|b|{
+  let Some(o)=b.as_object() else{return false;};
+  if b["type"]=="text" {return o.keys().all(|k|["type","text","textSignature"].contains(&k.as_str()))&&b["text"].is_string()&&o.get("textSignature").is_none_or(Value::is_string);}
+  if b["type"]!="image" || o.keys().any(|k|!["type","data","mimeType","detail","providerFile","url"].contains(&k.as_str())) || !b["data"].is_string() || !b["mimeType"].is_string() || o.get("url").is_some_and(|v|!v.is_string()) || o.get("detail").is_some_and(|v|!matches!(v.as_str(),Some("auto"|"low"|"high"|"original"))){return false;}
+  if let Some(f)=o.get("providerFile") {let Some(o)=f.as_object() else{return false;};if o.keys().any(|k|!["provider","id","uri","expiresAt"].contains(&k.as_str())) || !matches!(f["provider"].as_str(),Some("openai"|"anthropic"|"google")) || ["id","uri"].iter().any(|k|o.get(*k).is_some_and(|v|!v.is_string())) || o.get("expiresAt").is_some_and(|v|v.as_f64().is_none_or(|n|!n.is_finite())) {return false;}}
+  true
+ }))
+}
+
 fn same_message(a: &Value, b: &Value, omp: bool) -> bool {
-    if !omp {
+    if !omp || a["role"]=="custom" || b["role"]=="custom" {
         return a == b;
     }
     let mut a = a.clone();
@@ -245,6 +258,7 @@ pub(super) fn normalize(
                 }
                 match m["role"].as_str() {
                     Some("user") if !user && assistant.is_none() => {}
+                    Some("custom") if omp && assistant.is_none() && valid_custom(m) => {}
                     Some("assistant") if user && assistant.is_none() => {
                         block_types.clear();
                     }
@@ -305,10 +319,11 @@ pub(super) fn normalize(
             "message_end" => {
                 let m = r.get("message").ok_or_else(bad)?;
                 let current = open.as_ref().ok_or_else(bad)?;
-                if m["role"] != current["role"] || !m["content"].is_array() {
+                if m["role"] != current["role"] || (m["role"]!="custom" && !m["content"].is_array()) {
                     return Err(bad());
                 }
                 match m["role"].as_str() {
+                    Some("custom") => {if !omp || !valid_custom(m) || m!=current {return Err(bad());}}
                     Some("user") => {
                         if m != current {
                             return Err(bad());
@@ -653,4 +668,13 @@ mod late_task_tests {
    _=>bad.push(bad[at].clone())
   }assert!(normalize(&bad,"fixture-tools",true,true).is_err());}
  }
+}
+
+#[cfg(test)]
+mod custom_tests {
+ use super::*;
+ fn fixture()->Vec<Value>{serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/omp-custom.json")).unwrap()}
+ #[test] fn custom_pair_history_and_terminal(){let f=fixture();assert!(normalize(&f,"fixture-tools",true,true).is_ok());assert!(normalize(&f[..f.len()-1],"fixture-tools",true,true).is_err());}
+ #[test] fn custom_typed_content(){for c in [json!("opaque"),json!([{"type":"text","text":"opaque","textSignature":"sig"}]),json!([{"type":"image","data":"AA==","mimeType":"image/png","detail":"original","providerFile":{"provider":"openai","id":"x"},"url":"https://example.invalid/x"}])]{let mut f=fixture();f[9]["message"]["content"]=c.clone();f[10]["message"]["content"]=c.clone();f[14]["messages"][1]["content"]=c;assert!(normalize(&f,"fixture-tools",true,true).is_ok());}}
+ #[test] fn custom_rejects_invalid_pairs(){for variant in 0..12 {let mut f=fixture();match variant {0=>f[10]["message"]["content"]=json!("changed"),1=>f[14]["messages"][1]["display"]=json!(true),2=>f[9]["message"]["extra"]=json!(true),3=>f[9]["message"]["content"]=json!([{"type":"toolCall","id":"x"}]),4=>f[9]["message"]["attribution"]=json!("system"),5=>f[9]["message"]["timestamp"]=json!(-1),6=>{f.remove(9);},7=>f.insert(10,f[9].clone()),8=>f.insert(11,f[10].clone()),9=>f.insert(6,f[9].clone()),10=>f.push(f[9].clone()),_=>{f.drain(11..14);}}assert!(normalize(&f,"fixture-tools",true,true).is_err(),"variant {variant}");}}
 }
