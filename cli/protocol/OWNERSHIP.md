@@ -262,3 +262,6 @@ Rules:
 `green` means the leased local slice met its declared mechanical contract. It
 does not imply semantic, adapter, native-Windows, strict-containment, or public
 release admission.
+
+## Expedition active lease
+Owner cli_recon; exact paths cli/bun/src/adapters/protocols.ts, cli/bun/test/claude-protocol.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs, cli/shared/fixtures/adapters/claude-thinking-tokens.json. Scope: telemetry transport compatibility only. Approved by expedition lead; no language semantics.

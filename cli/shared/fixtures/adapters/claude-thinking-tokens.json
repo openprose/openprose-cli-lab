@@ -1,0 +1,8 @@
+{
+  "type": "system",
+  "subtype": "thinking_tokens",
+  "estimated_tokens": 50,
+  "estimated_tokens_delta": 50,
+  "uuid": "fixture-telemetry",
+  "session_id": "fixture-session"
+}

@@ -3,7 +3,7 @@
 //! These adapters transport an opaque Skill Runtime Image and task envelope.
 //! They deliberately contain no `OpenProse` command or program semantics.
 
-use crate::image::{RuntimeImage, sha256_hex};
+use crate::image::{sha256_hex, RuntimeImage};
 use crate::{ErrorCode, RunnerError};
 use prose_process_supervisor::{
     CancellationToken, CommandProbe, CommandProbeOutcome, EnvironmentPolicy, JsonlProtocol,
@@ -13,7 +13,7 @@ use prose_process_supervisor::{
 use serde::de::{Error as _, MapAccess, SeqAccess, Visitor};
 use serde::ser::{SerializeMap, SerializeSeq};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use std::ffi::{OsStr, OsString};
 use std::fmt;
 use std::fs;
@@ -992,6 +992,38 @@ pub fn normalize_transport(
                         assistant_messages.extend(assistant_text_content(record)?);
                     }
                     Some("user" | "stream_event") => {}
+                    Some("system")
+                        if record.get("subtype").and_then(Value::as_str)
+                            == Some("thinking_tokens") =>
+                    {
+                        let valid = record.as_object().is_some_and(|object| {
+                            object.len() == 6
+                                && [
+                                    "type",
+                                    "subtype",
+                                    "estimated_tokens",
+                                    "estimated_tokens_delta",
+                                    "uuid",
+                                    "session_id",
+                                ]
+                                .iter()
+                                .all(|key| object.contains_key(*key))
+                        }) && record
+                            .get("uuid")
+                            .and_then(Value::as_str)
+                            .is_some_and(|value| !value.is_empty())
+                            && ["estimated_tokens", "estimated_tokens_delta"]
+                                .iter()
+                                .all(|key| {
+                                    record
+                                        .get(*key)
+                                        .and_then(Value::as_u64)
+                                        .is_some_and(|value| value <= 9_007_199_254_740_991)
+                                });
+                        if !valid {
+                            return Err(malformed());
+                        }
+                    }
                     Some("result") if index + 1 == records.len() => {
                         if record.get("subtype").and_then(Value::as_str) != Some("success")
                             || record.get("is_error").and_then(Value::as_bool) != Some(false)
@@ -3399,7 +3431,7 @@ pub(crate) fn omp_rpc_id(invocation_id: &str, suffix: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::{Value, json};
+    use serde_json::{json, Value};
     use tempfile::TempDir;
 
     const FRAMING: &[u8] =
@@ -3561,15 +3593,13 @@ mod tests {
             InstalledAdapter::PrimeRpc.version_probe().output,
             VersionProbeOutput::Stderr
         );
-        assert!(
-            [
-                InstalledAdapter::CodexExecJson,
-                InstalledAdapter::ClaudePrintStreamJson,
-                InstalledAdapter::OmpRpc,
-            ]
-            .into_iter()
-            .all(|adapter| adapter.version_probe().output == VersionProbeOutput::Stdout)
-        );
+        assert!([
+            InstalledAdapter::CodexExecJson,
+            InstalledAdapter::ClaudePrintStreamJson,
+            InstalledAdapter::OmpRpc,
+        ]
+        .into_iter()
+        .all(|adapter| adapter.version_probe().output == VersionProbeOutput::Stdout));
     }
 
     #[test]
@@ -3892,9 +3922,7 @@ mod tests {
 
     #[test]
     fn exact_version_allowlists_reject_nearby_or_malformed_versions() {
-        assert!(
-            InstalledAdapter::CodexExecJson.version_is_supported("codex-cli 0.149.0-alpha.4.1")
-        );
+        assert!(InstalledAdapter::CodexExecJson.version_is_supported("codex-cli 0.149.0-alpha.4.1"));
         assert!(
             !InstalledAdapter::CodexExecJson.version_is_supported("codex-cli 0.149.0-alpha.4.2")
         );
@@ -4132,11 +4160,9 @@ mod tests {
             let protected = policy.output_protected_strings();
             assert!(protected.iter().any(|value| value == "/fixture/home"));
             assert!(!protected.iter().any(|value| value == raw_secret));
-            assert!(
-                !protected
-                    .iter()
-                    .any(|value| value.contains("store-override"))
-            );
+            assert!(!protected
+                .iter()
+                .any(|value| value.contains("store-override")));
         }
     }
 
@@ -4988,14 +5014,12 @@ mod tests {
 
         let mut atomic_text = text_only.clone();
         atomic_text.drain(7..10);
-        assert!(
-            normalize_transport(
-                InstalledAdapter::PrimeRpc,
-                &atomic_text,
-                "fixture-invocation-0001",
-            )
-            .is_ok()
-        );
+        assert!(normalize_transport(
+            InstalledAdapter::PrimeRpc,
+            &atomic_text,
+            "fixture-invocation-0001",
+        )
+        .is_ok());
 
         let mut empty_deltas_then_atomic_text = text_only.clone();
         for record in &mut empty_deltas_then_atomic_text[6..] {
@@ -5008,14 +5032,12 @@ mod tests {
                 record["message"]["content"][0]["text"] = json!("");
             }
         }
-        assert!(
-            normalize_transport(
-                InstalledAdapter::PrimeRpc,
-                &empty_deltas_then_atomic_text,
-                "fixture-invocation-0001",
-            )
-            .is_ok()
-        );
+        assert!(normalize_transport(
+            InstalledAdapter::PrimeRpc,
+            &empty_deltas_then_atomic_text,
+            "fixture-invocation-0001",
+        )
+        .is_ok());
 
         let mut invalid_first_content = text_only.clone();
         invalid_first_content[6]["assistantMessageEvent"]["contentIndex"] = json!(1);
@@ -5172,14 +5194,12 @@ mod tests {
                 }
             }
         }
-        assert!(
-            normalize_transport(
-                InstalledAdapter::PrimeRpc,
-                &records,
-                "fixture-invocation-0001",
-            )
-            .is_ok()
-        );
+        assert!(normalize_transport(
+            InstalledAdapter::PrimeRpc,
+            &records,
+            "fixture-invocation-0001",
+        )
+        .is_ok());
     }
 
     #[test]
@@ -5645,14 +5665,12 @@ mod tests {
             let mut records = omp_lifecycle();
             *records.last_mut().unwrap() = terminal;
             records.insert(3, omp_response(true));
-            assert!(
-                normalize_transport(
-                    InstalledAdapter::OmpRpc,
-                    &records,
-                    "fixture-invocation-0001"
-                )
-                .is_ok()
-            );
+            assert!(normalize_transport(
+                InstalledAdapter::OmpRpc,
+                &records,
+                "fixture-invocation-0001"
+            )
+            .is_ok());
         }
 
         for event_type in OMP_ASSISTANT_MESSAGE_EVENTS {
@@ -6067,21 +6085,15 @@ mod tests {
     #[test]
     fn omp_rpc_accepts_exact_set_widget_presentation_across_lifecycle_and_settlement() {
         let supervisor_protocol = InstalledAdapter::OmpRpc.protocol();
-        assert!(
-            supervisor_protocol
-                .allowed_events
-                .contains("extension_ui_request")
-        );
-        assert!(
-            !supervisor_protocol
-                .failure_events
-                .contains("extension_ui_request")
-        );
-        assert!(
-            supervisor_protocol
-                .allowed_after_terminal_events
-                .contains("extension_ui_request")
-        );
+        assert!(supervisor_protocol
+            .allowed_events
+            .contains("extension_ui_request"));
+        assert!(!supervisor_protocol
+            .failure_events
+            .contains("extension_ui_request"));
+        assert!(supervisor_protocol
+            .allowed_after_terminal_events
+            .contains("extension_ui_request"));
 
         let base = omp_lifecycle();
         let turn_end = base
@@ -6119,14 +6131,12 @@ mod tests {
             }),
         );
         cleared.insert(4, omp_response(true));
-        assert!(
-            normalize_transport(
-                InstalledAdapter::OmpRpc,
-                &cleared,
-                "fixture-invocation-0001"
-            )
-            .is_ok()
-        );
+        assert!(normalize_transport(
+            InstalledAdapter::OmpRpc,
+            &cleared,
+            "fixture-invocation-0001"
+        )
+        .is_ok());
 
         for presentation in [
             json!({"type":"extension_ui_request","id":"notify","method":"notify","message":"status","notifyType":"info"}),
@@ -6137,14 +6147,12 @@ mod tests {
             let mut records = omp_lifecycle();
             records.insert(3, omp_response(true));
             records.insert(3, presentation);
-            assert!(
-                normalize_transport(
-                    InstalledAdapter::OmpRpc,
-                    &records,
-                    "fixture-invocation-0001"
-                )
-                .is_ok()
-            );
+            assert!(normalize_transport(
+                InstalledAdapter::OmpRpc,
+                &records,
+                "fixture-invocation-0001"
+            )
+            .is_ok());
         }
     }
 
@@ -6276,5 +6284,38 @@ mod tests {
             recover_terminal(&echo_image(), &["first".to_owned(), terminal], &expected).unwrap();
         assert_eq!(recovered.visible_messages, ["first", "second"]);
         assert_eq!(recovered.visible_text, "first\nsecond");
+    }
+    #[test]
+    fn claude_thinking_tokens_are_information_not_completion() {
+        let telemetry: Value = serde_json::from_str(include_str!(
+            "../../../../shared/fixtures/adapters/claude-thinking-tokens.json"
+        ))
+        .unwrap();
+        let init = json!({"type":"system","subtype":"init","session_id":"fixture-session"});
+        let done = json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture-session"});
+        let adapter = InstalledAdapter::ClaudePrintStreamJson;
+        assert!(normalize_transport(
+            adapter,
+            &[init.clone(), telemetry.clone(), done.clone()],
+            "unused"
+        )
+        .is_ok());
+        assert!(
+            normalize_transport(adapter, &[init.clone(), telemetry.clone()], "unused").is_err()
+        );
+        for (key, value) in [
+            ("session_id", json!("other")),
+            ("estimated_tokens", json!(-1)),
+            ("estimated_tokens_delta", json!(0.5)),
+            ("uuid", json!("")),
+            ("unexpected", json!(true)),
+        ] {
+            let mut invalid = telemetry.clone();
+            invalid[key] = value;
+            assert!(
+                normalize_transport(adapter, &[init.clone(), invalid, done.clone()], "unused")
+                    .is_err()
+            );
+        }
     }
 }

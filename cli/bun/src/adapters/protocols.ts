@@ -99,6 +99,15 @@ class ClaudeProtocol extends InstalledProtocol {
       return this.start();
     }
     this.requireSession(record);
+    if (record.type === "system" && record.subtype === "thinking_tokens") {
+      if (!hasExactKeys(record, ["type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"])
+        || typeof record.uuid !== "string" || record.uuid.length === 0
+        || !Number.isSafeInteger(record.estimated_tokens) || (record.estimated_tokens as number) < 0
+        || !Number.isSafeInteger(record.estimated_tokens_delta) || (record.estimated_tokens_delta as number) < 0) {
+        malformed("Claude thinking-token telemetry is invalid.");
+      }
+      return null;
+    }
     if (record.type === "assistant") {
       const message = asRecord(record.message, "Claude assistant message is invalid.");
       const content = Array.isArray(message.content) ? message.content : malformed("Claude assistant content is invalid.");
