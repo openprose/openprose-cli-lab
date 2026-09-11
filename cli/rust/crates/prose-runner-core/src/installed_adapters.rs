@@ -1027,6 +1027,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
             Ok(TransportNormalization{terminal_event:"final",assistant_messages:vec![output.to_owned()]})
         }
         InstalledAdapter::ClaudePrintStreamJson => {
+            if native_claude && records.iter().filter(|r|r["type"]=="system" && r["subtype"]=="init").any(|r|r.get("messaging_socket_path").is_some_and(|v|!v.as_str().is_some_and(|s|!s.is_empty()))) {return Err(malformed());}
             let Some(session_id) = records
                 .first()
                 .filter(|record| {
@@ -1052,7 +1053,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
                     Some("system") if record.get("subtype").and_then(Value::as_str)==Some("init") => {
                         let previous=&records[index-1];
                         if (!native_claude && previous.get("subtype").and_then(Value::as_str)!=Some("task_notification")) || !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
-                        let mut first=records[0].as_object().ok_or_else(malformed)?.clone();let mut repeated=record.as_object().ok_or_else(malformed)?.clone();first.remove("uuid");repeated.remove("uuid");if first!=repeated{return Err(malformed());}
+                        let mut first=records[0].as_object().ok_or_else(malformed)?.clone();let mut repeated=record.as_object().ok_or_else(malformed)?.clone();first.remove("uuid");repeated.remove("uuid");if native_claude{first.remove("messaging_socket_path");repeated.remove("messaging_socket_path");}if first!=repeated{return Err(malformed());}
                     }
                     Some("system") if record.get("subtype").and_then(Value::as_str)==Some("background_tasks_changed") => {
                         if !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
@@ -6538,4 +6539,13 @@ fn native_repeated_init_requires_metadata_identity_and_fresh_result(){
  let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
  assert!(run(&records).is_ok());assert!(run(&records[..3]).is_err());assert!(normalize_transport(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture").is_err());
  for (key,value) in [("uuid",json!("")),("tools",json!(["Write"])),("model",json!("other")),("apiKeySource",json!("other")),("session_id",json!("other"))]{let mut bad=records.clone();bad[2][key]=value;assert!(run(&bad).is_err());}
+}
+
+#[cfg(test)]
+#[test]
+fn native_routing_metadata_mutation_is_typed_and_not_identity(){
+ let init=json!({"type":"system","subtype":"init","session_id":"fixture","uuid":"one"});let result=json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture"});
+ let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
+ for initial in [None,Some("/tmp/old")] {for next in [None,Some("/tmp/new")] {let mut first=init.clone();let mut repeated=init.clone();repeated["uuid"]=json!("two");if let Some(v)=initial{first["messaging_socket_path"]=json!(v);}if let Some(v)=next{repeated["messaging_socket_path"]=json!(v);}let records=vec![first,result.clone(),repeated,result.clone()];assert!(run(&records).is_ok());assert!(run(&records[..3]).is_err());}}
+ for bad in [json!(null),json!(0),json!({}),json!("")] {let mut invalid=init.clone();invalid["messaging_socket_path"]=bad;assert!(run(&[invalid.clone(),result.clone()]).is_err());assert!(run(&[init.clone(),invalid,result.clone()]).is_err());}
 }

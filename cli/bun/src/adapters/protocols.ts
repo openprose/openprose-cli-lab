@@ -129,10 +129,12 @@ class ClaudeProtocol extends InstalledProtocol {
     const record = this.record(value);
     if(this.nativeMode)this.candidateFresh=false;
     if (record.type === "system" && record.subtype === "init") {
+      if(this.nativeMode && Object.hasOwn(record,"messaging_socket_path") && (typeof record.messaging_socket_path!=="string" || !record.messaging_socket_path.length))malformed("Claude routing metadata is invalid.");
       if (typeof record.session_id !== "string" || record.session_id.length === 0) malformed("Claude init session identity is invalid.");
       if (this.started) {
         const {uuid: _old, ...initial}=this.initialRecord!;
         const {uuid, ...repeated}=record;
+        if(this.nativeMode){delete initial.messaging_socket_path;delete repeated.messaging_socket_path;}
         if ((!this.nativeMode && !this.afterTaskNotification) || typeof uuid !== "string" || !uuid || !isDeepStrictEqual(initial,repeated)) malformed("Claude duplicate init is not a matching task resumption.");
         this.afterTaskNotification=false;
         return null;

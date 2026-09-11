@@ -9,3 +9,5 @@ This conservative initial rule can reject harmless telemetry after a result; no 
 Legacy image-envelope mode retains its single-result behavior. Other harness adapters are unchanged. The historical failed pool runs remain failed observations even when their captured records pass later provider-free replay.
 
 Native mode also accepts repeated initialization records after initial start when every field equals the first initialization except a nonempty UUID. Native background resumptions do not guarantee adjacency to task-notification events. Changed session, tools, model, authentication source, or other metadata is rejected. Repeated initialization is activity and invalidates a prior candidate. Legacy adjacency checks remain unchanged.
+
+The sole mutable routing exception is `messaging_socket_path`: it may be absent or a nonempty string, and may appear, disappear, or change on a later init. It is excluded only from equality comparison; actual records remain unchanged. This does not weaken identity/auth/tool/model/cwd checks or permit unknown metadata changes.

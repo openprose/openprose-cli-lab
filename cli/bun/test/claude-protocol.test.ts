@@ -78,3 +78,11 @@ test("native repeated init requires exact metadata and invalidates prior result"
  }
  const old=installedProtocol("claude/print-stream-json","2.1.243","fixture");old.accept(init);expect(()=>old.accept({...init,uuid:"resumed"})).toThrow();
 });
+
+test("native routing metadata is typed mutable metadata only",()=>{
+ for(const initial of [undefined,"/tmp/old"]){for(const next of [undefined,"/tmp/new"]){
+  const p=native();p.accept({...turns[0],uuid:"first",...(initial?{messaging_socket_path:initial}:{})});p.accept(turns[1]);
+  p.accept({...turns[0],uuid:"next",...(next?{messaging_socket_path:next}:{})});expect(()=>p.settleProcess?.(0)).toThrow();p.accept(turns[2]);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+ }}
+ for(const bad of [null,0,{},""]){const p=native();expect(()=>p.accept({...turns[0],messaging_socket_path:bad})).toThrow();const q=native();q.accept(turns[0]);expect(()=>q.accept({...turns[0],uuid:"next",messaging_socket_path:bad})).toThrow();}
+});
