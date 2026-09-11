@@ -110,6 +110,7 @@ pub(super) fn normalize(
     let mut results = Vec::<Value>::new();
     let mut texts = Vec::<String>::new();
     let mut block_types = BTreeMap::<usize, String>::new();
+    let mut async_tasks = BTreeMap::<String,(Value,String)>::new();
     let mut calls = BTreeMap::<String, (String, Value, u8, Option<Value>, Option<bool>)>::new();
     for (record_index,r) in records.iter().enumerate() {
         let phase=if ended {"complete"} else if !started {"tool-await-agent-start"} else if open.is_some() {"tool-message-open"} else if turn {"tool-turn-open"} else if last_stop.as_deref()==Some("toolUse") {"tool-await-next-turn"} else {"tool-await-agent-end"};
@@ -193,6 +194,13 @@ pub(super) fn normalize(
         }
         if !inventory || (!omp && !ack) || ended {
             return Err(bad());
+        }
+        if omp && kind=="tool_execution_update" {
+            if let Some((args,job))=r["toolCallId"].as_str().and_then(|id|async_tasks.get(id)) {
+                let a=&r["partialResult"]["details"]["async"];
+                if !started || r["toolName"]!="task" || !native_args_match(&r["args"],args,true) || a["type"]!="task" || a["jobId"].as_str()!=Some(job.as_str()) || !matches!(a["state"].as_str(),Some("running"|"completed"|"failed")) {return Err(bad());}
+                continue;
+            }
         }
         if kind == "session_action_update" {
             if omp || !started || !valid_prime_queue(r) {return Err(bad());}
@@ -411,6 +419,10 @@ pub(super) fn normalize(
                     call.3 = r["result"].get("content").cloned();
                     call.4 = r["isError"].as_bool();
                     call.2 = 2;
+                    let a=&r["result"]["details"]["async"];
+                    if omp && call.0=="task" && r["isError"]==false && a["type"]=="task" && a["state"]=="running" {
+                        if let Some(job)=a["jobId"].as_str().filter(|s|!s.is_empty()) {async_tasks.insert(r["toolCallId"].as_str().ok_or_else(bad)?.to_owned(),(call.1.clone(),job.to_owned()));}
+                    }
                 }
             }
             "turn_end" => {
@@ -620,4 +632,25 @@ fn prime_recorded_prefix_replay(){
  let mut history:Vec<Value>=frames.iter().filter(|r|r["type"]=="message_end").map(|r|r["message"].clone()).collect();history.push(message.clone());
  frames.push(json!({"type":"message_end","message":message}));frames.push(json!({"type":"turn_end","message":message,"toolResults":[]}));
  assert!(normalize(&frames,&id,false,true).is_err());frames.push(json!({"type":"agent_end","messages":history}));assert!(normalize(&frames,&id,false,true).is_ok());
+}
+
+#[cfg(test)]
+mod late_task_tests {
+ use super::*;
+ #[test]
+ fn late_async_progress_preserves_terminal_and_correlation() {
+  let f:Vec<Value>=serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/omp-late-progress.json")).unwrap();
+  assert!(normalize(&f,"fixture-tools",true,true).is_ok());
+  assert!(normalize(&f[..f.len()-1],"fixture-tools",true,false).is_ok());
+  assert!(normalize(&f[..f.len()-1],"fixture-tools",true,true).is_err());
+  let at=f.iter().enumerate().position(|(i,x)|i>0&&x["type"]=="tool_execution_update"&&f[i-1]["type"]=="tool_execution_end").unwrap();
+  for n in 0..6 {let mut bad=f.clone();match n {
+   0=>bad[at]["partialResult"]["details"]["async"]["jobId"]=json!("other"),
+   1=>bad[at]["args"]=json!({"different":true}),
+   2=>{bad[at-1]["result"]["details"].as_object_mut().unwrap().remove("async");},
+   3=>bad[at]["toolName"]=json!("read"),
+   4=>bad.insert(at,bad[at-1].clone()),
+   _=>bad.push(bad[at].clone())
+  }assert!(normalize(&bad,"fixture-tools",true,true).is_err());}
+ }
 }

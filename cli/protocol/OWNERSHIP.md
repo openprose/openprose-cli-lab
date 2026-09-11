@@ -319,3 +319,5 @@ Decision024 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/
 Decision024 correction lease cli_recon: cli/rust/crates/prose-runner-core/src/installed_adapters.rs outer Prime event filter and focused regression; docs/prime-child-telemetry.md qualification addendum.
 
 Decision025 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/prime-queue-telemetry.test.ts; cli/rust/crates/prose-runner-core/src/installed_adapters.rs; cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs; cli/shared/fixtures/adapters/tool-lifecycle/prime-queue-telemetry.json; docs/prime-queue-telemetry.md. Generic typed observations only.
+
+Decision026 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/omp-late-progress.test.ts; cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs; cli/shared/fixtures/adapters/tool-lifecycle/omp-late-progress.json; docs/omp-late-progress.md. Generic correlated progress only.

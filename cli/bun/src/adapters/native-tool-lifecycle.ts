@@ -45,6 +45,7 @@ export class NativeToolLifecycle {
   started = false;
   ended = false;
   private turn = false;
+  private asyncTasks = new Map<string,{args:unknown;job:string}>();
   private user = false;
   private open: Record<string, any> | null = null;
   private assistant: Record<string, any> | null = null;
@@ -68,6 +69,11 @@ export class NativeToolLifecycle {
   accept(value: unknown): RawTransportEvent | null {
     const r = object(value);
     if (this.ended) bad();
+    if(this.omp && r.type==="tool_execution_update" && this.asyncTasks.has(r.toolCallId)) {
+      const task=this.asyncTasks.get(r.toolCallId)!;const a=r.partialResult?.details?.async;
+      if(!this.started||r.toolName!=="task"||!nativeArgsMatch(r.args,task.args,true)||!a||a.type!=="task"||a.jobId!==task.job||!["running","completed","failed"].includes(a.state))bad();
+      return null;
+    }
     switch (r.type) {
       case "session_action_update":
         if(this.omp||!this.started||!validPrimeQueue(r))bad();
@@ -152,6 +158,8 @@ export class NativeToolLifecycle {
           if (c.state !== "started" || !nativeArgsMatch(r.args,c.args,this.omp)) bad(); object(r.partialResult);
         } else {
           if (c.state !== "started" || typeof r.isError !== "boolean") bad(); object(r.result); c.result=r.result; c.isError=r.isError; c.state = "ended";
+          const a=r.result.details?.async;
+          if(this.omp&&c.name==="task"&&!r.isError&&a?.type==="task"&&a.state==="running"&&typeof a.jobId==="string"&&a.jobId) this.asyncTasks.set(r.toolCallId,{args:c.args,job:a.jobId});
         }
         return null;
       }
