@@ -1158,6 +1158,26 @@ impl OmpStagedController {
     }
 }
 
+#[derive(Debug)]
+struct PrimeStagedController {
+    id: String,
+    prompt: Option<Vec<u8>>,
+    pending_write: Option<Vec<u8>>,
+    records: Vec<Value>,
+    close: bool,
+}
+impl PrimeStagedController {
+    fn observe(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
+        if self.close {return Ok(());}
+        self.records.push(record.clone());
+        installed_adapters::validate_prime_native_prefix(&self.records,&self.id)
+            .map_err(|_|stream_observer_failure(FailureKind::ProtocolMalformed,"Prime native lifecycle rejected the observed record"))?;
+        if self.records.len()==1 { self.pending_write=self.prompt.take(); }
+        if record["type"]=="response" && record["command"]=="prompt" && record["success"]==true {self.close=true;}
+        Ok(())
+    }
+}
+
 struct InstalledRunObserver<'a> {
     require_api_source:bool,
     auth_source_failed:bool,
@@ -1166,6 +1186,7 @@ struct InstalledRunObserver<'a> {
     capture: Option<NativeCapture>,
     human: Option<InstalledHumanStream<'a>>,
     omp: Option<OmpStagedController>,
+    prime: Option<PrimeStagedController>,
 }
 
 impl std::fmt::Debug for InstalledRunObserver<'_> {
@@ -1193,6 +1214,7 @@ impl RecordObserver for InstalledRunObserver<'_> {
             self.auth_source_failed=true;
             return Err(stream_observer_failure(FailureKind::HarnessFailed,"Native init did not confirm selected API credential route"));
         }
+        if let Some(prime)=self.prime.as_mut() {prime.observe(record)?;}
         let mut projection = None;
         if let Some(omp) = self.omp.as_mut() {
             omp.observe(record)?;
@@ -1205,6 +1227,7 @@ impl RecordObserver for InstalledRunObserver<'_> {
     }
 
     fn take_stdin_write(&mut self) -> Result<Option<Vec<u8>>, SupervisorFailure> {
+        if let Some(prime)=self.prime.as_mut() {return Ok(prime.pending_write.take());}
         Ok(self
             .omp
             .as_mut()
@@ -1217,8 +1240,10 @@ impl RecordObserver for InstalledRunObserver<'_> {
             .and_then(OmpStagedController::retained_record_projection)
     }
 
+    fn close_stdin_requested(&self) -> bool {self.prime.as_ref().is_some_and(|p|p.close)}
+
     fn requires_staged_stdin(&self) -> bool {
-        self.omp.is_some()
+        self.omp.is_some() || self.prime.is_some()
     }
 }
 
@@ -2014,7 +2039,8 @@ fn execute_installed_adapter(
             )
         });
     let timeout = parse_duration(&config.timeout.value).unwrap_or(Duration::from_secs(600));
-    let process_spec = launch.process_spec(
+    let native_prime=adapter == installed_adapters::InstalledAdapter::PrimeRpc && config.output_contract.value == "native";
+    let mut process_spec = launch.process_spec(
         config.cwd.clone(),
         env::current_exe().ok(),
         &invocation_id,
@@ -2022,6 +2048,12 @@ fn execute_installed_adapter(
         probe_before_run,
         cancellation.clone(),
     );
+    let prime_controller=if native_prime {
+        let prompt=process_spec.stdin.take();
+        process_spec.stdin=Some(format!("{}\n",json!({"id":format!("{invocation_id}.prime.state.1"),"type":"get_state"})).into_bytes());
+        process_spec.stdin_lifecycle=prose_process_supervisor::StdinLifecycle::CloseAfterTerminalEvent;
+        Some(PrimeStagedController{id:invocation_id.clone(),prompt,pending_write:None,records:Vec::new(),close:false})
+    } else {None};
     let mut secret_values = process_spec.environment.secret_strings();
     secret_values.extend([
         process_spec.recursion_token.clone(),
@@ -2054,7 +2086,7 @@ fn execute_installed_adapter(
     protected.sort();
     protected.dedup();
     let human_stream = human_stream
-        .filter(|_| mode == OutputMode::Human && !(adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native"))
+        .filter(|_| mode == OutputMode::Human && !native_prime && !(adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native"))
         .map(|sink| InstalledHumanStream::new(adapter, &invocation_id, sink, protected));
     let omp_controller = launch
         .omp_prompt_bytes()
@@ -2070,11 +2102,13 @@ fn execute_installed_adapter(
         capture,
         human: human_stream,
         omp: omp_controller,
+        prime: prime_controller,
     };
     let native_claude=adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native";
     let mut installed_protocol=adapter.protocol();
-    installed_protocol.terminal_is_candidate=native_claude;
-    let supervised = if run_observer.sdk || run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
+    installed_protocol.terminal_is_candidate=native_claude || native_prime;
+    if native_prime {installed_protocol.allowed_events.insert("response".to_owned());}
+    let supervised = if run_observer.prime.is_some() || run_observer.sdk || run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
         supervise_observed(process_spec, &installed_protocol, &mut run_observer)
     } else {
         supervise(process_spec, &installed_protocol)
@@ -2205,7 +2239,7 @@ fn execute_installed_adapter(
         return installed_adapter_postprocess_failure(adapter,&task,&task_digest,&invocation_id,outcome,detected_version.as_deref(),error,config,image,mode,clock);
     }
     let normalized =
-        match installed_adapters::normalize_transport_mode(adapter, &outcome.records, &invocation_id,native_claude) {
+        match installed_adapters::normalize_transport_mode(adapter, &outcome.records, &invocation_id,native_claude || native_prime) {
             Ok(normalized) => normalized,
             Err(error) => {
                 return installed_adapter_postprocess_failure(
@@ -4204,8 +4238,16 @@ mod tests {
     }
 
     #[test]
+    fn prime_prelude_gates_prompt_and_closes_only_after_ack() {
+        let f:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/tool-lifecycle/prime-drain.json")).unwrap();
+        let make=||PrimeStagedController{id:"fixture-drain".into(),prompt:Some(b"prompt\n".to_vec()),pending_write:None,records:vec![],close:false};
+        let mut p=make();assert!(p.pending_write.is_none());p.observe(&f["stateResponse"]).unwrap();assert_eq!(p.pending_write.take(),Some(b"prompt\n".to_vec()));assert!(!p.close);p.observe(&f["promptResponse"]).unwrap();assert!(p.close);
+        for bad in [f["promptResponse"].clone(),json!({"id":"fixture-drain.prime.state.1","type":"response","command":"get_state","success":false,"data":{}})] {let mut p=make();assert!(p.observe(&bad).is_err());assert!(p.pending_write.is_none());assert!(!p.close);}
+    }
+
+    #[test]
     fn sdk_error_is_captured_safely_before_admission_without_log() {
-        let mut observer=InstalledRunObserver{require_api_source:false,auth_source_failed:false,sdk:true,native_failure:None,capture:None,human:None,omp:None};
+        let mut observer=InstalledRunObserver{require_api_source:false,auth_source_failed:false,sdk:true,native_failure:None,capture:None,human:None,omp:None,prime:None};
         observer.observe_parsed(&json!({"type":"error","error_type":"MaxTurnsExceeded","elapsed_seconds":2,"message":"do not expose"})).unwrap();
         assert_eq!(observer.native_failure,Some(json!({"kind":"max-turns","elapsedSeconds":2.0})));
         observer.sdk=false;observer.native_failure=None;
@@ -4264,7 +4306,7 @@ mod tests {
         assert!(validate_native_auth(&config,&[good.clone()]).is_ok());
         let meta=native_configuration(&config,Some(&[good])).unwrap();assert_eq!(meta["observed"]["tools"],json!(["Read","Task"]));assert_eq!(meta["configOwnership"],"runner-private");
         for records in [vec![],vec![json!({"type":"system","subtype":"init"})],vec![json!({"type":"system","subtype":"init","apiKeySource":"oauth"})]] {assert_eq!(validate_native_auth(&config,&records).unwrap_err().code,ErrorCode::HarnessNeedsAuth);}
-        let mut observer=InstalledRunObserver{require_api_source:true,auth_source_failed:false,sdk:false,native_failure:None,capture:None,human:None,omp:None};
+        let mut observer=InstalledRunObserver{require_api_source:true,auth_source_failed:false,sdk:false,native_failure:None,capture:None,human:None,omp:None,prime:None};
         assert!(observer.observe(&json!({"type":"system","subtype":"init","apiKeySource":"oauth"})).is_err());assert!(observer.auth_source_failed);
         config.auth_profile.value=Some("claude-subscription".into());assert!(validate_native_auth(&config,&[]).is_ok());assert_eq!(native_configuration(&config,None).unwrap()["configOwnership"],"native-auth-store");
     }

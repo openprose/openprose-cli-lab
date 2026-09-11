@@ -385,6 +385,9 @@ pub trait RecordObserver {
         Ok(None)
     }
 
+    /// Close staged stdin after its acknowledgement.
+    fn close_stdin_requested(&self) -> bool { false }
+
     /// Replaces the just-observed record before the supervisor retains it.
     /// `None` preserves the admitted record byte-for-byte.
     fn retained_record_projection(&self, _record: &Value) -> Option<Value> {
@@ -884,6 +887,7 @@ fn supervise_direct(
                             Ok(None) => {}
                             Err(error) => failure = Some(error),
                         }
+                        if observer.close_stdin_requested() { if let Some(writer)=stdin_writer.as_ref() {writer.request_close();} }
                     }
                 }
                 if failure.is_none() && state.terminal.is_some() && !protocol.terminal_is_candidate {

@@ -100,7 +100,7 @@ export async function superviseStructuredProcess(request: ProcessSupervisionRequ
   const stdinWriter = deferStdinClose
     ? startManagedStdin(
       child.stdin as Bun.FileSink,
-      stagedStdin ? undefined : request.stdinBytes as Uint8Array,
+      stagedStdin ? protocol.takeStagedStdinBytes?.() ?? undefined : request.stdinBytes as Uint8Array,
     )
     : null;
   let stdinError: RunnerFailure | null = null;

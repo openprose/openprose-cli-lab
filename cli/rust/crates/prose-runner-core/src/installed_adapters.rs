@@ -960,6 +960,8 @@ pub fn normalize_transport(
     normalize_transport_mode(adapter, records, expected_rpc_id, false)
 }
 
+pub(crate) fn validate_prime_native_prefix(records:&[Value],id:&str)->Result<(),RunnerError>{native_tools::normalize_mode(records,id,false,false,true).map(|_|())}
+
 pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expected_rpc_id:&str,native_claude:bool)->Result<TransportNormalization,RunnerError>{
     let malformed = || RunnerError::catalog(ErrorCode::ProtocolMalformed);
     let failed = || RunnerError::catalog(ErrorCode::HarnessFailed);
@@ -1130,6 +1132,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
                 assistant_messages,
             })
         }
+        InstalledAdapter::PrimeRpc if native_claude => native_tools::normalize_mode(records,expected_rpc_id,false,true,true),
         InstalledAdapter::PrimeRpc => normalize_prime_rpc(records, expected_rpc_id),
         InstalledAdapter::OmpRpc => normalize_omp_rpc(records, expected_rpc_id),
     }

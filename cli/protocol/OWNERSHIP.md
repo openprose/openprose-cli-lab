@@ -322,3 +322,7 @@ Decision025 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/
 
 Decision027 active lease: coordination_library owns Rust core invocation.rs/config.rs/runner.rs; Bun core args.ts/config.ts/types.ts, adapters sdk-limits.ts/types.ts/plan.ts/runner.ts, cli.ts and related SDK-budget tests; shared SDK-budget fixture/configuration-explanation schema, canonical help, docs/sdk-budgets.md. Isolated sdk-tool-timeout worktree, no native lifecycle/helper changes; root merges main.
 Decision026 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/omp-late-progress.test.ts; cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs; cli/shared/fixtures/adapters/tool-lifecycle/omp-late-progress.json; docs/omp-late-progress.md. Generic correlated progress only.
+
+Decision 028 active lease: cli_recon owns cli/bun/src/adapters/prime-drain.ts, protocols.ts, runner.ts, native-tool-lifecycle.ts; cli/bun/src/supervision/process.ts; cli/bun/test/prime-drain.test.ts; cli/shared/fixtures/adapters/tool-lifecycle/prime-drain.json; docs/prime-drain.md. Root authorized git/commits. Rust-only lease to coordination_library when assigned, no overlapping edits.
+
+- Decision 028: coordination_library owns cli/rust/** (Prime native drain and provider-free tests); no commits; cli_recon integrates.

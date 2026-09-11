@@ -152,7 +152,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     const supervisedArgv = options.fixtureInterpreter === undefined ? plan.argv.slice(1) : plan.argv;
     const capture = new NativeCapture(options.nativeLog,protectedValues);
     let observed: NativeObservation | null = null;
-    const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, options.adapterId === "omp/rpc" ? plan.stdinBytes : null, options.outputContract === "native");
+    const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, (options.adapterId === "omp/rpc" || options.adapterId === "prime/rpc") ? plan.stdinBytes : null, options.outputContract === "native");
     if(options.nativeProfile === "claude-workspace-tools") {
       const accept=protocol.accept.bind(protocol);
       protocol.accept=(record)=>{ observed=observeNativeInit(record,options.credentialGroup) ?? observed; return accept(record); };
@@ -168,7 +168,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       recursionToken: options.invocation.recursionToken,
       runNonce,
       ...(plan.stdinBytes === null ? {} : { stdinBytes: plan.stdinBytes }),
-      stdinLifecycle: plan.stdinLifecycle,
+      stdinLifecycle: options.adapterId === "prime/rpc" && options.outputContract === "native" ? "close-after-terminal-event" : plan.stdinLifecycle,
       ...(options.wrapperExecutable === undefined ? {} : { wrapperExecutable: options.wrapperExecutable }),
       startupTimeoutMs: Math.min(30_000, options.timeoutMs),
       runTimeoutMs: options.timeoutMs,

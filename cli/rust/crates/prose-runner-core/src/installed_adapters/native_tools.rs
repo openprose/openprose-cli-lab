@@ -98,6 +98,63 @@ fn same_message(a: &Value, b: &Value, omp: bool) -> bool {
     a == b
 }
 
+#[derive(Default)]
+struct PrimeDrain {
+    session: String,
+    segment_closed: bool,
+    resumed: bool,
+    queue_observed: bool,
+    queue_empty: bool,
+    children: BTreeMap<String, String>,
+    previews: std::collections::BTreeSet<String>,
+    used: std::collections::BTreeSet<String>,
+    used_previews: std::collections::BTreeSet<String>,
+}
+fn drain_message_equal(a: &Value, b: &Value) -> bool {
+    fn usage(v: &Value) -> bool {
+        has_exact_keys(v, &["input","output","cacheRead","cacheWrite","totalTokens","cost"])
+            && ["input","output","cacheRead","cacheWrite","totalTokens"].iter().all(|k|v[*k].as_f64().is_some_and(|n|n.is_finite()&&n>=0.0))
+            && has_exact_keys(&v["cost"], &["input","output","cacheRead","cacheWrite","total"])
+            && v["cost"].as_object().unwrap().values().all(|v|v.as_f64().is_some_and(|n|n.is_finite()&&n>=0.0))
+    }
+    if a["role"]!="assistant" || b["role"]!="assistant" || (a.get("usage").is_none() && b.get("usage").is_none()) {return a==b;}
+    if !usage(&a["usage"]) || !usage(&b["usage"]) {return false;}
+    let mut a=a.clone(); let mut b=b.clone();
+    a.as_object_mut().unwrap().remove("usage"); b.as_object_mut().unwrap().remove("usage"); a==b
+}
+impl PrimeDrain {
+    fn child(&mut self, c: &Value) {
+        if let (Some(id),Some(name))=(c["activeSessionId"].as_str(),c["sessionName"].as_str()) {self.children.insert(id.into(),name.into());}
+    }
+    fn queue(&mut self, a: &Value, candidate: bool) -> bool {
+        if candidate && a.get("active").is_some() {return false;}
+        self.queue_observed=true;
+        self.queue_empty=a["queuedCount"]==0 && a["steering"].as_array().is_some_and(Vec::is_empty) && a["followUps"].as_array().is_some_and(Vec::is_empty) && a.get("active").is_none();
+        for k in ["steering","followUps"] {for v in a[k].as_array().unwrap() {self.previews.insert(v.as_str().unwrap().into());}}
+        true
+    }
+    fn history(&mut self, observed: &[Value], streamed: &[Value]) -> bool {
+        if observed.len()==streamed.len() && observed.iter().zip(streamed).all(|(a,b)|drain_message_equal(a,b)) {return true;}
+        if !self.resumed || observed.len()!=streamed.len()+1 || !observed[1..].iter().zip(streamed).all(|(a,b)|drain_message_equal(a,b)) {return false;}
+        let m=&observed[0];let d=&m["details"];let from=&d["from"];let target=&d["target"];
+        let nonempty=|v:&Value|v.as_str().is_some_and(|s|!s.is_empty());
+        if !has_exact_keys(m,&["role","customType","content","display","details","timestamp"]) || m["role"]!="custom" || m["customType"]!="agent_message" || m["display"]!=true || m["timestamp"].as_f64().is_none_or(|n|!n.is_finite()||n<0.0)
+            || !has_exact_keys(d,&["id","message","from","fromRelationship","target"]) || !nonempty(&d["id"]) || !nonempty(&d["message"]) || d["fromRelationship"]!="child"
+            || !has_exact_keys(from,&["activeSessionId","sessionId","sessionName","clientId","runtimeKind"]) || from["runtimeKind"]!="subagent" || ["activeSessionId","sessionId","sessionName","clientId"].iter().any(|k|!nonempty(&from[*k]))
+            || target.as_object().is_none_or(|o|o.keys().any(|k|!["activeSessionId","sessionId","sessionName","runtimeKind"].contains(&k.as_str()))) || target["runtimeKind"]!="top-level" || !nonempty(&target["activeSessionId"]) || target["sessionId"]!=self.session || target.get("sessionName").is_some_and(|v|!v.is_string()) {return false;}
+        let id=d["id"].as_str().unwrap();let body=d["message"].as_str().unwrap();let sender=from["activeSessionId"].as_str().unwrap();
+        if self.used.contains(id) || self.children.get(sender).map(String::as_str)!=from["sessionName"].as_str() {return false;}
+        let preview=format!("Agent message received: {body}");if !self.previews.contains(&preview) || self.used_previews.contains(&preview) {return false;}
+        let fmt=|s:&str|s.split(|c:char|c.is_whitespace() || matches!(c,','|'['|']')).filter(|s|!s.is_empty()).collect::<Vec<_>>().join(" ");
+        let get=|v:&Value,k:&str|fmt(v[k].as_str().unwrap());
+        let sender=[get(from,"sessionName"),format!("active {}",get(from,"activeSessionId")),format!("session {}",get(from,"sessionId")),format!("client {}",get(from,"clientId"))].into_iter().filter(|s|!s.is_empty()).collect::<Vec<_>>().join(", ");
+        let endpoint=format!("{}active {}, session {}",target.get("sessionName").and_then(Value::as_str).filter(|s|!s.is_empty()).map(|s|format!("{}, ",fmt(s))).unwrap_or_default(),get(target,"activeSessionId"),get(target,"sessionId"));
+        let content=format!("[from child:{}]\nAgent-to-agent message received.\nSource: agent_message\nFrom: {sender}\nTo: {endpoint}\nMessage id: {id}\n\n{body}",get(from,"sessionName"));
+        if m["content"]!=content {return false;}
+        self.used.insert(id.into());self.previews.remove(&preview);self.used_previews.insert(preview);true
+    }
+}
+
 /// Validates only native transport state. Prefix mode projects already-complete
 /// messages without manufacturing terminal records or claiming settlement.
 pub(super) fn normalize(
@@ -106,6 +163,11 @@ pub(super) fn normalize(
     omp: bool,
     terminal: bool,
 ) -> Result<TransportNormalization, RunnerError> {
+    normalize_mode(records, id, omp, terminal, false)
+}
+
+pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: bool, drain: bool) -> Result<TransportNormalization, RunnerError> {
+    let mut drain_state = PrimeDrain::default();
     let bad = || RunnerError::catalog(ErrorCode::ProtocolMalformed);
     let fail = || RunnerError::catalog(ErrorCode::HarnessFailed);
     let mut ready = !omp;
@@ -164,6 +226,11 @@ pub(super) fn normalize(
             return Err(bad());
         }
         if kind == "response" {
+            if drain && drain_state.session.is_empty() {
+                if !has_exact_keys(r,&["id","type","command","success","data"]) || !r["data"].is_object() || r["id"] != format!("{id}.prime.state.1") || r["command"] != "get_state" || r["success"] != true || r["data"]["isStreaming"] != false || r["data"]["messageCount"] != 0 { return Err(bad()); }
+                drain_state.session = r["data"]["sessionId"].as_str().filter(|s|!s.is_empty()).ok_or_else(bad)?.to_owned();
+                continue;
+            }
             if omp && !inventory {
                 if r["id"] != omp_rpc_id(id, "state.1")
                     || r["command"] != "get_state"
@@ -205,7 +272,7 @@ pub(super) fn normalize(
             ack = true;
             continue;
         }
-        if !inventory || (!omp && !ack) || ended {
+        if !inventory || (!omp && !ack) || (ended && !(drain && kind=="session_action_update")) {
             return Err(bad());
         }
         if omp && kind=="tool_execution_update" {
@@ -217,13 +284,18 @@ pub(super) fn normalize(
         }
         if kind == "session_action_update" {
             if omp || !started || !valid_prime_queue(r) {return Err(bad());}
+            if drain && !drain_state.queue(&r["actions"], ended) { return Err(bad()); }
             continue;
         }
         if kind == "rlm_child_update" {
             if omp || !started || !valid_prime_child_update(r) {
                 return Err(bad());
             }
+            if drain { drain_state.child(&r["child"]); }
             continue;
+        }
+        if drain && drain_state.segment_closed && matches!(kind,"turn_start"|"message_start") {
+            drain_state.segment_closed=false; drain_state.resumed=true; history.clear();
         }
         match kind {
             "agent_start" => {
@@ -458,18 +530,12 @@ pub(super) fn normalize(
             }
             "agent_end" => {
                 let msgs = r["messages"].as_array().ok_or_else(bad)?;
-                if !started
-                    || turn
-                    || open.is_some()
-                    || last_stop.as_deref() != Some("stop")
-                    || msgs.len() != history.len()
-                    || msgs
-                        .iter()
-                        .zip(&history)
-                        .any(|(a, b)| !same_message(a, b, omp))
-                {
-                    return Err(bad());
-                }
+                if !started || turn || open.is_some() || calls.values().any(|c|c.2!=3) { return Err(bad()); }
+                if drain {
+                    if drain_state.segment_closed || !drain_state.history(msgs, &history) { return Err(bad()); }
+                    if last_stop.as_deref()==Some("toolUse") { drain_state.segment_closed=true; continue; }
+                    if last_stop.as_deref()!=Some("stop") { return Err(bad()); }
+                } else if last_stop.as_deref()!=Some("stop") || msgs.len()!=history.len() || msgs.iter().zip(&history).any(|(a,b)|!same_message(a,b,omp)) { return Err(bad()); }
                 if omp && r["isTerminal"] != true {
                     return Err(fail());
                 }
@@ -478,7 +544,7 @@ pub(super) fn normalize(
             _ => return Err(bad()),
         }
     }
-    if terminal && (!ended || !ack) {
+    if terminal && (!ended || !ack || (drain && (drain_state.resumed || drain_state.queue_observed) && !drain_state.queue_empty)) {
         return Err(bad());
     }
     Ok(TransportNormalization {
@@ -490,6 +556,34 @@ pub(super) fn normalize(
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn drain_frames() -> Vec<Value> {
+        let f:Value=serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime-drain.json")).unwrap();
+        let mut r=vec![f["stateResponse"].clone(),f["promptResponse"].clone()];r.extend(f["frames"].as_array().unwrap().clone());r
+    }
+    #[test]
+    fn prime_drain_requires_complete_correlated_settlement() {
+        let run=|r:&[Value],terminal|normalize_mode(r,"fixture-drain",false,terminal,true);
+        let r=drain_frames();assert!(run(&r,true).is_ok());
+        let ends:Vec<_>=r.iter().enumerate().filter(|(_,v)|v["type"]=="agent_end").map(|(i,_)|i).collect();
+        assert!(run(&r[..=ends[0]],false).is_ok());assert!(run(&r[..=ends[0]],true).is_err());
+        for path in ["/sessionId","/isStreaming","/messageCount"] {let mut bad=r.clone();*bad[0]["data"].pointer_mut(path).unwrap()=json!("wrong");assert!(run(&bad,true).is_err());}
+        let mut bad=r.clone();bad.remove(0);assert!(run(&bad,true).is_err());
+        for path in ["/messages/0/details/target/sessionId","/messages/0/details/from/activeSessionId","/messages/0/details/message","/messages/0/content"] {let mut bad=r.clone();*bad[ends[1]].pointer_mut(path).unwrap()=json!("wrong");assert!(run(&bad,true).is_err());}
+        let mut bad=r.clone();bad.pop();assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();let pos=bad.iter().position(|v|v["type"]=="tool_execution_end").unwrap();bad.remove(pos);assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad[ends[0]]["messages"][0]["content"]=json!([]);assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad[1]["success"]=json!(false);assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad.push(json!({"type":"session_action_update","actions":{"queuedCount":0,"steering":[],"followUps":[],"active":{"kind":"turn","phase":"running"}}}));assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad.push(json!({"type":"turn_start"}));assert!(run(&bad,true).is_err());
+    }
+    #[test]
+    fn prime_usage_projection_is_typed_and_only_history() {
+        let usage=json!({"input":1,"output":2,"cacheRead":0,"cacheWrite":0,"totalTokens":3,"cost":{"input":0,"output":0,"cacheRead":0,"cacheWrite":0,"total":0}});
+        let a=json!({"role":"assistant","content":[],"usage":usage});let mut b=a.clone();b["usage"]["output"]=json!(8);assert!(drain_message_equal(&a,&b));
+        for value in [json!(-1),json!("8"),Value::Null] {let mut b=b.clone();b["usage"]["output"]=value;assert!(!drain_message_equal(&a,&b));assert!(!drain_message_equal(&b,&b));}
+        let mut b=b.clone();b["usage"]["extra"]=json!(0);assert!(!drain_message_equal(&a,&b));
+        let mut b=a.clone();b["content"]=json!([{"type":"text","text":"changed"}]);assert!(!drain_message_equal(&a,&b));
+    }
     fn frames(omp: bool) -> Vec<Value> {
         serde_json::from_str(if omp {
             include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/omp.json")

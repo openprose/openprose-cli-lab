@@ -1,3 +1,4 @@
+import {PrimeDrain} from "./prime-drain";
 import { isDeepStrictEqual } from "node:util";
 import { failure } from "../core/errors";
 import type { RawTransportEvent } from "../supervision/types";
@@ -69,7 +70,13 @@ export class NativeToolLifecycle {
   private results: Record<string, any>[] = [];
   private blockTypes = new Map<number,string>();
   private lastStop: string | null = null;
-  constructor(private readonly omp: boolean) {}
+  constructor(private readonly omp: boolean, readonly primeDrain:PrimeDrain|null=null) {}
+
+  settlePrime(exitCode:number|null):RawTransportEvent|null {
+    if(!this.primeDrain)return null;
+    if(exitCode!==0||!this.primeDrain.candidate||((this.primeDrain.resumed||this.primeDrain.queueObserved)&&!this.primeDrain.queueEmpty)||this.turn||this.open)throw failure("PROTOCOL_TRUNCATED",{reason:"Prime native operation did not drain with a fresh final result."});
+    this.ended=true;return {type:"session.completed"};
+  }
 
   get phase(): "tool-await-agent-start" | "tool-await-next-turn" | "tool-message-open" | "tool-turn-open" | "tool-await-agent-end" | "complete" {
     return this.ended ? "complete" : !this.started ? "tool-await-agent-start" : this.open ? "tool-message-open" : this.turn ? "tool-turn-open" : this.lastStop === "toolUse" ? "tool-await-next-turn" : "tool-await-agent-end";
@@ -89,12 +96,15 @@ export class NativeToolLifecycle {
       if(!this.started||r.toolName!=="task"||!nativeArgsMatch(r.args,task.args,true)||!a||a.type!=="task"||a.jobId!==task.job||!["running","completed","failed"].includes(a.state))bad();
       return null;
     }
+    if(this.primeDrain?.candidate&&r.type!=="session_action_update")bad();
     switch (r.type) {
       case "session_action_update":
         if(this.omp||!this.started||!validPrimeQueue(r))bad();
+        if(this.primeDrain&&!this.primeDrain.queue(r.actions))bad();
         return null;
       case "rlm_child_update":
         if(this.omp||!this.started||!validPrimeChildUpdate(r))bad();
+        if(this.primeDrain){if(this.primeDrain.candidate)bad();this.primeDrain.child(r.child);}
         return null;
       case "agent_start":
         if (this.started) bad();
@@ -106,6 +116,10 @@ export class NativeToolLifecycle {
         return null;
       case "message_start": {
         const m = object(r.message);
+        if(this.primeDrain?.segmentClosed){
+          if(this.lastStop!=="toolUse")bad();
+          this.primeDrain.segmentClosed=false;this.primeDrain.resumed=true;this.primeDrain.candidate=false;this.primeDrain.queueEmpty=false;this.history=[];
+        }
         // Prime 0.7 has emitted this boundary without its turn_start marker.
         // Only a fully settled tool turn permits this empty assistant start.
         if (!this.omp && this.started && !this.turn && !this.open && this.lastStop === "toolUse"
@@ -184,6 +198,10 @@ export class NativeToolLifecycle {
         if (!this.turn || this.open || !this.assistant || !this.sameMessage(r.message,this.assistant) || !same(r.toolResults,this.results) || [...this.calls.values()].some(c=>c.state!=="reported")) bad();
         this.lastStop = this.assistant!.stopReason; this.turn = false; return null;
       case "agent_end":
+        if(this.primeDrain){
+          if(!this.started||this.turn||this.open||!["stop","toolUse"].includes(this.lastStop??"")||[...this.calls.values()].some(c=>c.state!=="reported")||this.primeDrain.segmentClosed||!Array.isArray(r.messages)||!this.primeDrain.history(r.messages,this.history))bad();
+          this.primeDrain.segmentClosed=true;this.primeDrain.candidate=this.lastStop==="stop";return null;
+        }
         if (!this.started || this.turn || this.open || this.lastStop !== "stop" || (!Array.isArray(r.messages) || r.messages.length!==this.history.length || r.messages.some((m:any,i:number)=>!this.sameMessage(m,this.history[i])))) bad();
         if (this.omp && r.isTerminal !== true) throw failure("HARNESS_FAILED", {reason:"unsupported_nonterminal_settlement"});
         this.ended = true; return {type:"session.completed"};

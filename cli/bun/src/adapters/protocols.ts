@@ -1,3 +1,4 @@
+import {PrimeDrain} from "./prime-drain";
 import {sdkNativeFailure} from "./sdk-limits";
 import {hasFreshClaudeResult} from "./claude-shutdown";
 import { isDeepStrictEqual } from "node:util";
@@ -54,6 +55,37 @@ abstract class InstalledProtocol implements StructuredProtocolState {
     if (!this.started) malformed("Harness emitted a terminal event before its start event.");
     this.terminalEventObserved = true;
     return { type: "session.completed" };
+  }
+}
+
+class PrimeNativeProtocol extends InstalledProtocol {
+  readonly stagedStdin=true;
+  private phase:"state"|"ack"|"running"="state";
+  private pending:Uint8Array|null;
+  private lifecycle:NativeToolLifecycle|null=null;
+  constructor(version:string|null,private readonly id:string,private readonly prompt:Uint8Array){
+    super(version);this.pending=new TextEncoder().encode(JSON.stringify({id:`${id}.prime.state.1`,type:"get_state"})+"\n");
+  }
+  override get stdinCloseRequested(){return this.phase==="running";}
+  takeStagedStdinBytes(){const p=this.pending;this.pending=null;return p;}
+  accept(value:unknown):RawTransportEvent|null {
+    const r=asRecord(value,"Prime native record is invalid.");
+    if(!primeBoundedJson(r))malformed("Prime native record is over its bounded contract.");
+    if(this.phase==="state"){
+      if(r.type!=="response"||r.id!==`${this.id}.prime.state.1`||r.command!=="get_state"||r.success!==true||!hasExactKeys(r,["id","type","command","success","data"])||!r.data||typeof r.data!=="object"||Array.isArray(r.data))malformed("Prime native identity response is invalid.");
+      const d=r.data as Record<string,unknown>;
+      if(typeof d.sessionId!=="string"||!d.sessionId||d.isStreaming!==false||d.messageCount!==0)malformed("Prime native invocation requires a fresh identified session.");
+      this.lifecycle=new NativeToolLifecycle(false,new PrimeDrain(d.sessionId));this.phase="ack";this.pending=this.prompt;return null;
+    }
+    if(this.phase==="ack"){
+      if(r.type!=="response"||r.id!==this.id||r.command!=="prompt"||r.success!==true||!hasExactKeys(r,["id","type","command","success"]))malformed("Prime native prompt acknowledgement is invalid.");
+      this.phase="running";return null;
+    }
+    return this.lifecycle!.accept(r);
+  }
+  settleProcess(exitCode:number|null):RawTransportEvent|null {
+    if(this.phase!=="running"||!this.lifecycle)throw failure("PROTOCOL_TRUNCATED",{reason:"Prime native identity/prompt exchange is incomplete."});
+    const result=this.lifecycle.settlePrime(exitCode);this.terminalEventObserved=this.lifecycle.ended;return result;
   }
 }
 
@@ -738,6 +770,7 @@ export function installedProtocol(
     if (ompPromptBytes === null) malformed("OMP staged prompt bytes are unavailable.");
     return new OmpProtocol(harnessVersion, invocationId, ompPromptBytes);
   }
+  if(nativeMode){if(ompPromptBytes===null)malformed("Prime native prompt bytes are unavailable.");return new PrimeNativeProtocol(harnessVersion,invocationId,ompPromptBytes);}
   return new PrimeProtocol(harnessVersion, invocationId);
 }
 
