@@ -26,7 +26,7 @@ import {
   probeInstalledAdapterVersion,
   resolveInstalledExecutable,
 } from "./adapters/executable";
-import { recoverImageTerminalEnvelope } from "./adapters/terminal";
+import { nativeOutputText, recoverImageTerminalEnvelope } from "./adapters/terminal";
 import { assertInstalledAdapterPlatform } from "./adapters/admission";
 import providerFreeProbeSource from "../../shared/fixtures/adapters/bin/adapter_probe.py" with { type: "text" };
 import { readFile } from "node:fs/promises";
@@ -1093,7 +1093,8 @@ async function runInstalledInvocation(
       installedProcessFailureDetails(outcome.process, readiness.adapterId),
     );
   let terminalEnvelope: Record<string, unknown> | null = null;
-  if (attemptedError === null) {
+  const nativeOutput = config.values.outputContract === "native";
+  if (attemptedError === null && !nativeOutput) {
     try {
       terminalEnvelope = recoverImageTerminalEnvelope(image, outcome.process.events, invocation);
     } catch (caught) {
@@ -1108,7 +1109,7 @@ async function runInstalledInvocation(
     outcome.process,
     harness.id,
     transport,
-    terminalEnvelope !== null,
+    !nativeOutput && terminalEnvelope !== null,
     outcome.publicEvents,
   );
   const result = await buildResult({
@@ -1126,6 +1127,7 @@ async function runInstalledInvocation(
     harnessVersion: readiness.version,
     descriptor: { id: readiness.adapterId },
     terminalEnvelope,
+    nativeOutput,
     process: outcome.process,
     capabilities: installedCapabilities(definition, dependencies.platform),
     deliveredImageSha256: outcome.plan.imageSha256,
@@ -1136,7 +1138,9 @@ async function runInstalledInvocation(
     emitAttemptFailure(result, attemptedError, mode, invocation.invocationId, baseEvents, dependencies);
     return attemptedError.exitCode;
   }
-  const humanMessage = placeholderHumanOutput(outcome.publicEvents, harness.id);
+  const humanMessage = nativeOutput
+    ? nativeOutputText(outcome.publicEvents.filter(item => item.type === "assistant.message").map(item => item.text ?? ""))
+    : placeholderHumanOutput(outcome.publicEvents, harness.id);
   humanOutput.stream?.completeSuccess(humanMessage);
   emitSuccess(
     result,
@@ -1277,6 +1281,7 @@ interface ResultInput {
   dependencies: CliDependencies;
   harnessVersion?: string | null;
   descriptor?: Record<string, unknown>;
+  nativeOutput?: boolean;
   terminalEnvelope?: Record<string, unknown> | null;
   process?: ProcessSupervisionResult;
   capabilities?: Record<string, string>;
@@ -1323,7 +1328,7 @@ async function buildResult(input: ResultInput): Promise<Record<string, unknown>>
   // A terminal envelope is accepted as semantic evidence only after its
   // transport settles successfully. Preserve the schema-authoritative value
   // exactly on success; a failed transport has no accepted semantic result.
-  const semanticStatus = !failed && typeof terminalEnvelope?.semanticStatus === "string"
+  const semanticStatus = input.nativeOutput && !failed ? "not-applicable" : !failed && typeof terminalEnvelope?.semanticStatus === "string"
     ? terminalEnvelope.semanticStatus
     : "unknown";
   const runnerExitCode = input.error?.exitCode ?? (semanticStatus === "semantic-failed" ? 30 : 0);

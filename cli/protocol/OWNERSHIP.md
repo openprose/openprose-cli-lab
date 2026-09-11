@@ -271,3 +271,6 @@ Lease extension cli_recon: cli/rust/crates/prose-process-supervisor/src/supervis
 Lease cli_recon API route: cli/shared/capabilities/adapters/oracle.v1.json, cli/bun/src/adapters/{executable,plan}.ts, cli/bun/test/claude-api.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs. Explicit Claude API-key provider route; no language semantics.
 
 Lease cli_recon: permission-mode flag/config/launch plumbing and tests across Rust/Bun, native nonterminal permission telemetry handling. Modes default and acceptEdits only; no implicit bypass.
+
+## Native output mode lease
+cli_recon owns generic native-output configuration, settlement, tests and documentation in both runners; no language semantics.

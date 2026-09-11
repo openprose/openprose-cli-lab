@@ -25,6 +25,7 @@ const fileKeyMap: Record<string, ConfigKey> = {
   color: "color",
   verbose: "verbose",
   auth_profile: "authProfile",
+  output_contract: "outputContract",
   permission_mode: "permissionMode",
 };
 
@@ -37,6 +38,7 @@ const environmentKeyMap: Record<string, ConfigKey> = {
   PROSE_COLOR: "color",
   PROSE_VERBOSE: "verbose",
   PROSE_AUTH_PROFILE: "authProfile",
+  PROSE_OUTPUT_CONTRACT: "outputContract",
   PROSE_PERMISSION_MODE: "permissionMode",
 };
 
@@ -49,6 +51,7 @@ const defaults: EffectiveValues = {
   color: false,
   verbose: false,
   authProfile: null,
+  outputContract: "image-envelope",
   permissionMode: null,
 };
 
@@ -400,7 +403,7 @@ function parseEnvironment(env: Readonly<Record<string, string | undefined>>): Pa
 function parseFlags(flags: GlobalFlags): ParsedValues {
   const values: PartialValues = {};
   const locations: Partial<Record<ConfigKey, string>> = {};
-  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "timeout", "output", "color", "verbose"] as const) {
+  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "outputContract", "timeout", "output", "color", "verbose"] as const) {
     const value = flags[key];
     if (value === undefined) continue;
     const location = key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
@@ -437,6 +440,10 @@ function assignValidated(values: PartialValues, key: ConfigKey, raw: string | bo
   }
   if (key === "model") values.model = raw;
   else if (key === "authProfile") values.authProfile = raw;
+  else if (key === "outputContract") {
+    if (raw !== "native" && raw !== "image-envelope") fail("Output contract must be native or image-envelope.");
+    values.outputContract = raw;
+  }
   else if (key === "permissionMode") {
     if (raw !== "default" && raw !== "acceptEdits") fail("Permission mode must be default or acceptEdits.");
     values.permissionMode = raw;

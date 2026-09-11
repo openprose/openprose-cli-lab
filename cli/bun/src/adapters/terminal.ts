@@ -105,3 +105,6 @@ function schemaRequiresTaskArgv(schema: Record<string, unknown>): boolean {
   const task = requiredPropertySchema(schema, "task");
   return task !== null && requiredPropertySchema(task, "argv") !== null;
 }
+
+/** No synthetic terminal carrier: called after the native protocol has settled. */
+export function nativeOutputText(messages: readonly string[]): string { return messages.join("\n"); }

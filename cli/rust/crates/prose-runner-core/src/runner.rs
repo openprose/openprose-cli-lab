@@ -2162,7 +2162,9 @@ fn execute_installed_adapter(
                 );
             }
         };
-    let terminal =
+    let terminal = if config.output_contract.value == "native" {
+        native_output(&normalized.assistant_messages)
+    } else {
         match installed_adapters::recover_terminal(image, &normalized.assistant_messages, argv) {
             Ok(terminal) => terminal,
             Err(error) => {
@@ -2180,7 +2182,8 @@ fn execute_installed_adapter(
                     clock,
                 );
             }
-        };
+        }
+    };
     let human_stream_settlement = match run_observer.human.as_ref().map_or(
         Ok(HumanStreamSettlement {
             emitted_prefix_bytes: 0,
@@ -2331,8 +2334,9 @@ fn installed_adapter_success_result(
         event_bytes.extend(serde_json::to_vec(value).expect("event JSON"));
         event_bytes.push(b'\n');
     }
-    let terminal_digest =
-        sha256_hex(&serde_json::to_vec(&terminal.envelope).expect("terminal envelope JSON"));
+    let terminal_digest = if terminal.envelope.is_null() { None } else {
+        Some(sha256_hex(&serde_json::to_vec(&terminal.envelope).expect("terminal envelope JSON")))
+    };
     let result = json!({
         "schema":"openprose.runner-result/1",
         "invocationId":invocation_id,
@@ -4571,4 +4575,23 @@ mod tests {
             "unsupported_nonterminal_settlement"
         );
     }
+}
+
+// Called only after native transport normalization has accepted terminal settlement.
+fn native_output(messages:&[String])->installed_adapters::RecoveredTerminal {
+ installed_adapters::RecoveredTerminal { envelope:Value::Null,visible_messages:messages.to_vec(),visible_text:messages.join("\n") }
+}
+#[test]
+fn native_output_preserves_arbitrary_prose_without_an_envelope(){
+ let fixture:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/native-output.v1.json")).unwrap();
+ let messages:Vec<String>=serde_json::from_value(fixture["messages"].clone()).unwrap();
+ let output=native_output(&messages);
+ assert!(output.envelope.is_null());
+ assert_eq!(output.visible_text,fixture["visibleText"].as_str().unwrap());
+}
+
+#[test]
+fn native_output_requires_a_native_terminal_before_rendering(){
+ let records=vec![json!({"type":"thread.started","thread_id":"fixture"}),json!({"type":"turn.started"}),json!({"type":"item.completed","item":{"type":"agent_message","text":"arbitrary prose"}})];
+ assert!(installed_adapters::normalize_transport(installed_adapters::InstalledAdapter::CodexExecJson,&records,"fixture").is_err());
 }

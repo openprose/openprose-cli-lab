@@ -238,3 +238,8 @@ test("permission mode is an explicit runner flag",()=>{
  const parsed=parseEntrypoint(["--permission-mode","acceptEdits","run","PROGRAM.md"]);
  expect(parsed.global.permissionMode).toBe("acceptEdits");
 });
+
+test("native output is an explicit transport option",()=>{
+ expect(parseEntrypoint(["--output-contract","native","run","a.md"])).toMatchObject({global:{outputContract:"native"}});
+ expect(()=>parseEntrypoint(["--output-contract","guessed","run"])).toThrow();
+});

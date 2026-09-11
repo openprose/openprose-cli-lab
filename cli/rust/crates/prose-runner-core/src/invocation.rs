@@ -36,6 +36,7 @@ pub struct GlobalFlags {
     pub cwd: Option<PathBuf>,
     pub model: Option<String>,
     pub auth_profile: Option<String>,
+    pub output_contract: Option<String>,
     pub permission_mode: Option<String>,
     pub timeout: Option<String>,
     pub output: Option<OutputMode>,
@@ -185,6 +186,7 @@ fn is_value_option(value: &str) -> bool {
             | "--cwd"
             | "--model"
             | "--auth-profile"
+            | "--output-contract"
             | "--permission-mode"
             | "--timeout"
             | "--output"
@@ -208,6 +210,10 @@ fn set_value_option(globals: &mut GlobalFlags, name: &str, value: &str) -> Resul
         "--cwd" => globals.cwd = Some(PathBuf::from(value)),
         "--model" => set_once(&mut globals.model, name, value)?,
         "--auth-profile" => set_once(&mut globals.auth_profile, name, value)?,
+        "--output-contract" => {
+            if !matches!(value,"native"|"image-envelope") { return Err(RunnerError::invocation("output contract must be native or image-envelope")); }
+            set_once(&mut globals.output_contract,name,value)?;
+        }
         "--permission-mode" => set_once(&mut globals.permission_mode, name, value)?,
         "--timeout" => globals.timeout = Some(value.to_owned()),
         "--output" => {

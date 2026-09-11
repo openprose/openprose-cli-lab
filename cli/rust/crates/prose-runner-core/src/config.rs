@@ -175,6 +175,7 @@ pub struct EffectiveConfig {
     pub color: Sourced<bool>,
     pub verbose: Sourced<bool>,
     pub auth_profile: Sourced<Option<String>>,
+    pub output_contract: Sourced<String>,
     pub permission_mode: Sourced<Option<String>>,
 }
 
@@ -446,6 +447,7 @@ impl EffectiveConfig {
                 value: false,
                 source: ConfigSource::default(),
             },
+            output_contract: Sourced { value:"image-envelope".into(),source:ConfigSource::default() },
             permission_mode: Sourced { value:None, source:ConfigSource::default() },
             auth_profile: Sourced {
                 value: None,
@@ -466,6 +468,7 @@ struct FileConfig {
     color: Option<bool>,
     verbose: Option<bool>,
     auth_profile: Option<String>,
+    output_contract: Option<String>,
     permission_mode: Option<String>,
 }
 
@@ -483,6 +486,7 @@ const FILE_CONFIG_KEYS: &[&str] = &[
     "color",
     "verbose",
     "auth_profile",
+    "output_contract",
     "permission_mode",
 ];
 
@@ -907,6 +911,7 @@ fn apply_file(
     if let Some(value) = source_values.verbose {
         target.verbose.replace(value, source.clone());
     }
+    if let Some(value) = source_values.output_contract { target.output_contract.replace(validate_output_contract(value)?,source.clone()); }
     if let Some(value) = source_values.permission_mode {
         target.permission_mode.replace(Some(validate_permission_mode(value)?), source.clone());
     }
@@ -972,6 +977,7 @@ fn apply_environment(
             ConfigSource::environment("PROSE_VERBOSE"),
         );
     }
+    if let Some(value) = environment.get("PROSE_OUTPUT_CONTRACT") { target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::environment("PROSE_OUTPUT_CONTRACT")); }
     if let Some(value) = environment.get("PROSE_PERMISSION_MODE") {
         target.permission_mode.replace(Some(validate_permission_mode(value.clone())?),ConfigSource::environment("PROSE_PERMISSION_MODE"));
     }
@@ -984,11 +990,16 @@ fn apply_environment(
     Ok(())
 }
 
+fn validate_output_contract(value:String)->Result<String,RunnerError>{
+ if matches!(value.as_str(),"native"|"image-envelope") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Output contract must be native or image-envelope"))}
+}
+
 fn validate_permission_mode(value:String)->Result<String,RunnerError>{
     if matches!(value.as_str(),"default"|"acceptEdits") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Permission mode must be default or acceptEdits"))}
 }
 
 fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), RunnerError> {
+    if let Some(value)=&flags.output_contract {target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::flag("--output-contract"));}
     if let Some(value)=&flags.permission_mode {target.permission_mode.replace(Some(validate_permission_mode(value.clone())?),ConfigSource::flag("--permission-mode"));}
     if let Some(value) = &flags.harness {
         target.harness.replace(

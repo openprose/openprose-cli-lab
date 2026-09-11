@@ -1,0 +1,8 @@
+{
+  "messages": [
+    "First paragraph.",
+    "Final arbitrary prose without any JSON."
+  ],
+  "visibleText": "First paragraph.\nFinal arbitrary prose without any JSON.",
+  "semanticStatus": "not-applicable"
+}
