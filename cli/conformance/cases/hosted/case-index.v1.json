@@ -1,0 +1,20 @@
+{
+  "schema": "openprose.hosted-oracle-case-index/1",
+  "hashAlgorithm": "sha256-file-bytes",
+  "cases": {
+    "auth-required.json": "4a928da06bb67c433dcdb5649e8370cb2ee1506aeff095810c73714c40bc866d",
+    "backpressure.json": "99be1634f1e8a86057f4ae8461dc3a6bf2a9471579fb6062ccda036d8ba3a9c4",
+    "capability-nul.json": "4dfccb09cae2dca8b758fd387634b53ad5b272c5d9c63e7d2802f5cc08beb9a6",
+    "capability-shell.json": "6a1d8fd32abc213af81dfecdfd754df71091ca88b5bddd7b12c11a220051e03d",
+    "capability-symlink.json": "de74a4c2cf37a1e5feb5779aa8ceb1a3b94dd186184be0630275f1e48ff7fa17",
+    "capability-traversal.json": "c84c098e4e6465403b1980bba6e818e30897d13c8302f928c34084e4350980e9",
+    "hosted-agent-bridge.json": "858862162edc0cd91f3f1540a04e6a079f9f430c644c67618b3a1bb8073055dc",
+    "lifecycle-race.json": "aeacddc58bf08d460e8380ccfaef2bb34ced07970dc47349b15d1501202d19d3",
+    "local-loop-gateway.json": "e6484c48d5ad256cd766e4174af22996a65861f6d2a1aec1410a6941596d1886",
+    "quota-exceeded.json": "a0b0be6575f658ebe0ffe9e573a2813fbffde3bf331d4b7feaac4a3632d22229",
+    "replay-idempotency.json": "25230382f4ed7b7c628fa62cab78fc9632cef633c84048945e6612e8b8f14485",
+    "terminal-required.json": "a47c0803c04ecfdcb21b44d06b38ef95e5e32058bd326de7c0711e02a926d31e",
+    "unavailable.json": "e46a95847f857b57b2fefca5babea85d06ffaf576857a22b897e4240d5b27a6d",
+    "usage-unavailable.json": "d374130f5384aeff9852f3ff5e5673974100507b571513a47c605d5db99d1270"
+  }
+}

@@ -1,0 +1,701 @@
+{
+  "schema": "openprose.adapter-probe-scenario/1",
+  "scenarioVersion": "1.0.0",
+  "adapterId": "prime/rpc",
+  "recipe": "cli/shared/capabilities/adapters/recipes/prime-rpc.v1.json",
+  "placeholders": {
+    "executable": "{{EXECUTABLE}}",
+    "cwd": "{{WORKSPACE}}",
+    "imagePath": "{{IMAGE_PATH}}",
+    "imageUtf8": "{{IMAGE_UTF8}}",
+    "taskJson": "{{TASK_JSON}}",
+    "model": "{{MODEL}}",
+    "daemonSocketPath": "{{DAEMON_SOCKET_PATH}}",
+    "invocationId": "fixture-invocation-0001"
+  },
+  "expectedArgv": [
+    "{{EXECUTABLE}}",
+    "--mode",
+    "rpc",
+    "--no-session",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--daemon-socket",
+    "{{DAEMON_SOCKET_PATH}}",
+    "--cwd",
+    "{{WORKSPACE}}",
+    "--append-system-prompt",
+    "{{IMAGE_UTF8}}"
+  ],
+  "expectedArgvWithModel": [
+    "{{EXECUTABLE}}",
+    "--mode",
+    "rpc",
+    "--no-session",
+    "--no-extensions",
+    "--no-skills",
+    "--no-prompt-templates",
+    "--no-themes",
+    "--no-context-files",
+    "--daemon-socket",
+    "{{DAEMON_SOCKET_PATH}}",
+    "--cwd",
+    "{{WORKSPACE}}",
+    "--append-system-prompt",
+    "{{IMAGE_UTF8}}",
+    "--model",
+    "{{MODEL}}"
+  ],
+  "environment": {
+    "baseAllowlistRef": "oracle.v1.json#baseEnvironmentAllowlist",
+    "credentialGroup": "openrouter",
+    "additionalNames": [],
+    "forbiddenNames": [
+      "OPENPROSE_TOKEN",
+      "PROSE_TOKEN",
+      "PROSE_BILLING_TOKEN",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "GEMINI_API_KEY",
+      "GOOGLE_APPLICATION_CREDENTIALS",
+      "GOOGLE_CLOUD_PROJECT",
+      "GOOGLE_CLOUD_LOCATION",
+      "GITHUB_TOKEN",
+      "GH_TOKEN",
+      "COPILOT_GITHUB_TOKEN",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "AWS_SESSION_TOKEN",
+      "AWS_PROFILE",
+      "AWS_REGION",
+      "AWS_DEFAULT_REGION"
+    ]
+  },
+  "files": [],
+  "stdin": {
+    "fixture": "cli/shared/fixtures/adapters/wire/prime-stdin.jsonl",
+    "byteLength": 272,
+    "sha256": "c1b91c6f0d2a42108c24dd971cf3bd262655ccc88eeeeea015842b950e98fe55",
+    "decodedMessageSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc",
+    "decodedTaskSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc"
+  },
+  "fakeStdout": [
+    {
+      "id": "fixture-invocation-0001",
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_start",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"],\"interactionMode\":\"non-interactive\",\"schema\":\"openprose.task-envelope/1\"}"
+          }
+        ],
+        "timestamp": 1700000000000
+      }
+    },
+    {
+      "type": "message_end",
+      "message": {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"],\"interactionMode\":\"non-interactive\",\"schema\":\"openprose.task-envelope/1\"}"
+          }
+        ],
+        "timestamp": 1700000000000
+      }
+    },
+    {
+      "type": "message_start",
+      "message": {
+        "role": "assistant",
+        "content": [],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "thinking_start",
+        "contentIndex": 0
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": ""
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "thinking_delta",
+        "contentIndex": 0,
+        "delta": "synthetic"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "thinking_delta",
+        "contentIndex": 0,
+        "delta": " reasonin"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasonin"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "thinking_delta",
+        "contentIndex": 0,
+        "delta": "g summary\n\n"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary\n\n"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "thinking_end",
+        "contentIndex": 0,
+        "content": "synthetic reasoning summary"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_start",
+        "contentIndex": 1
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": ""
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_delta",
+        "contentIndex": 1,
+        "delta": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"s"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"s"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_delta",
+        "contentIndex": 1,
+        "delta": "chema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_delta",
+        "contentIndex": 1,
+        "delta": "_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_end",
+        "contentIndex": 1,
+        "content": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+      },
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}",
+            "textSignature": "fixture-text-signature"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "message_end",
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}",
+            "textSignature": "fixture-text-signature"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      }
+    },
+    {
+      "type": "turn_end",
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "thinking",
+            "thinking": "synthetic reasoning summary",
+            "thinkingSignature": "fixture-thinking-signature"
+          },
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}",
+            "textSignature": "fixture-text-signature"
+          }
+        ],
+        "api": "fixture-jsonl",
+        "provider": "fixture",
+        "model": "fixture/model",
+        "usage": {
+          "input": 0,
+          "output": 0,
+          "cacheRead": 0,
+          "cacheWrite": 0,
+          "totalTokens": 0,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "total": 0
+          }
+        },
+        "stopReason": "stop",
+        "timestamp": 1700000000001,
+        "responseId": "fixture-response-id"
+      },
+      "toolResults": []
+    },
+    {
+      "type": "agent_end",
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"],\"interactionMode\":\"non-interactive\",\"schema\":\"openprose.task-envelope/1\"}"
+            }
+          ],
+          "timestamp": 1700000000000
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "thinking",
+              "thinking": "synthetic reasoning summary",
+              "thinkingSignature": "fixture-thinking-signature"
+            },
+            {
+              "type": "text",
+              "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}",
+              "textSignature": "fixture-text-signature"
+            }
+          ],
+          "api": "fixture-jsonl",
+          "provider": "fixture",
+          "model": "fixture/model",
+          "usage": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0,
+            "totalTokens": 0,
+            "cost": {
+              "input": 0,
+              "output": 0,
+              "cacheRead": 0,
+              "cacheWrite": 0,
+              "total": 0
+            }
+          },
+          "stopReason": "stop",
+          "timestamp": 1700000000001,
+          "responseId": "fixture-response-id"
+        }
+      ]
+    }
+  ],
+  "cancelStdin": "{\"id\":\"fixture-invocation-0001-cancel\",\"type\":\"abort\"}\n",
+  "expectedTerminal": "correlated prompt acknowledgement, then one closed no-tool agent/turn/user/assistant/turn_end lifecycle, then terminal agent_end followed by process exit 0 after stdin close",
+  "expectedExitCode": 0,
+  "inlineImage": {
+    "argument": "{{IMAGE_UTF8}}",
+    "source": "cli/shared/image/echo-v0/manifest.json#modelVisibleBytes",
+    "byteLength": 1310,
+    "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+  },
+  "expectedLanguageTerminal": {
+    "schema": "openprose.echo-terminal/1",
+    "semanticStatus": "not-applicable",
+    "placeholder": true,
+    "marker": "OPENPROSE_ECHO_TERMINAL_V0",
+    "task": {
+      "argv": [
+        "prose",
+        "run",
+        "path with spaces/example.prose.md",
+        "--model",
+        "雪",
+        "",
+        "line\nbreak",
+        ";$(touch nope)"
+      ]
+    }
+  },
+  "stdinLifecycle": "close-after-terminal-event"
+}

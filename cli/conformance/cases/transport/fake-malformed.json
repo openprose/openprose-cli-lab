@@ -1,0 +1,28 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "transport.fake-malformed",
+  "summary": "Malformed structured output fails at the protocol boundary.",
+  "phase": 2,
+  "tags": ["fake-process", "protocol", "malformed"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied",
+    "fakeHarness": { "scenario": "malformed" }
+  },
+  "invocation": {
+    "argv": ["--harness", "mock", "--transport", "fake-process", "--output", "json", "run", "fixture.prose.md"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 22,
+    "stdout": { "kind": "json", "schema": "openprose.runner-result/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": true,
+    "errorCode": "PROTOCOL_MALFORMED",
+    "errorAction": "Invoke the `cli doctor` runner operation and install a harness version supported by the selected adapter.",
+    "fakeObservation": { "exactImageBytes": true, "exactTaskBytes": true }
+  }
+}

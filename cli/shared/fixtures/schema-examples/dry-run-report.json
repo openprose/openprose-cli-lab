@@ -1,0 +1,28 @@
+{
+  "schema": "openprose.runner-dry-run-report/1",
+  "wouldStartModel": false,
+  "cwd": "/workspace",
+  "selection": {
+    "harness": "mock",
+    "transport": "fake-process",
+    "adapterId": "mock/fake-process",
+    "runtimeVersion": "1.0.0",
+    "model": null
+  },
+  "prompt": { "placement": "developer", "strictness": "strict" },
+  "isolation": "test-fixture",
+  "auth": { "category": "none-test-only", "readiness": "not-applicable" },
+  "billingOwner": "test-fixture",
+  "languageImage": {
+    "formatVersion": "openprose.skill-runtime-image/1",
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00",
+    "releaseEligible": false
+  },
+  "configuration": [
+    { "key": "harness", "source": "flag", "location": null, "redacted": false },
+    { "key": "authProfile", "source": "default", "location": null, "redacted": true }
+  ],
+  "readiness": "ready",
+  "blockingError": null
+}

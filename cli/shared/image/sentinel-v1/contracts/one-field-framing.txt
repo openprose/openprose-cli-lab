@@ -1,0 +1,7 @@
+OPENPROSE_SENTINEL_ONE_FIELD_V1
+<image sha256="{{IMAGE_SHA256}}">
+{{IMAGE_BYTES}}
+</image>
+<task sha256="{{TASK_SHA256}}">
+{{TASK_JSON}}
+</task>

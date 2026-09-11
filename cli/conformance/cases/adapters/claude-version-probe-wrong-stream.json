@@ -1,0 +1,52 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "adapters.claude-version-probe-wrong-stream",
+  "summary": "A successful Claude version probe on the wrong stream fails closed with exact repair metadata and no fallback.",
+  "phase": 7,
+  "tags": ["adapter", "claude", "version-probe", "provider-free", "differential", "fail-closed"],
+  "platforms": ["unix"],
+  "controls": {
+    "fixedInvocationId": "00000000-0000-7000-8000-000000000714",
+    "fixedTimestamp": "2026-01-01T00:00:00.000Z",
+    "fixedMonotonicMs": 714,
+    "network": "denied",
+    "installedAdapter": {
+      "adapterId": "claude/print-stream-json",
+      "versionProbeScenario": "wrong-stream-success"
+    }
+  },
+  "invocation": {
+    "argv": ["--harness", "claude", "--transport", "print-stream-json", "--output", "json", "cli", "doctor"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {
+      "HOME": "{{WORKSPACE}}/home",
+      "XDG_CONFIG_HOME": "{{WORKSPACE}}/config"
+    }
+  },
+  "expected": {
+    "exitCode": 10,
+    "stdout": { "kind": "json", "schema": "openprose.doctor-report/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": {
+      "ready": false,
+      "selectedHarness": "claude",
+      "selectedAdapterId": "claude/print-stream-json",
+      "problems": [{
+        "schema": "openprose.runner-error/1",
+        "code": "HARNESS_INCOMPATIBLE",
+        "boundary": "adapter",
+        "message": "The selected harness version is incompatible with this adapter.",
+        "action": "Run the exact Repair command reported with this error, then retry.",
+        "exitCode": 10,
+        "retryable": false,
+        "details": {
+          "adapterId": "claude/print-stream-json",
+          "admittedVersions": ["2.1.243"],
+          "fallbackAttempted": false,
+          "repairCommand": "npm install --global @anthropic-ai/claude-code@2.1.243"
+        }
+      }]
+    }
+  }
+}

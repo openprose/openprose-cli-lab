@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/harness-list.schema.json",
+  "title": "OpenProse harness inventory v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "selected", "harnesses"],
+  "properties": {
+    "schema": { "const": "openprose.harness-list/1" },
+    "selected": { "type": "string", "minLength": 1 },
+    "harnesses": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/harness" }
+    }
+  },
+  "$defs": {
+    "harness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "runtime", "availability", "detectedVersion", "transports", "authCategory", "billingOwner", "strictWrapperConformant", "testOnly"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9./_-]+$" },
+        "runtime": { "$ref": "common.schema.json#/$defs/runtime" },
+        "availability": { "enum": ["available", "unavailable", "not-implemented", "missing", "incompatible", "needs-auth", "blocked"] },
+        "detectedVersion": { "type": ["string", "null"] },
+        "transports": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" }
+        },
+        "authCategory": { "$ref": "common.schema.json#/$defs/authCategory" },
+        "billingOwner": { "$ref": "common.schema.json#/$defs/billingOwner" },
+        "strictWrapperConformant": { "type": "boolean" },
+        "testOnly": { "type": "boolean" },
+        "runtimePrerequisites": {
+          "type": "array",
+          "maxItems": 1,
+          "items": { "$ref": "common.schema.json#/$defs/runtimePrerequisiteObservation" }
+        },
+        "admissionBlock": { "enum": ["prompt-channel", "strict-admission", "containment", "terminal-envelope", "release-image", "test-seams-disabled"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "id": { "const": "omp" } } },
+          "then": {
+            "required": ["runtimePrerequisites"],
+            "properties": { "runtimePrerequisites": { "minItems": 1, "maxItems": 1 } }
+          }
+        },
+        {
+          "if": { "properties": { "id": { "not": { "const": "omp" } } } },
+          "then": { "properties": { "runtimePrerequisites": { "maxItems": 0 } } }
+        }
+      ]
+    }
+  }
+}

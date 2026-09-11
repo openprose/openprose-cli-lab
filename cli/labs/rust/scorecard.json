@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "openprose.research-scorecard.v1",
+  "observedAt": "2026-08-27",
+  "releaseEligible": false,
+  "variants": [
+    {
+      "id": "rust-acp-transport-lab",
+      "attemptStatus": "working_lab",
+      "runtimeClass": "typed_transport_client",
+      "substrate": {
+        "package": "agent-client-protocol",
+        "version": "2.0.0",
+        "license": "Apache-2.0",
+        "crateChecksum": "6d87bc7769eba641753ba5dc52f73ec3765d51022c6753bf040967125ddc86a8",
+        "declaredRustVersion": "1.88.0",
+        "isEmbeddedAgentRuntime": false
+      },
+      "authentication": {
+        "lab": "none",
+        "production": "delegated to the connected ACP agent",
+        "credentialsReadByLab": false
+      },
+      "billing": {
+        "labOwner": "none",
+        "productionOwner": "connected agent or its configured model provider",
+        "openProseBillingImplemented": false
+      },
+      "transport": {
+        "baseStatus": "passed_provider_free_in_memory",
+        "strictStatus": "not_earned",
+        "proven": [
+          "ACP v1 initialize and session negotiation",
+          "typed bidirectional request and notification dispatch",
+          "incremental session update streaming",
+          "client permission callback and selected response",
+          "session/cancel carriage and Cancelled terminal response"
+        ],
+        "notProven": [
+          "real ACP executable discovery or launch",
+          "process containment and cleanup",
+          "ambient instruction isolation",
+          "canonical Skill Runtime Image delivery",
+          "OpenProse terminal-envelope carriage",
+          "credential or billing behavior of any connected agent"
+        ]
+      },
+      "semantics": {
+        "status": "unknown",
+        "profile": null,
+        "reason": "ACP transports messages; it does not supply an agent implementation or OpenProse semantics."
+      },
+      "cancellation": {
+        "labStatus": "passed_cooperative_session_cancel",
+        "boundary": "The fake agent offloads prompt work from the SDK dispatch loop, observes session/cancel, and returns StopReason::Cancelled.",
+        "notProven": "Subprocess or provider-side cleanup depends on the connected agent."
+      },
+      "packaging": {
+        "workspaceRustVersion": "1.90.0",
+        "minimumSubstrateRustVersion": "1.88.0",
+        "cargoTreeUniquePackageLines": 112,
+        "localReleaseBuild": {
+          "platform": "darwin-arm64",
+          "profile": "Cargo default release, unstripped",
+          "binaryBytes": 4294624,
+          "status": "passed"
+        },
+        "stableArtifactIncluded": false
+      },
+      "benchmarkEligibility": {
+        "eligible": false,
+        "reason": "No concrete harness adapter or strict wrapper contract has been admitted."
+      },
+      "stableAdmission": {
+        "eligible": false,
+        "blockers": [
+          "Choose a concrete ACP-capable agent identity and version recipe.",
+          "Integrate with the stable supervisor and prove Tier-1 containment.",
+          "Prove canonical image and task placement without ambient override.",
+          "Map ACP terminal behavior into the shared runner envelope.",
+          "Run the shared transport and semantic admission corpora."
+        ]
+      },
+      "sources": [
+        "https://crates.io/crates/agent-client-protocol/2.0.0",
+        "https://docs.rs/agent-client-protocol/2.0.0",
+        "https://github.com/agentclientprotocol/rust-sdk",
+        "https://agentclientprotocol.github.io/rust-sdk/"
+      ]
+    },
+    {
+      "id": "rust-rig-embedded-lab",
+      "attemptStatus": "working_lab",
+      "runtimeClass": "true_embedded_agent_candidate",
+      "substrate": {
+        "package": "rig",
+        "version": "0.42.0",
+        "license": "MIT",
+        "crateChecksum": "b989f4060e5f3c1ea4b8b6999f6759949d820704286cc6976b7a688cc0133029",
+        "declaredRustVersion": null,
+        "resolvedRustVersionFloor": "1.90.0 via ordered-float 5.5.0",
+        "isEmbeddedAgentRuntime": true
+      },
+      "authentication": {
+        "lab": "none",
+        "production": "chosen Rig provider or local-model specific",
+        "credentialsReadByLab": false
+      },
+      "billing": {
+        "labOwner": "none",
+        "productionOwner": "chosen model provider unless OpenProse supplies a gateway",
+        "openProseBillingImplemented": false
+      },
+      "transport": {
+        "baseStatus": "passed_provider_free_in_process",
+        "strictStatus": "not_earned",
+        "proven": [
+          "two-turn embedded model/tool/model loop",
+          "typed in-process tool invocation",
+          "opaque instruction and task marker delivery",
+          "incremental streaming plus terminal result",
+          "cancellation of an in-process pending model future by task drop"
+        ],
+        "notProven": [
+          "real provider authentication or wire behavior",
+          "remote provider request cancellation",
+          "generic filesystem and terminal coding substrate",
+          "subagent orchestration",
+          "canonical Skill Runtime Image delivery and digest evidence",
+          "OpenProse terminal-envelope authority"
+        ]
+      },
+      "semantics": {
+        "status": "unknown",
+        "profile": null,
+        "reason": "The lab proves generic agent mechanics only and deliberately imports no OpenProse language semantics."
+      },
+      "cancellation": {
+        "labStatus": "passed_future_drop",
+        "boundary": "Aborting the host task drops the pending CompletionModel future.",
+        "notProven": "A selected provider may require an additional remote cancellation mechanism."
+      },
+      "packaging": {
+        "workspaceRustVersion": "1.90.0",
+        "minimumSubstrateRustVersion": "not declared by rig 0.42.0",
+        "cargoTreeUniquePackageLines": 158,
+        "localReleaseBuild": {
+          "platform": "darwin-arm64",
+          "profile": "Cargo default release, unstripped",
+          "binaryBytes": 2464224,
+          "status": "passed"
+        },
+        "stableArtifactIncluded": false
+      },
+      "benchmarkEligibility": {
+        "eligible": false,
+        "reason": "No production provider, complete coding tool substrate, strict transport evidence, or semantic profile has been admitted."
+      },
+      "stableAdmission": {
+        "eligible": false,
+        "blockers": [
+          "Select and admit an authentication and billing route.",
+          "Implement a portable coding, filesystem, terminal, and subagent tool substrate.",
+          "Prove provider-specific streaming and cancellation behavior.",
+          "Carry the canonical image and terminal envelope with shared evidence.",
+          "Run the shared transport and semantic admission corpora in both products or explicitly relax parity."
+        ]
+      },
+      "sources": [
+        "https://crates.io/crates/rig/0.42.0",
+        "https://docs.rs/rig/0.42.0/rig/",
+        "https://github.com/0xPlaygrounds/rig"
+      ]
+    }
+  ]
+}

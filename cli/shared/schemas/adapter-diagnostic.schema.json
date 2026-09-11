@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/adapter-diagnostic.schema.json",
+  "title": "OpenProse candidate-reported adapter parser diagnostic v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "adapterId", "stage", "phase", "counters"],
+  "properties": {
+    "schema": { "const": "openprose.adapter-diagnostic/1" },
+    "adapterId": { "const": "prime/rpc" },
+    "stage": { "enum": ["jsonl-framing", "prime-lifecycle"] },
+    "phase": {
+      "enum": [
+        "record-boundary",
+        "await-prompt-ack",
+        "await-agent-start",
+        "await-turn-start",
+        "await-user-message-start",
+        "await-user-message-end",
+        "await-assistant-message-start",
+        "await-thinking-or-text-start",
+        "await-thinking-delta-or-end",
+        "await-text-start",
+        "await-text-delta-or-end",
+        "await-assistant-message-end",
+        "await-turn-end",
+        "await-agent-end",
+        "complete"
+      ]
+    },
+    "counters": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["acceptedRecords", "thinkingDeltas", "textDeltas", "saturated"],
+      "properties": {
+        "acceptedRecords": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "thinkingDeltas": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "textDeltas": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        "saturated": { "type": "boolean" }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "stage": { "const": "jsonl-framing" },
+        "phase": { "const": "record-boundary" }
+      }
+    },
+    {
+      "properties": {
+        "stage": { "const": "prime-lifecycle" },
+        "phase": {
+          "enum": [
+            "await-prompt-ack",
+            "await-agent-start",
+            "await-turn-start",
+            "await-user-message-start",
+            "await-user-message-end",
+            "await-assistant-message-start",
+            "await-thinking-or-text-start",
+            "await-thinking-delta-or-end",
+            "await-text-start",
+            "await-text-delta-or-end",
+            "await-assistant-message-end",
+            "await-turn-end",
+            "await-agent-end",
+            "complete"
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema": "openprose.runner-invocation/1",
+  "invocationId": "fixture-invocation-0001",
+  "cwd": "/workspace",
+  "languageImage": {
+    "formatVersion": "openprose.skill-runtime-image/1",
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00"
+  },
+  "runner": {
+    "name": "rust",
+    "version": "0.1.0-fixture",
+    "commit": "fixture-commit"
+  },
+  "harness": "mock",
+  "transport": "fake-process",
+  "recursionToken": "fixture-recursion-token",
+  "task": {
+    "schema": "openprose.task-envelope/1",
+    "argv": [
+      "prose",
+      "run",
+      "path with spaces/example.prose.md",
+      "--model",
+      "雪",
+      "",
+      "line\nbreak",
+      ";$(touch nope)"
+    ],
+    "interactionMode": "non-interactive"
+  },
+  "taskDigestSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc"
+}

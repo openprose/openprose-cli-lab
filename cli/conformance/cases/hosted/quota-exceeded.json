@@ -1,0 +1,22 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.quota-exceeded",
+  "revision": 1,
+  "immutable": true,
+  "summary": "An exhausted fake quota maps to HOSTED_QUOTA_EXCEEDED without a billing-owner fallback.",
+  "phase": 5,
+  "tags": ["quota", "billing", "no-fallback", "terminal"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "quota-exceeded",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [{ "type": "start" }],
+  "expected": {
+    "exitCode": 10,
+    "terminalType": "run.rejected",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "not-emitted",
+    "requiredEventTypes": ["run.rejected"],
+    "error": { "code": "HOSTED_QUOTA_EXCEEDED", "exitCode": 10 }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.lifecycle-race",
+  "revision": 1,
+  "immutable": true,
+  "summary": "Disconnect wins before a tied cancel/timeout and the run settles exactly once without fallback.",
+  "phase": 5,
+  "tags": ["disconnect", "cancellation", "timeout", "race", "terminal", "no-fallback"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "backpressure",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [
+    { "type": "start" },
+    { "type": "lifecycle.race", "signals": [{ "cause": "timeout", "atMs": 100 }, { "cause": "cancel", "atMs": 100 }, { "cause": "disconnect", "atMs": 90 }] }
+  ],
+  "expected": {
+    "exitCode": 22,
+    "terminalType": "run.terminal",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "not-emitted",
+    "requiredEventTypes": ["run.accepted", "assistant.delta", "run.terminal"],
+    "error": { "code": "PROTOCOL_TRUNCATED", "exitCode": 22 },
+    "lifecycleWinner": "disconnect"
+  }
+}

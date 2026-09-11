@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli-conformance/v1/fake-harness-event.schema.json",
+  "title": "Independent fake harness raw event v1",
+  "oneOf": [
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "type", "sessionId", "harnessVersion"],
+      "properties": {
+        "schema": { "const": "openprose.fake-harness-event/1" },
+        "type": { "const": "session.started" },
+        "sessionId": { "const": "fake-session-0001" },
+        "harnessVersion": { "const": "1.0.0" }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "type", "sessionId", "text"],
+      "properties": {
+        "schema": { "const": "openprose.fake-harness-event/1" },
+        "type": { "const": "assistant.message" },
+        "sessionId": { "const": "fake-session-0001" },
+        "text": { "type": "string" }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "type", "sessionId", "terminalEnvelope"],
+      "properties": {
+        "schema": { "const": "openprose.fake-harness-event/1" },
+        "type": { "const": "session.completed" },
+        "sessionId": { "const": "fake-session-0001" },
+        "terminalEnvelope": {
+          "type": "object", "additionalProperties": false,
+          "required": ["schema", "semanticStatus", "marker"],
+          "properties": {
+            "schema": { "const": "openprose.sentinel-terminal-envelope/1" },
+            "semanticStatus": { "const": "not-applicable" },
+            "marker": { "const": "OPENPROSE_SENTINEL_TERMINAL_V1" }
+          }
+        }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema", "type", "sessionId", "identities"],
+      "properties": {
+        "schema": { "const": "openprose.fake-harness-event/1" },
+        "type": { "const": "fixture.descendants" },
+        "sessionId": { "const": "fake-session-0001" },
+        "identities": {
+          "type": "object", "additionalProperties": false,
+          "required": ["childPid", "grandchildPid", "processGroupId", "attemptedDetachment", "runNonce"],
+          "properties": {
+            "childPid": { "type": "integer", "minimum": 1 },
+            "grandchildPid": { "type": "integer", "minimum": 1 },
+            "processGroupId": { "type": ["integer", "null"] },
+            "attemptedDetachment": { "const": false },
+            "runNonce": { "type": ["string", "null"] }
+          }
+        }
+      }
+    }
+  ]
+}

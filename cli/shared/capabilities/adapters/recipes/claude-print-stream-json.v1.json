@@ -1,0 +1,96 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "claude-print-stream-json-v1",
+  "adapterId": "claude/print-stream-json",
+  "state": "frozen",
+  "runtime": "installed-process",
+  "identity": {
+    "kind": "executable",
+    "executableNames": ["claude"],
+    "packageIdentity": "Claude Code native installer"
+  },
+  "support": {
+    "versionRange": "=2.1.243",
+    "admittedVersions": ["2.1.243"],
+    "repairCommand": "npm install --global @anthropic-ai/claude-code@2.1.243",
+    "platforms": ["darwin-arm64"]
+  },
+  "probe": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--version" }
+    ],
+    "timeoutMs": 5000,
+    "versionPattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?(?: \\(Claude Code\\))?$",
+    "versionStream": "stdout"
+  },
+  "launch": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--safe-mode" },
+      { "literal": "--print" },
+      { "literal": "--output-format" },
+      { "literal": "stream-json" },
+      { "literal": "--verbose" },
+      { "literal": "--no-session-persistence" },
+      { "literal": "--append-system-prompt-file" },
+      { "value": "image-path" },
+      { "value": "task-json" }
+    ],
+    "optionalArgv": [
+      {
+        "when": "model-present",
+        "placement": "before-final-argument",
+        "argv": [
+          { "literal": "--model" },
+          { "value": "model" }
+        ]
+      }
+    ],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "closed",
+    "stdinLifecycle": "close-after-write",
+    "stdoutProtocol": "jsonl",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    "imageDelivery": {
+      "mechanism": "file",
+      "field": "--append-system-prompt-file",
+      "encoding": "raw-bytes"
+    },
+    "taskDelivery": {
+      "mechanism": "argv",
+      "field": "prompt",
+      "encoding": "json-utf8"
+    }
+  },
+  "isolation": {
+    "guarantee": "advisory",
+    "ambientDisabled": ["user-skills", "project-skills", "memories", "plugins", "mcp", "instruction-files", "auto-discovered-openprose"],
+    "preserved": ["native-safety-prompt", "managed-policy", "selected-permissions", "harness-auth"]
+  },
+  "cancellation": {
+    "protocol": "signal",
+    "containment": "unsupported",
+    "graceMs": 2000,
+    "hardKillAfterMs": 5000
+  },
+  "auth": {
+    "category": "harness-managed",
+    "readinessProbe": "claude auth status --json",
+    "secretsInArgv": false
+  },
+  "billingOwner": "user-provider",
+  "requiredTerminal": {
+    "event": "result(subtype=success,is_error=false)",
+    "acceptableExitCodes": [0],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": []
+}

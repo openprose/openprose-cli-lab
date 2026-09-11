@@ -1,0 +1,108 @@
+{
+  "schema": "openprose.functional-alpha-adapter-oracle/1",
+  "version": "1.0.0",
+  "status": "functional-alpha",
+  "imageVersion": "echo-v0",
+  "semanticStatus": "not-applicable",
+  "fallback": "forbidden",
+  "claims": {
+    "installedHarnessLaunched": true,
+    "opaqueImageAndTaskDelivered": true,
+    "terminalEnvelopeRecovered": true,
+    "openProseExecuted": false,
+    "strictWrapperConformant": false,
+    "releaseBenchmarkEligible": false
+  },
+  "selectionContract": {
+    "harness": "The user selects exactly one harness by CLI option or persisted CLI configuration.",
+    "auth": "An adapter auth profile selects one credential route. Prime and OMP harness-login keeps the ordinary HOME-backed store; each environment-key route receives a fresh runner-owned private config directory. Their preflight auth readiness remains unknown and the actual run is the first authentication authority. Harness-owned caches, keychains, provider routing, and upstream billing identity remain outside functional-alpha control.",
+    "billing": "Every adapter in this contract is bring-your-own and billed through the user's harness-managed account or provider route; functional alpha does not independently prove which harness-owned credential was charged.",
+    "noFallback": "The wrapper never changes harness or injects another credential environment group after discovery, version, auth, launch, protocol, terminal, cancellation, or timeout failure. Harness-owned credential/provider fallback is outside functional-alpha control.",
+    "languageBoundary": "Adapters transport image and task bytes and recover the image-declared terminal; they do not parse or implement OpenProse."
+  },
+  "taskEvidence": {
+    "terminalVerification": "The runner requires terminal task.argv to equal its original argv exactly.",
+    "digestAuthority": "The runner retains its independently computed digest of the unchanged task envelope; the model neither receives nor produces that digest."
+  },
+  "terminalEnvelopeTemplate": {
+    "schema": "openprose.echo-terminal/1",
+    "semanticStatus": "not-applicable",
+    "placeholder": true,
+    "marker": "OPENPROSE_ECHO_TERMINAL_V0",
+    "task": {
+      "argv": "copy-exactly-from-task-envelope"
+    }
+  },
+  "terminalExtraction": {
+    "source": "final completed assistant-message text",
+    "rule": "The final nonblank line must parse as exactly the image-declared closed terminal envelope.",
+    "missingOrInvalid": "protocol-error",
+    "harnessTerminalAlsoRequired": true,
+    "acceptableProcessExitCodes": [0]
+  },
+  "adapters": [
+    {
+      "adapterId": "prime/rpc",
+      "recipe": "cli/shared/capabilities/adapters/recipes/prime-rpc.v1.json",
+      "versionRange": "=0.7.0 || =0.8.1",
+      "admittedVersions": ["0.7.0", "0.8.1"],
+      "repairCommand": "curl -fsSL https://app.primeintellect.ai/prime-agent/install.sh | sh -s -- 0.8.1",
+      "selection": "explicit",
+      "shell": false,
+      "outerPty": false,
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "terminalCarriage": "assistant-final-text",
+      "harnessTerminal": "correlated prompt acknowledgement, then one closed no-tool agent/turn/user/assistant/turn_end lifecycle, then terminal agent_end followed by process exit 0 after stdin close"
+    },
+    {
+      "adapterId": "omp/rpc",
+      "recipe": "cli/shared/capabilities/adapters/recipes/omp-rpc.v1.json",
+      "versionRange": "=18.0.9",
+      "admittedVersions": ["18.0.9"],
+      "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9",
+      "runtimePrerequisites": [
+        {
+          "runtime": "bun",
+          "versionRange": ">=1.3.14",
+          "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+        }
+      ],
+      "selection": "explicit",
+      "shell": false,
+      "outerPty": false,
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "terminalCarriage": "assistant-final-text",
+      "harnessTerminal": "agent_end followed by process exit 0 after stdin close"
+    },
+    {
+      "adapterId": "codex/exec-json",
+      "recipe": "cli/shared/capabilities/adapters/recipes/codex-exec-json.v1.json",
+      "versionRange": "=0.149.0-alpha.4.1",
+      "admittedVersions": ["0.149.0-alpha.4.1"],
+      "repairCommand": "npm install --global @openai/codex@0.149.0-alpha.4.1",
+      "selection": "explicit",
+      "shell": false,
+      "outerPty": false,
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "terminalCarriage": "assistant-final-text",
+      "harnessTerminal": "turn.completed followed by process exit 0"
+    },
+    {
+      "adapterId": "claude/print-stream-json",
+      "recipe": "cli/shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json",
+      "versionRange": "=2.1.243",
+      "admittedVersions": ["2.1.243"],
+      "repairCommand": "npm install --global @anthropic-ai/claude-code@2.1.243",
+      "selection": "explicit",
+      "shell": false,
+      "outerPty": false,
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "terminalCarriage": "assistant-final-text",
+      "harnessTerminal": "result(subtype=success,is_error=false) followed by process exit 0"
+    }
+  ]
+}

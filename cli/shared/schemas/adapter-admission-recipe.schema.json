@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/adapter-admission-recipe.schema.json",
+  "title": "OpenProse launch-adapter admission recipe v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "recipeVersion", "adapterId", "state", "runtime", "identity",
+    "support", "probe", "launch", "isolation", "cancellation", "auth",
+    "billingOwner", "requiredTerminal", "admissionClaims"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.adapter-admission-recipe/1" },
+    "recipeVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "adapterId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$" },
+    "state": { "enum": ["draft", "frozen", "retired"] },
+    "runtime": { "$ref": "common.schema.json#/$defs/runtime" },
+    "identity": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "executableNames", "packageIdentity"],
+          "properties": {
+            "kind": { "const": "executable" },
+            "executableNames": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z0-9._-]+$" } },
+            "packageIdentity": { "type": ["string", "null"] }
+          }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["kind", "packageIdentity"],
+          "properties": { "kind": { "enum": ["library", "hosted-service"] }, "packageIdentity": { "type": "string", "minLength": 1 } }
+        }
+      ]
+    },
+    "support": {
+      "type": "object", "additionalProperties": false,
+      "required": ["versionRange", "admittedVersions", "repairCommand", "platforms"],
+      "properties": {
+        "versionRange": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "admittedVersions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$"
+          }
+        },
+        "repairCommand": { "type": "string", "pattern": "^[^\\r\\n]+$" },
+        "runtimePrerequisites": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["runtime", "versionRange", "repairCommand"],
+            "properties": {
+              "runtime": { "enum": ["bun", "node"] },
+              "versionRange": {
+                "type": "string",
+                "pattern": "^>=(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+              },
+              "repairCommand": { "type": "string", "pattern": "^[^\\r\\n]+$" }
+            }
+          }
+        },
+        "platforms": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "common.schema.json#/$defs/platform" } }
+      }
+    },
+    "probe": {
+      "type": "object", "additionalProperties": false,
+      "required": ["argv", "timeoutMs", "versionPattern", "versionStream"],
+      "properties": {
+        "argv": { "$ref": "#/$defs/argvTemplate" },
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 60000 },
+        "versionPattern": { "type": "string", "minLength": 1 },
+        "versionStream": { "enum": ["stdout", "stderr"] }
+      }
+    },
+    "launch": {
+      "type": "object", "additionalProperties": false,
+      "required": ["argv", "optionalArgv", "interactionMode", "shell", "outerPty", "stdin", "stdinLifecycle", "stdoutProtocol", "stderr", "instructionPlacement", "imageDelivery", "taskDelivery"],
+      "properties": {
+        "argv": { "$ref": "#/$defs/argvTemplate" },
+        "optionalArgv": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "placement", "argv"],
+            "properties": {
+              "when": { "const": "model-present" },
+              "placement": { "enum": ["append", "before-final-argument", "before-final-pair"] },
+              "argv": { "$ref": "#/$defs/argvTemplate" }
+            }
+          }
+        },
+        "interactionMode": { "const": "non-interactive" },
+        "shell": { "const": false },
+        "outerPty": { "const": false },
+        "stdin": { "enum": ["closed", "structured-request", "protocol"] },
+        "stdinLifecycle": { "enum": ["close-after-write", "close-after-terminal-event"] },
+        "stdoutProtocol": { "enum": ["json", "jsonl", "json-rpc", "structured-sdk"] },
+        "stderr": { "const": "diagnostics-only" },
+        "instructionPlacement": {
+          "type": "object", "additionalProperties": false,
+          "required": ["manifestPlacementId", "strictness", "preservesHarnessBasePrompt"],
+          "properties": {
+            "manifestPlacementId": { "type": "string", "pattern": "^[a-z][a-z0-9._-]*$" },
+            "strictness": { "enum": ["strict", "degraded"] },
+            "preservesHarnessBasePrompt": { "type": "boolean" }
+          }
+        },
+        "imageDelivery": { "$ref": "#/$defs/delivery" },
+        "taskDelivery": { "$ref": "#/$defs/delivery" },
+        "controls": {
+          "type": "object", "additionalProperties": false,
+          "required": ["ownedConfigOverlay", "protocolPrelude"],
+          "properties": {
+            "ownedConfigOverlay": {
+              "type": "object", "additionalProperties": false,
+              "required": ["argvFlag", "value", "encoding", "mode", "bytes", "byteLength", "sha256", "precedence"],
+              "properties": {
+                "argvFlag": { "type": "string", "pattern": "^--[a-z][a-z0-9-]*$" },
+                "value": { "const": "rendered-config-path" },
+                "encoding": { "const": "utf8" },
+                "mode": { "const": "0600" },
+                "bytes": { "type": "string", "minLength": 1 },
+                "byteLength": { "type": "integer", "minimum": 1, "maximum": 65536 },
+                "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+                "precedence": { "const": "final-cli-overlay" }
+              }
+            },
+            "protocolPrelude": {
+              "type": "object", "additionalProperties": false,
+              "required": ["barrierEvent", "stateRequestType", "stateRequestIdSuffix", "promptRequestIdSuffix", "requiredStateDataArrayField", "requiredStateDataArrayLength"],
+              "properties": {
+                "barrierEvent": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                "stateRequestType": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+                "stateRequestIdSuffix": { "type": "string", "pattern": "^[a-z][a-z0-9._-]*$" },
+                "promptRequestIdSuffix": { "type": "string", "pattern": "^[a-z][a-z0-9._-]*$" },
+                "requiredStateDataArrayField": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9]*$" },
+                "requiredStateDataArrayLength": { "const": 0 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "isolation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["guarantee", "ambientDisabled", "preserved"],
+      "properties": {
+        "guarantee": { "$ref": "common.schema.json#/$defs/guarantee" },
+        "ambientDisabled": { "type": "array", "uniqueItems": true, "items": { "enum": ["user-skills", "project-skills", "memories", "plugins", "mcp", "instruction-files", "auto-discovered-openprose"] } },
+        "preserved": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["native-safety-prompt", "managed-policy", "selected-permissions", "harness-auth"] } }
+      }
+    },
+    "cancellation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["protocol", "containment", "graceMs", "hardKillAfterMs"],
+      "properties": {
+        "protocol": { "enum": ["documented-protocol", "signal", "api", "none"] },
+        "containment": { "enum": ["unix-process-group", "windows-job-kill-on-close", "embedded-owned", "hosted-request", "unsupported"] },
+        "graceMs": { "type": "integer", "minimum": 0, "maximum": 60000 },
+        "hardKillAfterMs": { "type": "integer", "minimum": 1, "maximum": 120000 }
+      }
+    },
+    "auth": {
+      "type": "object", "additionalProperties": false,
+      "required": ["category", "readinessProbe", "secretsInArgv"],
+      "properties": {
+        "category": { "$ref": "common.schema.json#/$defs/authCategory" },
+        "readinessProbe": { "type": "string", "minLength": 1 },
+        "secretsInArgv": { "const": false }
+      }
+    },
+    "billingOwner": { "$ref": "common.schema.json#/$defs/billingOwner" },
+    "requiredTerminal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["event", "acceptableExitCodes", "eofWithoutEvent"],
+      "properties": {
+        "event": { "type": "string", "minLength": 1 },
+        "acceptableExitCodes": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "integer" } },
+        "eofWithoutEvent": { "const": "protocol-error" }
+      }
+    },
+    "admissionClaims": {
+      "type": "array", "uniqueItems": true,
+      "items": { "enum": ["base-transport-compatible", "strict-wrapper-conformant"] }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "adapterId": { "const": "omp/rpc" } },
+        "required": ["adapterId"]
+      },
+      "then": {
+        "properties": {
+          "support": {
+            "required": ["runtimePrerequisites"],
+            "properties": {
+              "repairCommand": {
+                "const": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+              },
+              "runtimePrerequisites": {
+                "const": [
+                  {
+                    "runtime": "bun",
+                    "versionRange": ">=1.3.14",
+                    "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "argvTemplate": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "oneOf": [
+          { "type": "object", "additionalProperties": false, "required": ["literal"], "properties": { "literal": { "type": "string" } } },
+          { "type": "object", "additionalProperties": false, "required": ["value"], "properties": { "value": { "enum": ["executable", "image-path", "image-utf8", "rendered-config-path", "task-json", "task-path", "cwd", "model", "invocation-id", "daemon-socket-path"] } } }
+        ]
+      }
+    },
+    "delivery": {
+      "type": "object", "additionalProperties": false,
+      "required": ["mechanism", "field", "encoding"],
+      "properties": {
+        "mechanism": { "enum": ["argv", "file", "stdin", "rpc-field", "sdk-option", "one-field-framing"] },
+        "field": { "type": ["string", "null"] },
+        "encoding": { "enum": ["utf8", "json-utf8", "raw-bytes"] }
+      }
+    }
+  }
+}

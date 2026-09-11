@@ -1,0 +1,77 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "fixture-v1",
+  "adapterId": "mock/fake-process",
+  "state": "draft",
+  "runtime": "deterministic-mock",
+  "identity": {
+    "kind": "executable",
+    "executableNames": ["openprose-fake-harness"],
+    "packageIdentity": null
+  },
+  "support": {
+    "versionRange": "=1.0.0",
+    "admittedVersions": ["1.0.0"],
+    "repairCommand": "npm install --global openprose-fake-harness@1.0.0",
+    "platforms": ["darwin-arm64", "linux-x64-gnu"]
+  },
+  "probe": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--version" }
+    ],
+    "timeoutMs": 1000,
+    "versionPattern": "^openprose-fake-harness 1\\.0\\.0$",
+    "versionStream": "stdout"
+  },
+  "launch": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "run" },
+      { "literal": "--scenario" },
+      { "literal": "success" },
+      { "literal": "--image-file" },
+      { "value": "image-path" },
+      { "literal": "--task-file" },
+      { "value": "task-path" }
+    ],
+    "optionalArgv": [],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "closed",
+    "stdinLifecycle": "close-after-write",
+    "stdoutProtocol": "jsonl",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "developer",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    "imageDelivery": { "mechanism": "file", "field": "--image-file", "encoding": "raw-bytes" },
+    "taskDelivery": { "mechanism": "file", "field": "--task-file", "encoding": "json-utf8" }
+  },
+  "isolation": {
+    "guarantee": "enforced",
+    "ambientDisabled": ["user-skills", "project-skills", "memories", "plugins", "mcp", "instruction-files", "auto-discovered-openprose"],
+    "preserved": ["native-safety-prompt", "managed-policy", "selected-permissions", "harness-auth"]
+  },
+  "cancellation": {
+    "protocol": "signal",
+    "containment": "unix-process-group",
+    "graceMs": 250,
+    "hardKillAfterMs": 1000
+  },
+  "auth": {
+    "category": "none-test-only",
+    "readinessProbe": "always-ready-test-fixture",
+    "secretsInArgv": false
+  },
+  "billingOwner": "test-fixture",
+  "requiredTerminal": {
+    "event": "session.completed",
+    "acceptableExitCodes": [0],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": ["base-transport-compatible"]
+}

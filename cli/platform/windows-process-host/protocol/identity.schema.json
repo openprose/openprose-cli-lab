@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/windows-process-host/identity.v1.json",
+  "title": "OpenProse Windows process host identity v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "component", "componentVersion", "target", "protocol", "claims"],
+  "properties": {
+    "schema": { "const": "openprose.windows-process-host.identity/1" },
+    "component": { "const": "openprose-windows-process-host" },
+    "componentVersion": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:[-+][0-9A-Za-z.-]+)?$" },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "architecture", "nativeWindowsImplementation"],
+      "properties": {
+        "os": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "architecture": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "nativeWindowsImplementation": { "type": "boolean" }
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["request", "control", "event", "error", "maxRequestBytes", "maxControlBytes", "limits"],
+      "properties": {
+        "request": { "const": "openprose.windows-process-host.request/1" },
+        "control": { "const": "openprose.windows-process-host.control/1" },
+        "event": { "const": "openprose.windows-process-host.event/1" },
+        "error": { "const": "openprose.windows-process-host.error/1" },
+        "maxRequestBytes": { "const": 67108864 },
+        "maxControlBytes": { "const": 4096 },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maxDecodedStdinBytes",
+            "maxStdinBase64Characters",
+            "maxArgvItems",
+            "maxArgumentCharacters",
+            "maxEnvironmentItems",
+            "maxEnvironmentNameCharacters",
+            "maxEnvironmentValueCharacters",
+            "maxPathCharacters",
+            "maxEnvironmentBlockBytes",
+            "maxRenderedCommandLineUtf16Units"
+          ],
+          "properties": {
+            "maxDecodedStdinBytes": { "const": 16777215 },
+            "maxStdinBase64Characters": { "const": 22369620 },
+            "maxArgvItems": { "const": 64 },
+            "maxArgumentCharacters": { "const": 32766 },
+            "maxEnvironmentItems": { "const": 64 },
+            "maxEnvironmentNameCharacters": { "const": 128 },
+            "maxEnvironmentValueCharacters": { "const": 8192 },
+            "maxPathCharacters": { "const": 32766 },
+            "maxEnvironmentBlockBytes": { "const": 4194304 },
+            "maxRenderedCommandLineUtf16Units": { "const": 32766 }
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerCallsMade", "nativeWindowsRuntimeEvidence", "strictWindowsContainmentReady"],
+      "properties": {
+        "providerCallsMade": { "const": false },
+        "nativeWindowsRuntimeEvidence": { "const": false },
+        "strictWindowsContainmentReady": { "const": false }
+      }
+    }
+  }
+}

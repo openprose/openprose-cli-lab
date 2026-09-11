@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/alpha-public-verification.schema.json",
+  "title": "OpenProse functional-alpha public verification v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "status", "version", "sourceSha", "repository", "releaseId",
+    "tag", "registry", "stableLatest", "alphaTag", "targetId", "workflowRun",
+    "startedAt", "updatedAt", "draftAuthority", "github", "npm", "journeys", "attempts", "failure"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.alpha-public-verification/1" },
+    "status": { "enum": ["initialized", "in-progress", "complete", "failed"] },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-alpha\\.(0|[1-9][0-9]*)$"
+    },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "releaseId": { "type": "integer", "minimum": 1 },
+    "tag": { "type": "string", "pattern": "^cli-v[0-9]+\\.[0-9]+\\.[0-9]+-alpha\\.[0-9]+$" },
+    "registry": { "const": "https://registry.npmjs.org" },
+    "stableLatest": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "alphaTag": { "const": "alpha" },
+    "targetId": { "enum": ["linux-x64", "linux-arm64", "darwin-arm", "darwin-x64"] },
+    "workflowRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "path", "id", "attempt"],
+      "properties": {
+        "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "path": { "const": ".github/workflows/openprose-cli-alpha-post-public.yml" },
+        "id": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "draftAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256", "controlSha", "releaseBody", "assetCount",
+        "assetInventorySha256", "workflowRun", "outcome", "verified"
+      ],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "controlSha": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[0-9a-f]{40}$" }
+          ]
+        },
+        "releaseBody": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["byteLength", "sha256"],
+              "properties": {
+                "byteLength": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+                "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              }
+            }
+          ]
+        },
+        "assetCount": { "enum": [0, 38] },
+        "assetInventorySha256": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          ]
+        },
+        "workflowRun": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "id", "attempt"],
+          "properties": {
+            "path": { "const": ".github/workflows/openprose-cli-alpha-release.yml" },
+            "id": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "outcome": {
+          "oneOf": [
+            { "type": "null" },
+            { "enum": ["created", "resumed"] }
+          ]
+        },
+        "verified": { "type": "boolean" }
+      }
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "releaseVerified", "releaseBodyVerified", "tagVerified", "inventoryVerified", "sha256SumsVerified",
+        "assetCount", "assets"
+      ],
+      "properties": {
+        "releaseVerified": { "type": "boolean" },
+        "releaseBodyVerified": { "type": "boolean" },
+        "tagVerified": { "type": "boolean" },
+        "inventoryVerified": { "type": "boolean" },
+        "sha256SumsVerified": { "type": "boolean" },
+        "assetCount": { "type": "integer", "minimum": 0, "maximum": 38 },
+        "assets": {
+          "type": "array",
+          "maxItems": 38,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name", "byteLength", "sha256", "downloaded",
+              "attestationOutcome", "attestationResultCount"
+            ],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,254}$" },
+              "byteLength": { "type": "integer", "minimum": 1, "maximum": 536870912 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "downloaded": { "type": "boolean" },
+              "attestationOutcome": { "enum": ["not-attempted", "verified", "failed", "ambiguous"] },
+              "attestationResultCount": { "type": "integer", "minimum": 0, "maximum": 2 }
+            }
+          }
+        }
+      }
+    },
+    "npm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stableLatestVerifiedBefore", "stableLatestVerifiedAfter", "packages"],
+      "properties": {
+        "stableLatestVerifiedBefore": { "type": "boolean" },
+        "stableLatestVerifiedAfter": { "type": "boolean" },
+        "packages": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name", "role", "artifact", "outcome", "sha256", "shasum",
+              "integrity", "registryIntegrity", "provenancePredicateType", "alphaTagVerified"
+            ],
+            "properties": {
+              "name": { "type": "string", "pattern": "^@openprose/prose-cli(?:-[a-z0-9-]+)?$" },
+              "role": { "enum": ["platform", "meta"] },
+              "artifact": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*\\.tgz$" },
+              "outcome": { "enum": ["not-attempted", "verified", "failed", "ambiguous"] },
+              "sha256": {
+                "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^[0-9a-f]{64}$" }]
+              },
+              "shasum": {
+                "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^[0-9a-f]{40}$" }]
+              },
+              "integrity": {
+                "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" }]
+              },
+              "registryIntegrity": {
+                "oneOf": [{ "type": "null" }, { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" }]
+              },
+              "provenancePredicateType": {
+                "oneOf": [{ "type": "null" }, { "const": "https://slsa.dev/provenance/v1" }]
+              },
+              "alphaTagVerified": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    "journeys": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "surface", "targetId", "outcome", "artifactSha256", "admissionSchema",
+          "providerCalls", "semanticEvaluation"
+        ],
+        "properties": {
+          "surface": { "enum": ["direct-rust", "direct-bun", "npm-launcher"] },
+          "targetId": { "enum": ["linux-x64", "linux-arm64", "darwin-arm", "darwin-x64"] },
+          "outcome": { "enum": ["not-attempted", "verified", "failed", "ambiguous"] },
+          "artifactSha256": {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 2,
+            "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          },
+          "admissionSchema": {
+            "oneOf": [{ "type": "null" }, { "const": "openprose.alpha-package-admission/1" }]
+          },
+          "providerCalls": {
+            "oneOf": [{ "type": "null" }, { "const": "none-provider-free-fixture" }]
+          },
+          "semanticEvaluation": {
+            "oneOf": [{ "type": "null" }, { "const": false }]
+          }
+        }
+      }
+    },
+    "attempts": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "boundary", "subject", "outcome", "code"],
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 1, "maximum": 256 },
+          "boundary": {
+            "enum": [
+              "draft-authority", "github-release", "github-tag", "github-inventory", "github-asset-download",
+              "github-sha256s", "github-attestation", "npm-latest", "npm-package",
+              "package-journeys"
+            ]
+          },
+          "subject": { "type": "string", "pattern": "^[A-Za-z0-9@][A-Za-z0-9@/._:+-]{0,511}$" },
+          "outcome": { "enum": ["started", "verified", "failed", "ambiguous"] },
+          "code": {
+            "oneOf": [
+              { "type": "null" },
+              { "enum": ["MISMATCH", "BOUNDARY_FAILED", "TIMEOUT", "AMBIGUOUS"] }
+            ]
+          }
+        }
+      }
+    },
+    "failure": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["stage", "code"],
+          "properties": {
+            "stage": {
+              "enum": [
+                "draft-authority", "github-release", "github-tag", "github-inventory", "github-asset-download",
+                "github-sha256s", "github-attestation", "npm-latest", "npm-package",
+                "package-journeys"
+              ]
+            },
+            "code": { "enum": ["MISMATCH", "BOUNDARY_FAILED", "TIMEOUT", "AMBIGUOUS"] }
+          }
+        }
+      ]
+    }
+  }
+}

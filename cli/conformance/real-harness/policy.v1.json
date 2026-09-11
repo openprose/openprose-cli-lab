@@ -1,0 +1,49 @@
+{
+  "schema": "openprose.real-harness-policy/1",
+  "id": "research-route-canaries-2026-08-27",
+  "frozenAt": "2026-08-27T22:55:00-04:00",
+  "postObservationClarification": {
+    "at": "2026-08-27T23:18:00-04:00",
+    "reason": "Narrowed baseTransportObservation to require an adapter transport boundary; direct harness JSON is exploratory route evidence only. This changes no route, model, task, trial, retry, timeout, or cost limit."
+  },
+  "purpose": "Research-only route evidence; never a release or semantic admission gate.",
+  "limits": {
+    "maximumTotalCostUsd": 1.0,
+    "maximumTrialsPerRoute": 1,
+    "timeoutSecondsPerTrial": 90,
+    "maximumPersistedStreamBytes": 8192,
+    "retryCount": 0
+  },
+  "isolation": {
+    "freshWorkingDirectory": true,
+    "tools": false,
+    "builtinTools": false,
+    "skills": false,
+    "extensions": false,
+    "contextFiles": false,
+    "promptTemplates": false,
+    "themes": false,
+    "savedSession": false,
+    "thinking": "off"
+  },
+  "claims": {
+    "exploratoryRouteCanary": "performed",
+    "baseTransportObservation": false,
+    "strictWrapperAdmission": false,
+    "semanticConformance": "unknown",
+    "proseComplete": "unknown",
+    "releaseEligible": false
+  },
+  "missingAuthorities": [
+    "canonical Skill Runtime Image",
+    "canonical terminal schema",
+    "strict installed-wrapper admission for the observed harness version"
+  ],
+  "retention": {
+    "retainEverySanitizedObservation": true,
+    "retainFailureEvidence": true,
+    "retainPromptBodies": false,
+    "retainCredentials": false,
+    "retainDisposableWorkingDirectories": false
+  }
+}

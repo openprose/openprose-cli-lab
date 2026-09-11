@@ -1,0 +1,2 @@
+Set-Content -LiteralPath "SHELL_EXECUTED" -Value "POWERSHELL_SHIM_WAS_EXECUTED"
+exit 99

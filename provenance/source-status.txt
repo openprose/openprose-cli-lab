@@ -1,0 +1,133 @@
+ M cli/README.md
+ M cli/SPEC.md
+ M cli/benchmarks/installed/benchmark.py
+ M cli/benchmarks/installed/test_benchmark.py
+ M cli/bun/README.md
+ M cli/bun/bun.lock
+ M cli/bun/npm/bin/prose.js
+ M cli/bun/package.json
+ M cli/bun/scripts/image-bundle.ts
+ M cli/bun/src/adapters/executable.ts
+ M cli/bun/src/adapters/runner.ts
+ M cli/bun/src/adapters/types.ts
+ M cli/bun/src/cli.ts
+ M cli/bun/src/core/args.ts
+ M cli/bun/src/core/build.ts
+ M cli/bun/src/core/config.ts
+ M cli/bun/src/core/errors.ts
+ M cli/bun/src/core/human-stream.ts
+ M cli/bun/src/core/output.ts
+ M cli/bun/src/core/types.ts
+ M cli/bun/src/supervision/files.ts
+ M cli/bun/src/supervision/windows-process.ts
+ M cli/bun/test/adapters-installed.test.ts
+ M cli/bun/test/args.test.ts
+ M cli/bun/test/build-identity.test.ts
+ M cli/bun/test/cli.test.ts
+ M cli/bun/test/config.test.ts
+ M cli/bun/test/dx-parity.test.ts
+ M cli/bun/test/human-stream.test.ts
+ M cli/bun/test/output.test.ts
+ M cli/bun/test/prime-owned-service.test.ts
+ M cli/bun/test/shared-contract.test.ts
+ M cli/bun/test/standalone.test.ts
+ M cli/bun/test/supervision-process.test.ts
+ M cli/bun/test/windows-host-integration.test.ts
+ M cli/ci/alpha_package_admission.py
+ M cli/ci/build_local.py
+ M cli/ci/check_architecture.py
+ M cli/ci/check_dependencies.py
+ M cli/ci/check_workflows.py
+ M cli/ci/create_draft_release.py
+ M cli/ci/package_local.py
+ M cli/ci/rehearse_release.py
+ M cli/ci/render_release_notes.py
+ M cli/ci/run_local.py
+ M cli/ci/test_alpha_package_admission.py
+ M cli/ci/test_check_architecture.py
+ M cli/ci/test_check_build_local.py
+ M cli/ci/test_check_dependencies.py
+ M cli/ci/test_check_draft_release.py
+ M cli/ci/test_check_registry_lineage.py
+ M cli/ci/test_check_workflows.py
+ M cli/ci/test_create_draft_release.py
+ M cli/ci/test_dependency_evidence.py
+ M cli/ci/test_package_lifecycle.py
+ M cli/ci/test_package_local.py
+ M cli/ci/test_rehearse_release.py
+ M cli/ci/test_render_release_notes.py
+ M cli/ci/test_run_local.py
+ M cli/conformance/adversarial/adapter-products/test_adapter_products.py
+ M cli/conformance/adversarial/adapters/test_adapter_oracle.py
+ M cli/conformance/cases/case-manifest.schema.json
+ M cli/conformance/cases/core/bare-delimiter-rejected.json
+ M cli/conformance/cases/core/openprose-hosted-unavailable.json
+ M cli/conformance/cases/dx/dry-run-default-hosted.json
+ M cli/conformance/cases/dx/jsonl-hosted-failure.json
+ M cli/conformance/cases/operations/harness-use-duplicate-model-suffix-json.json
+ M cli/conformance/cases/operations/harness-use-prime-missing-bundle.json
+ M cli/conformance/direct-skill-real/README.md
+ M cli/conformance/direct-skill-real/matrix.v1.json
+ M cli/conformance/direct-skill-real/run.py
+ M cli/conformance/direct-skill-real/test_run.py
+ M cli/conformance/real-harness/README.md
+ M cli/conformance/real-harness/run.py
+ M cli/conformance/real-harness/test_run.py
+ M cli/conformance/runner/run.py
+ M cli/conformance/runner/test_runner.py
+ M cli/protocol/OWNERSHIP.md
+ M cli/protocol/STATUS.md
+ M cli/release/MIGRATION_AND_ROLLBACK.md
+ M cli/release/README.md
+ M cli/rust/README.md
+ M cli/rust/crates/prose-cli/Cargo.toml
+ M cli/rust/crates/prose-cli/build.rs
+ M cli/rust/crates/prose-cli/src/main.rs
+ M cli/rust/crates/prose-cli/tests/cli.rs
+ M cli/rust/crates/prose-cli/tests/image_bundle.rs
+ M cli/rust/crates/prose-process-supervisor/src/supervisor.rs
+ M cli/rust/crates/prose-process-supervisor/tests/fake_harness.rs
+ M cli/rust/crates/prose-runner-core/Cargo.toml
+ M cli/rust/crates/prose-runner-core/src/config.rs
+ M cli/rust/crates/prose-runner-core/src/error.rs
+ M cli/rust/crates/prose-runner-core/src/invocation.rs
+ M cli/rust/crates/prose-runner-core/src/runner.rs
+ M cli/shared/errors/taxonomy.v1.json
+ M cli/shared/fixtures/dx/dry-run-default-hosted.json
+ M cli/shared/fixtures/operations/account-status-unavailable.json
+ M cli/shared/fixtures/operations/doctor-report.json
+ M cli/shared/fixtures/transport/runner-result-hosted-unavailable.json
+ M cli/shared/image/bundle/README.md
+ M cli/shared/schemas/runner-error.schema.json
+ M cli/shared/tests/test_contracts.py
+?? cli/CHANGELOG.md
+?? cli/CONTRIBUTING.md
+?? cli/SUPPORT.md
+?? cli/ci/check_alpha_public_docs.py
+?? cli/ci/promote_alpha_release.py
+?? cli/ci/run_public_alpha_verification.py
+?? cli/ci/test_check_alpha_public_docs.py
+?? cli/ci/test_check_contributor_docs.py
+?? cli/ci/test_promote_alpha_release.py
+?? cli/ci/test_run_public_alpha_verification.py
+?? cli/ci/test_verify_public_alpha.py
+?? cli/ci/verify_public_alpha.py
+?? cli/conformance/cases/adapters/claude-version-probe-wrong-stream.json
+?? cli/conformance/cases/adapters/codex-version-probe-wrong-stream.json
+?? cli/conformance/cases/adapters/omp-version-probe-wrong-stream.json
+?? cli/conformance/cases/adapters/prime-version-probe-wrong-stream.json
+?? cli/conformance/cases/core/codex-invalid-transport-run.json
+?? cli/conformance/cases/core/duplicate-output-json-invalid.json
+?? cli/conformance/cases/core/duplicate-output-jsonl-invalid.json
+?? cli/conformance/cases/core/openprose-invalid-transport-run.json
+?? cli/conformance/cases/operations/config-invalid-harness-environment.json
+?? cli/conformance/cases/operations/invocation-invalid-runner-command.json
+?? cli/conformance/cases/operations/openprose-invalid-transport-doctor.json
+?? cli/conformance/cases/operations/prime-invalid-transport-doctor.json
+?? cli/release/ALPHA_READINESS.md
+?? cli/release/alpha-draft-authority.schema.json
+?? cli/release/alpha-promotion-attestation-evidence.schema.json
+?? cli/release/alpha-promotion-settlement.schema.json
+?? cli/release/alpha-public-verification.schema.json
+?? cli/shared/fixtures/config/
+?? cli/shared/fixtures/human/

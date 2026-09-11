@@ -1,0 +1,60 @@
+{
+  "schema": "openprose.benchmark-policy/1",
+  "policyId": "openprose-local-sentinel-smoke",
+  "policyVersion": "1.0.0",
+  "frozenAt": "2026-08-27T20:00:00Z",
+  "warmups": 1,
+  "repetitions": 7,
+  "randomizedPairing": {
+    "enabled": true,
+    "seedSource": "profile-fixed",
+    "recordSeed": true
+  },
+  "timeoutAccounting": {
+    "perRunMs": 5000,
+    "timeoutsCountAsFailures": true,
+    "includeElapsed": true
+  },
+  "noOutlierDrop": true,
+  "retainFailures": true,
+  "confidence": {
+    "method": "paired-bootstrap",
+    "level": 0.95,
+    "resamples": 5000
+  },
+  "machineQualification": {
+    "recordOs": true,
+    "recordArch": true,
+    "recordCpu": true,
+    "recordMemory": true,
+    "recordLoad": true,
+    "maximumLoadAveragePerCore": 0.75
+  },
+  "regressionBudgets": [
+    {
+      "metric": "transport.wall-ms.p50",
+      "direction": "lower-is-better",
+      "maximumRelativeRegression": 0.15
+    },
+    {
+      "metric": "dx.cold-startup-ms.p50",
+      "direction": "lower-is-better",
+      "maximumRelativeRegression": 0.15
+    },
+    {
+      "metric": "dx.command-success-rate",
+      "direction": "higher-is-better",
+      "maximumRelativeRegression": 0.0
+    }
+  ],
+  "holdout": {
+    "requiredForPublicClaims": true,
+    "protectedExternally": true,
+    "identityHiddenFromImplementations": true
+  },
+  "residualTiming": {
+    "publishOnlyWithCompleteSpans": true,
+    "requireCommonOrCorrelatedClock": true,
+    "fallback": "publish-components-without-subtraction"
+  }
+}

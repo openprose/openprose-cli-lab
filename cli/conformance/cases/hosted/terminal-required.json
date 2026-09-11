@@ -1,0 +1,22 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.terminal-required",
+  "revision": 1,
+  "immutable": true,
+  "summary": "EOF without a structural hosted terminal is refused; no semantic status is inferred from assistant output.",
+  "phase": 5,
+  "tags": ["terminal", "truncation", "semantic-unknown", "no-fallback"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "no-terminal",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [{ "type": "start" }, { "type": "finalize" }],
+  "expected": {
+    "exitCode": 22,
+    "terminalType": "missing-refused",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "fixture-authoritative",
+    "requiredEventTypes": ["run.accepted", "assistant.delta", "usage.report"],
+    "error": { "code": "PROTOCOL_TRUNCATED", "exitCode": 22 }
+  }
+}

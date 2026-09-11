@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/sentinel/v1/task-envelope.schema.json",
+  "title": "Release-ineligible sentinel task envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "argv", "interactionMode"],
+  "properties": {
+    "schema": { "const": "openprose.task-envelope/1" },
+    "argv": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "interactionMode": { "const": "non-interactive" }
+  }
+}

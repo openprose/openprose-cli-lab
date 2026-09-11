@@ -1,0 +1,103 @@
+{
+  "schema": "openprose.functional-alpha-terminal-carriage-fixture/1",
+  "imageVersion": "echo-v0",
+  "task": {
+    "original": {
+      "schema": "openprose.task-envelope/1",
+      "argv": ["prose", "run", "hello.prose.md"],
+      "interactionMode": "non-interactive"
+    },
+    "sha256": "3045752e0dfb6d5a87f6d77835164b9b5fa67442097d8543bce22c712e8f55dd",
+    "delivered": {
+      "schema": "openprose.task-envelope/1",
+      "argv": ["prose", "run", "hello.prose.md"],
+      "interactionMode": "non-interactive"
+    }
+  },
+  "terminal": {
+    "schema": "openprose.echo-terminal/1",
+    "semanticStatus": "not-applicable",
+    "placeholder": true,
+    "marker": "OPENPROSE_ECHO_TERMINAL_V0",
+    "task": {
+      "argv": ["prose", "run", "hello.prose.md"]
+    }
+  },
+  "streams": {
+    "codex/exec-json": {
+      "assistantText": "Echoed task argv: [\"prose\",\"run\",\"hello.prose.md\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"hello.prose.md\"]}}",
+      "harnessEvents": [
+        { "type": "thread.started", "thread_id": "fixture-thread-0001" },
+        { "type": "turn.started" },
+        {
+          "type": "item.completed",
+          "item": {
+            "id": "fixture-item-0001",
+            "type": "agent_message",
+            "textRef": "assistantText"
+          }
+        },
+        { "type": "turn.completed" }
+      ],
+      "harnessTerminalObserved": true,
+      "expectedExitCode": 0
+    },
+    "claude/print-stream-json": {
+      "assistantText": "Echoed task argv: [\"prose\",\"run\",\"hello.prose.md\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"hello.prose.md\"]}}",
+      "harnessEvents": [
+        { "type": "system", "subtype": "init", "session_id": "fixture-session-0001" },
+        {
+          "type": "assistant",
+          "session_id": "fixture-session-0001",
+          "message": {
+            "role": "assistant",
+            "content": [{ "type": "text", "textRef": "assistantText" }]
+          }
+        },
+        {
+          "type": "result",
+          "subtype": "success",
+          "session_id": "fixture-session-0001",
+          "is_error": false,
+          "resultRef": "assistantText"
+        }
+      ],
+      "harnessTerminalObserved": true,
+      "expectedExitCode": 0
+    },
+    "prime/rpc": {
+      "assistantText": "Echoed task argv: [\"prose\",\"run\",\"hello.prose.md\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"hello.prose.md\"]}}",
+      "harnessEvents": [
+        { "id": "fixture-invocation-0001", "type": "response", "command": "prompt", "success": true },
+        { "type": "agent_start" },
+        {
+          "type": "message_end",
+          "message": {
+            "role": "assistant",
+            "content": [{ "type": "text", "textRef": "assistantText" }]
+          }
+        },
+        { "type": "agent_end", "messages": [] }
+      ],
+      "harnessTerminalObserved": true,
+      "expectedExitCode": 0
+    },
+    "omp/rpc": {
+      "assistantText": "Echoed task argv: [\"prose\",\"run\",\"hello.prose.md\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"hello.prose.md\"]}}",
+      "harnessEvents": [
+        { "id": "fixture-invocation-0001", "type": "response", "command": "prompt", "success": true },
+        { "type": "agent_start" },
+        {
+          "type": "message_end",
+          "message": {
+            "role": "assistant",
+            "content": [{ "type": "text", "textRef": "assistantText" }]
+          }
+        },
+        { "type": "agent_end", "messages": [] }
+      ],
+      "harnessTerminalObserved": true,
+      "expectedExitCode": 0
+    }
+  }
+}

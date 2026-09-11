@@ -1,0 +1,52 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "adapters.omp-version-probe-wrong-stream",
+  "summary": "A successful OMP version probe on the wrong stream fails closed with exact repair metadata and no fallback.",
+  "phase": 7,
+  "tags": ["adapter", "omp", "version-probe", "provider-free", "differential", "fail-closed"],
+  "platforms": ["unix"],
+  "controls": {
+    "fixedInvocationId": "00000000-0000-7000-8000-000000000712",
+    "fixedTimestamp": "2026-01-01T00:00:00.000Z",
+    "fixedMonotonicMs": 712,
+    "network": "denied",
+    "installedAdapter": {
+      "adapterId": "omp/rpc",
+      "versionProbeScenario": "wrong-stream-success"
+    }
+  },
+  "invocation": {
+    "argv": ["--harness", "omp", "--transport", "rpc", "--model", "fixture/model", "--auth-profile", "omp-harness-login", "--output", "json", "cli", "doctor"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {
+      "HOME": "{{WORKSPACE}}/home",
+      "XDG_CONFIG_HOME": "{{WORKSPACE}}/config"
+    }
+  },
+  "expected": {
+    "exitCode": 10,
+    "stdout": { "kind": "json", "schema": "openprose.doctor-report/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": {
+      "ready": false,
+      "selectedHarness": "omp",
+      "selectedAdapterId": "omp/rpc",
+      "problems": [{
+        "schema": "openprose.runner-error/1",
+        "code": "HARNESS_INCOMPATIBLE",
+        "boundary": "adapter",
+        "message": "The selected harness version is incompatible with this adapter.",
+        "action": "Run the exact Repair command reported with this error, then retry.",
+        "exitCode": 10,
+        "retryable": false,
+        "details": {
+          "adapterId": "omp/rpc",
+          "admittedVersions": ["18.0.9"],
+          "fallbackAttempted": false,
+          "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+        }
+      }]
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/windows-process-host/error.v1.json",
+  "title": "OpenProse Windows process host error v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "code", "operation", "win32"],
+  "properties": {
+    "schema": { "const": "openprose.windows-process-host.error/1" },
+    "code": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "operation": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "win32": {
+      "oneOf": [
+        { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+        { "type": "null" }
+      ]
+    }
+  }
+}

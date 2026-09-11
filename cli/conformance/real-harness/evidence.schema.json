@@ -1,0 +1,122 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/real-harness-evidence.v1.json",
+  "title": "OpenProse research-only real-harness observation",
+  "type": "object",
+  "required": [
+    "schema",
+    "matrixId",
+    "matrixSha256",
+    "policyId",
+    "policySha256",
+    "route",
+    "harness",
+    "taskSha256",
+    "process",
+    "observation",
+    "claims"
+  ],
+  "properties": {
+    "schema": {"const": "openprose.real-harness-evidence/1"},
+    "matrixId": {"type": "string"},
+    "matrixSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "policyId": {"type": "string"},
+    "policySha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "route": {
+      "type": "object",
+      "required": ["id", "provider", "model", "trial"],
+      "properties": {
+        "id": {"type": "string"},
+        "provider": {"type": "string"},
+        "model": {"type": "string"},
+        "trial": {"type": "integer", "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "harness": {
+      "type": "object",
+      "required": ["name", "executableSha256", "observedVersion", "stableRecipeVersion", "stableRecipeCompatible"],
+      "properties": {
+        "name": {"const": "prime-agent"},
+        "executableSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "observedVersion": {"type": "string"},
+        "stableRecipeVersion": {"type": "string"},
+        "stableRecipeCompatible": {"const": false}
+      },
+      "additionalProperties": false
+    },
+    "taskSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "process": {
+      "type": "object",
+      "required": ["exitCode", "timedOut", "stoppedAfterFirstAssistantFailure", "durationMs", "stdoutBytes", "stderrBytes", "stdoutSha256", "stderrSha256", "capture", "settlement"],
+      "properties": {
+        "exitCode": {"type": ["integer", "null"]},
+        "timedOut": {"type": "boolean"},
+        "stoppedAfterFirstAssistantFailure": {"type": "boolean"},
+        "durationMs": {"type": "integer", "minimum": 0},
+        "stdoutBytes": {"type": "integer", "minimum": 0},
+        "stderrBytes": {"type": "integer", "minimum": 0},
+        "stdoutSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "stderrSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "sanitizedStdout": {"type": "string"},
+        "sanitizedStderr": {"type": "string"},
+        "capture": {
+          "type": "object",
+          "required": ["limitBytesPerStream", "enforcedLive", "outputLimitExceeded", "stdoutBytesObserved", "stderrBytesObserved"],
+          "properties": {
+            "limitBytesPerStream": {"type": "integer", "minimum": 1},
+            "enforcedLive": {"type": "boolean"},
+            "outputLimitExceeded": {"type": ["boolean", "null"]},
+            "stdoutBytesObserved": {"type": "integer", "minimum": 0},
+            "stderrBytesObserved": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "settlement": {
+          "type": "object",
+          "required": ["scope", "leaderReaped", "streamsClosed", "originalProcessGroupEmpty", "detachedDescendantsContained", "strictContainmentClaimed"],
+          "properties": {
+            "scope": {"enum": ["original-posix-process-group", "direct-process-only"]},
+            "leaderReaped": {"const": true},
+            "streamsClosed": {"const": true},
+            "originalProcessGroupEmpty": {"type": ["boolean", "null"]},
+            "detachedDescendantsContained": {"const": false},
+            "strictContainmentClaimed": {"const": false}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "required": ["classification", "jsonEventsParsed", "assistantExactMatch", "usage", "cost"],
+      "properties": {
+        "classification": {"enum": ["route-canary-pass", "route-canary-fail", "route-unavailable", "timeout", "output-limit"]},
+        "jsonEventsParsed": {"type": "integer", "minimum": 0},
+        "assistantExactMatch": {"type": "boolean"},
+        "assistantText": {"type": ["string", "null"]},
+        "usage": {"type": ["object", "null"]},
+        "cost": {"type": ["object", "null"]},
+        "assistantTerminalAttempts": {"type": "integer", "minimum": 0},
+        "harnessInternalRetryObserved": {"type": "boolean"},
+        "frozenRetryPolicySatisfied": {"type": "boolean"}
+      },
+      "additionalProperties": true
+    },
+    "claims": {
+      "type": "object",
+      "required": ["exploratoryRouteCanary", "baseTransportObservation", "strictWrapperAdmission", "semanticConformance", "proseComplete", "releaseEligible"],
+      "properties": {
+        "exploratoryRouteCanary": {"type": "boolean"},
+        "baseTransportObservation": {"type": "boolean"},
+        "strictWrapperAdmission": {"const": false},
+        "semanticConformance": {"const": "unknown"},
+        "proseComplete": {"const": "unknown"},
+        "releaseEligible": {"const": false}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

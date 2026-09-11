@@ -1,0 +1,7 @@
+{
+  "schema": "openprose.harness-selection/1",
+  "harness": "claude",
+  "scope": "user",
+  "path": "/workspace/config/openprose/cli.toml",
+  "changed": true
+}

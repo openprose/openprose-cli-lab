@@ -1,0 +1,10 @@
+{
+  "schema": "openprose.benchmark-mechanical-validator/1",
+  "id": "runner-result-shape-v1",
+  "kind": "mechanical-transport-only",
+  "requiredSchema": "openprose.runner-result/1",
+  "requiredTransport": "deterministic",
+  "requiredHarness": "mock",
+  "requireTransportCompletion": true,
+  "semanticAuthority": false
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "openprose.runner-result/1",
+  "invocationId": "fixture-invocation-0001",
+  "runner": {
+    "name": "bun",
+    "version": "0.1.0-fixture",
+    "commit": "fixture-commit"
+  },
+  "adapter": {
+    "id": "openprose/hosted",
+    "harnessVersion": null,
+    "descriptorDigestSha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "transport": "hosted",
+  "negotiatedCapabilities": {
+    "promptPlacement": "unsupported",
+    "isolation": "unsupported",
+    "streaming": "unsupported",
+    "cancellation": "unsupported",
+    "terminal": "unsupported"
+  },
+  "languageImage": {
+    "formatVersion": "openprose.skill-runtime-image/1",
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00"
+  },
+  "digests": {
+    "invocationSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "taskSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc",
+    "normalizedEventsSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "deliveredImageSha256": null,
+    "renderedPayloadSha256": null
+  },
+  "cwd": {
+    "path": "/workspace",
+    "identitySha256": "c52ddf65534b7b46035084358ab7902be4bfef220bdb503ac7039cc861905b05"
+  },
+  "timing": {
+    "startedAt": "2025-01-01T00:00:00Z",
+    "firstEventAt": null,
+    "cancellationAt": null,
+    "terminalAt": "2025-01-01T00:00:00Z",
+    "durationMs": 0
+  },
+  "terminal": {
+    "classification": "runner-error",
+    "transportCompleted": false,
+    "terminalEventObserved": false,
+    "exitCode": null,
+    "signal": null
+  },
+  "semantic": {
+    "status": "unknown",
+    "terminalSchemaSha256": "4927ef7ffd5c3d22286590a00f33b7fe9ddcaa109ac90e3358e1be79aba06477",
+    "terminalEnvelopeDigestSha256": null
+  },
+  "usage": { "status": "unavailable" },
+  "billing": {
+    "owner": "openprose",
+    "authCategory": "openprose-account"
+  },
+  "diagnosticRefs": [],
+  "runnerExitCode": 10,
+  "error": {
+    "schema": "openprose.runner-error/1",
+    "code": "HOSTED_UNAVAILABLE",
+    "boundary": "hosted-service",
+    "message": "OpenProse-billed execution is not available in this build.",
+    "action": "Select an available BYO harness with the `cli harness use <id>` runner operation, then invoke the `cli doctor` runner operation.",
+    "exitCode": 10,
+    "retryable": false
+  }
+}

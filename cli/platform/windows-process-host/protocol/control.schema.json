@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/windows-process-host/control.v1.json",
+  "title": "OpenProse Windows process host control v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "schema", "reason"],
+  "properties": {
+    "type": { "const": "cancel" },
+    "schema": { "const": "openprose.windows-process-host.control/1" },
+    "reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    }
+  }
+}

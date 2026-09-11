@@ -1,0 +1,387 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli-conformance/research/hosted-wire.v1.schema.json",
+  "title": "OpenProse scripted hosted research wire protocol v1",
+  "description": "Closed provider-free research protocol. It is not the production hosted API.",
+  "oneOf": [
+    { "$ref": "#/$defs/runStart" },
+    { "$ref": "#/$defs/streamCredit" },
+    { "$ref": "#/$defs/lifecycleSignal" },
+    { "$ref": "#/$defs/runAccepted" },
+    { "$ref": "#/$defs/runReplayed" },
+    { "$ref": "#/$defs/assistantDelta" },
+    { "$ref": "#/$defs/capabilityRequest" },
+    { "$ref": "#/$defs/capabilityResult" },
+    { "$ref": "#/$defs/capabilityError" },
+    { "$ref": "#/$defs/usageAuthoritative" },
+    { "$ref": "#/$defs/usageUnavailable" },
+    { "$ref": "#/$defs/runRejected" },
+    { "$ref": "#/$defs/runTerminal" }
+  ],
+  "$defs": {
+    "schema": { "const": "openprose.hosted-wire/1" },
+    "id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "content": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["encoding", "byteLength", "sha256", "bytesBase64"],
+      "properties": {
+        "encoding": { "enum": ["utf-8", "json-utf-8"] },
+        "byteLength": { "type": "integer", "minimum": 0, "maximum": 1048576 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytesBase64": { "type": "string", "maxLength": 1398104, "contentEncoding": "base64" }
+      }
+    },
+    "runStart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "invocationId", "idempotencyKey", "placementCandidate", "auth", "billing", "runtimeImage", "taskEnvelope", "stream"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "run.start" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "invocationId": { "$ref": "#/$defs/id" },
+        "idempotencyKey": { "$ref": "#/$defs/id" },
+        "placementCandidate": { "enum": ["local-loop-gateway", "hosted-agent-local-capability-bridge"] },
+        "auth": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["category", "credentialTransport"],
+          "properties": {
+            "category": { "const": "none-test-only" },
+            "credentialTransport": { "const": "none" }
+          }
+        },
+        "billing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["owner", "usageAuthority"],
+          "properties": {
+            "owner": { "const": "openprose" },
+            "usageAuthority": { "enum": ["fixture-authoritative", "unavailable"] }
+          }
+        },
+        "runtimeImage": { "$ref": "#/$defs/content" },
+        "taskEnvelope": { "$ref": "#/$defs/content" },
+        "stream": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["initialCredit", "maxInFlight", "maxFrameBytes", "maxQueuedFrames"],
+          "properties": {
+            "initialCredit": { "type": "integer", "minimum": 0, "maximum": 16 },
+            "maxInFlight": { "type": "integer", "minimum": 1, "maximum": 16 },
+            "maxFrameBytes": { "type": "integer", "minimum": 256, "maximum": 65536 },
+            "maxQueuedFrames": { "type": "integer", "minimum": 1, "maximum": 16 }
+          }
+        }
+      }
+    },
+    "streamCredit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "acknowledgeThrough", "grant"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "stream.credit" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "acknowledgeThrough": { "type": "integer", "minimum": 0 },
+        "grant": { "type": "integer", "minimum": 1, "maximum": 16 }
+      }
+    },
+    "lifecycleSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "enum": ["run.cancel", "run.timeout", "run.disconnect"] },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "reason": { "type": "string", "maxLength": 256 }
+      }
+    },
+    "serviceBase": {
+      "type": "object",
+      "required": ["schema", "type", "requestId", "runId", "sequence"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "type": "string" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "runAccepted": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "invocationId", "placementCandidate", "billingOwner", "authCategory"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "run.accepted" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "invocationId": { "$ref": "#/$defs/id" },
+        "placementCandidate": { "enum": ["local-loop-gateway", "hosted-agent-local-capability-bridge"] },
+        "billingOwner": { "const": "openprose" },
+        "authCategory": { "const": "none-test-only" }
+      }
+    },
+    "runReplayed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "originalRequestId", "idempotencyKey", "sideEffectsReexecuted", "state"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "run.replayed" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "originalRequestId": { "$ref": "#/$defs/id" },
+        "idempotencyKey": { "$ref": "#/$defs/id" },
+        "sideEffectsReexecuted": { "const": false },
+        "state": { "enum": ["in-progress", "terminal"] },
+        "terminalSnapshot": {
+          "type": "object", "additionalProperties": false,
+          "required": ["classification", "semantic", "error", "fallbackSelected"],
+          "properties": {
+            "classification": { "enum": ["cancelled", "timeout", "runner-error"] },
+            "semantic": { "$ref": "#/$defs/semanticUnknown" },
+            "error": { "$ref": "#/$defs/error" },
+            "fallbackSelected": { "const": false }
+          }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "state": { "const": "terminal" } }, "required": ["state"] }, "then": { "required": ["terminalSnapshot"] } },
+        { "if": { "properties": { "state": { "const": "in-progress" } }, "required": ["state"] }, "then": { "not": { "required": ["terminalSnapshot"] } } }
+      ]
+    },
+    "assistantDelta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "part", "text"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "assistant.delta" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "part": { "type": "integer", "minimum": 0 },
+        "text": { "type": "string", "maxLength": 1024 }
+      }
+    },
+    "readArguments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "maxBytes"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "maxBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 }
+      }
+    },
+    "writeArguments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytesBase64"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "bytesBase64": { "type": "string", "maxLength": 1398104, "contentEncoding": "base64" }
+      }
+    },
+    "execArguments": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["argv", "cwd", "env", "timeoutMs", "maxOutputBytes"],
+      "properties": {
+        "argv": { "type": "array", "minItems": 1, "maxItems": 128, "items": { "type": "string", "maxLength": 4096 } },
+        "cwd": { "type": "string", "minLength": 1, "maxLength": 1024 },
+        "env": { "type": "object", "maxProperties": 16, "additionalProperties": { "type": "string", "maxLength": 4096 } },
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 30000 },
+        "maxOutputBytes": { "type": "integer", "minimum": 1, "maximum": 1048576 }
+      }
+    },
+    "capabilityRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "correlationId", "operation", "arguments"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "capability.request" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "correlationId": { "$ref": "#/$defs/id" },
+        "operation": { "enum": ["workspace.read", "workspace.write", "process.exec"] },
+        "arguments": { "oneOf": [{ "$ref": "#/$defs/readArguments" }, { "$ref": "#/$defs/writeArguments" }, { "$ref": "#/$defs/execArguments" }] }
+      },
+      "allOf": [
+        { "if": { "properties": { "operation": { "const": "workspace.read" } }, "required": ["operation"] }, "then": { "properties": { "arguments": { "$ref": "#/$defs/readArguments" } } } },
+        { "if": { "properties": { "operation": { "const": "workspace.write" } }, "required": ["operation"] }, "then": { "properties": { "arguments": { "$ref": "#/$defs/writeArguments" } } } },
+        { "if": { "properties": { "operation": { "const": "process.exec" } }, "required": ["operation"] }, "then": { "properties": { "arguments": { "$ref": "#/$defs/execArguments" } } } }
+      ]
+    },
+    "capabilityResultValue": {
+      "oneOf": [
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["bytesBase64", "byteLength"],
+          "properties": { "bytesBase64": { "type": "string", "contentEncoding": "base64" }, "byteLength": { "type": "integer", "minimum": 0 } }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["bytesWritten"],
+          "properties": { "bytesWritten": { "type": "integer", "minimum": 0 } }
+        },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["exitCode", "stdoutBase64", "stderrBase64"],
+          "properties": { "exitCode": { "type": "integer", "minimum": 0, "maximum": 255 }, "stdoutBase64": { "type": "string", "contentEncoding": "base64" }, "stderrBase64": { "type": "string", "contentEncoding": "base64" } }
+        }
+      ]
+    },
+    "capabilityResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "correlationId", "result"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "capability.result" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "correlationId": { "$ref": "#/$defs/id" },
+        "result": { "$ref": "#/$defs/capabilityResultValue" }
+      }
+    },
+    "capabilityErrorValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "enum": ["CAPABILITY_PATH_REJECTED", "CAPABILITY_SYMLINK_REJECTED", "CAPABILITY_NOT_FOUND", "CAPABILITY_NOT_FILE", "CAPABILITY_INPUT_LIMIT", "CAPABILITY_OUTPUT_LIMIT", "CAPABILITY_SHELL_REJECTED", "CAPABILITY_EXECUTABLE_REJECTED", "CAPABILITY_ENV_REJECTED", "CAPABILITY_OPERATION_REJECTED", "CAPABILITY_EXECUTION_FAILED"] },
+        "message": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "capabilityError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "correlationId", "error"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "capability.error" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "correlationId": { "$ref": "#/$defs/id" },
+        "error": { "$ref": "#/$defs/capabilityErrorValue" }
+      }
+    },
+    "usageAuthoritative": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "authority", "usage", "cost"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "usage.report" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "authority": { "const": "fixture-authoritative" },
+        "usage": {
+          "type": "object", "additionalProperties": false,
+          "required": ["inputTokens", "outputTokens"],
+          "properties": { "inputTokens": { "type": "integer", "minimum": 0 }, "outputTokens": { "type": "integer", "minimum": 0 } }
+        },
+        "cost": {
+          "type": "object", "additionalProperties": false,
+          "required": ["currency", "amountMicros"],
+          "properties": { "currency": { "const": "USD" }, "amountMicros": { "type": "integer", "minimum": 0 } }
+        }
+      }
+    },
+    "usageUnavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "authority", "reason"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "usage.report" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "authority": { "const": "unavailable" },
+        "reason": { "type": "string", "minLength": 1, "maxLength": 256 }
+      }
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "exitCode", "retryable"],
+      "properties": {
+        "code": { "enum": ["HOSTED_UNAVAILABLE", "HOSTED_AUTH_REQUIRED", "HOSTED_QUOTA_EXCEEDED", "SEMANTIC_STATUS_UNKNOWN", "CANCELLED", "STARTUP_TIMEOUT", "PROTOCOL_TRUNCATED", "LOCAL_CAPABILITY_REJECTED"] },
+        "exitCode": { "enum": [10, 21, 22, 23, 24] },
+        "retryable": { "type": "boolean" }
+      },
+      "oneOf": [
+        { "properties": { "code": { "const": "HOSTED_UNAVAILABLE" }, "exitCode": { "const": 10 }, "retryable": { "const": false } } },
+        { "properties": { "code": { "const": "HOSTED_AUTH_REQUIRED" }, "exitCode": { "const": 10 }, "retryable": { "const": false } } },
+        { "properties": { "code": { "const": "HOSTED_QUOTA_EXCEEDED" }, "exitCode": { "const": 10 }, "retryable": { "const": false } } },
+        { "properties": { "code": { "const": "SEMANTIC_STATUS_UNKNOWN" }, "exitCode": { "const": 23 }, "retryable": { "const": false } } },
+        { "properties": { "code": { "const": "CANCELLED" }, "exitCode": { "const": 24 }, "retryable": { "const": true } } },
+        { "properties": { "code": { "const": "STARTUP_TIMEOUT" }, "exitCode": { "const": 21 }, "retryable": { "const": true } } },
+        { "properties": { "code": { "const": "PROTOCOL_TRUNCATED" }, "exitCode": { "const": 22 }, "retryable": { "const": true } } },
+        { "properties": { "code": { "const": "LOCAL_CAPABILITY_REJECTED" }, "exitCode": { "const": 22 }, "retryable": { "const": false } } }
+      ]
+    },
+    "semanticUnknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "externalSchemaAvailable"],
+      "properties": {
+        "status": { "const": "unknown" },
+        "reason": { "enum": ["external-terminal-schema-unavailable", "transport-did-not-complete"] },
+        "externalSchemaAvailable": { "const": false }
+      }
+    },
+    "runRejected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "terminal", "classification", "semantic", "error", "fallbackSelected"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "run.rejected" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "terminal": { "const": true },
+        "classification": { "const": "runner-error" },
+        "semantic": { "$ref": "#/$defs/semanticUnknown" },
+        "error": { "$ref": "#/$defs/error" },
+        "fallbackSelected": { "const": false }
+      }
+    },
+    "runTerminal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "type", "requestId", "runId", "sequence", "terminal", "classification", "semantic", "error", "fallbackSelected"],
+      "properties": {
+        "schema": { "$ref": "#/$defs/schema" },
+        "type": { "const": "run.terminal" },
+        "requestId": { "$ref": "#/$defs/id" },
+        "runId": { "$ref": "#/$defs/id" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "terminal": { "const": true },
+        "classification": { "enum": ["cancelled", "timeout", "runner-error"] },
+        "semantic": { "$ref": "#/$defs/semanticUnknown" },
+        "error": { "$ref": "#/$defs/error" },
+        "fallbackSelected": { "const": false },
+        "lifecycle": {
+          "type": "object", "additionalProperties": false,
+          "required": ["winner", "atMs"],
+          "properties": { "winner": { "enum": ["cancel", "timeout", "disconnect"] }, "atMs": { "type": "integer", "minimum": 0 } }
+        }
+      }
+    }
+  }
+}

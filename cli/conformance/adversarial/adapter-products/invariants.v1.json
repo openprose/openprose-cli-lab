@@ -1,0 +1,91 @@
+{
+  "schema": "openprose.adapter-product-adversarial-invariants/1",
+  "version": "1.0.0",
+  "authorities": {
+    "oracle": "cli/shared/capabilities/adapters/oracle.v1.json",
+    "recipes": "cli/shared/capabilities/adapters/recipes/*.json",
+    "invocations": "cli/conformance/cases/adapters/*.json",
+    "errors": "cli/shared/errors/taxonomy.v1.json",
+    "image": "cli/shared/image/echo-v0/manifest.json",
+    "functionalAlphaHarness": "cli/conformance/adversarial/adapter-products/fake_live_harness.py",
+    "runnerMetadataEnvironment": "cli/shared/fixtures/adapters/product/runner-metadata-env.v1.json"
+  },
+  "checks": [
+    {
+      "id": "missing-harnesses-fail-without-fallback-or-spawn",
+      "test": "test_missing_installed_harnesses_fail_without_fallback_or_spawn"
+    },
+    {
+      "id": "auto-never-falls-back",
+      "test": "test_auto_selects_only_declared_baseline_without_fallback"
+    },
+    {
+      "id": "stable-listing-is-honest",
+      "test": "test_harness_list_names_every_missing_adapter_honestly"
+    },
+    {
+      "id": "doctor-is-actionable",
+      "test": "test_doctor_reports_selected_missing_adapter"
+    },
+    {
+      "id": "dry-run-never-starts-model",
+      "test": "test_dry_run_reports_selection_billing_and_missing_readiness"
+    },
+    {
+      "id": "provider-free-launch-is-exact",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "auth-profile-flag-selects-one-credential-group",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "transport-terminal-is-not-semantic-success",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "no-secret-output-or-child-leak",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "shared-scenarios-use-full-runtime-image",
+      "test": "test_shared_adapter_scenarios_define_the_full_runtime_image"
+    },
+    {
+      "id": "functional-alpha-live-success-cross-product-parity",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "prime-run-telemetry-opt-out-is-adapter-owned-and-credential-neutral",
+      "test": "test_functional_alpha_live_success_is_cross_product_equivalent"
+    },
+    {
+      "id": "prime-omp-harness-login-cross-product-parity",
+      "test": "test_harness_login_profiles_have_cross_product_readiness_and_error_parity"
+    },
+    {
+      "id": "prime-omp-harness-login-skips-installed-auth-probe",
+      "test": "test_harness_login_profiles_have_cross_product_readiness_and_error_parity"
+    },
+    {
+      "id": "prime-omp-environment-key-private-config-isolation",
+      "test": "test_prime_omp_environment_key_routes_are_fresh_private_and_cross_product_isolated"
+    },
+    {
+      "id": "prime-omp-environment-key-skips-installed-auth-probe",
+      "test": "test_prime_omp_environment_key_routes_are_fresh_private_and_cross_product_isolated"
+    },
+    {
+      "id": "prime-owned-service-failed-settlement-scrubs-private-root-without-following-symlinks-before-every-exit",
+      "test": "test_prime_owned_service_cleanup_precedes_every_run_exit_mode_with_parity"
+    },
+    {
+      "id": "exact-version-rejection-cross-product-parity",
+      "test": "test_adjacent_harness_versions_fail_with_exact_cross_product_repair_parity"
+    },
+    {
+      "id": "real-providers-are-not-literal-launch-targets",
+      "test": "test_suite_has_no_literal_provider_launch"
+    }
+  ]
+}

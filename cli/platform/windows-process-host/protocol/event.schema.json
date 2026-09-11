@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/windows-process-host/event.v1.json",
+  "title": "OpenProse Windows process host event v1",
+  "oneOf": [
+    { "$ref": "#/$defs/started" },
+    { "$ref": "#/$defs/stream" },
+    { "$ref": "#/$defs/exited" }
+  ],
+  "$defs": {
+    "base": {
+      "type": "object",
+      "required": ["schema", "requestId", "sequence", "type", "payload"],
+      "properties": {
+        "schema": { "const": "openprose.windows-process-host.event/1" },
+        "requestId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "sequence": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "started": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "requestId", "sequence", "type", "payload"],
+          "properties": {
+            "schema": true,
+            "requestId": true,
+            "sequence": true,
+            "type": { "const": "host.started" },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "pid",
+                "suspendedCreate",
+                "strictHandleList",
+                "inheritedHandleCount",
+                "jobAssignedBeforeResume",
+                "killOnJobClose",
+                "newProcessGroup",
+                "outerPty",
+                "shell"
+              ],
+              "properties": {
+                "pid": { "type": "integer", "minimum": 1 },
+                "suspendedCreate": { "const": true },
+                "strictHandleList": { "const": true },
+                "inheritedHandleCount": { "const": 3 },
+                "jobAssignedBeforeResume": { "const": true },
+                "killOnJobClose": { "const": true },
+                "newProcessGroup": { "const": true },
+                "outerPty": { "const": false },
+                "shell": { "const": false }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "stream": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "requestId", "sequence", "type", "payload"],
+          "properties": {
+            "schema": true,
+            "requestId": true,
+            "sequence": true,
+            "type": { "enum": ["child.stdout", "child.stderr"] },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["encoding", "data", "stream"],
+              "properties": {
+                "encoding": { "const": "base64" },
+                "data": {
+                  "type": "string",
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "stream": { "enum": ["stdout", "stderr"] }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "exited": {
+      "allOf": [
+        { "$ref": "#/$defs/base" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["schema", "requestId", "sequence", "type", "payload"],
+          "properties": {
+            "schema": true,
+            "requestId": true,
+            "sequence": true,
+            "type": { "const": "host.exited" },
+            "payload": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "pid",
+                "processExitCode",
+                "termination",
+                "gracefulControlAttempted",
+                "gracefulControlDelivered",
+                "hardKillUsed",
+                "activeProcessesBeforeCleanup",
+                "activeProcessesAfterCleanup",
+                "cleanupVerified",
+                "stdoutBytes",
+                "stderrBytes"
+              ],
+              "properties": {
+                "pid": { "type": "integer", "minimum": 1 },
+                "processExitCode": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+                "termination": {
+                  "enum": [
+                    "natural",
+                    "cancelled",
+                    "parent-disconnected",
+                    "timeout",
+                    "output-limit",
+                    "io-failure",
+                    "protocol-failure",
+                    "backpressure"
+                  ]
+                },
+                "gracefulControlAttempted": { "type": "boolean" },
+                "gracefulControlDelivered": { "type": "boolean" },
+                "hardKillUsed": { "type": "boolean" },
+                "activeProcessesBeforeCleanup": { "type": "integer", "minimum": 0 },
+                "activeProcessesAfterCleanup": { "type": "integer", "minimum": 0 },
+                "cleanupVerified": { "type": "boolean" },
+                "stdoutBytes": { "type": "integer", "minimum": 0 },
+                "stderrBytes": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

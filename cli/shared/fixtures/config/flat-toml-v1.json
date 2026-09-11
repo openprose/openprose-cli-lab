@@ -1,0 +1,249 @@
+{
+  "schema": "openprose.config-flat-toml-corpus/1",
+  "knownKeys": [
+    "harness",
+    "transport",
+    "model",
+    "timeout",
+    "output",
+    "color",
+    "verbose",
+    "auth_profile"
+  ],
+  "basicStringEscapes": [
+    "\\\"",
+    "\\\\",
+    "\\b",
+    "\\t",
+    "\\n",
+    "\\f",
+    "\\r",
+    "\\uXXXX",
+    "\\UXXXXXXXX"
+  ],
+  "accepted": [
+    {
+      "id": "all-value-types",
+      "source": "harness = \"codex\"\ntransport = \"exec-json\"\nmodel = \"gpt-5.4\"\ntimeout = \"30s\"\noutput = \"json\"\ncolor = true\nverbose = false\nauth_profile = \"cached-chatgpt-login\"\n",
+      "values": {
+        "harness": "codex",
+        "transport": "exec-json",
+        "model": "gpt-5.4",
+        "timeout": "30s",
+        "output": "json",
+        "color": true,
+        "verbose": false,
+        "authProfile": "cached-chatgpt-login"
+      }
+    },
+    {
+      "id": "whitespace-comments-and-literals",
+      "source": "\t# leading comment\n harness\t=\t'claude'  # selected harness\nmodel = 'sonnet#stable' # the hash inside the string is data\n\n",
+      "values": {
+        "harness": "claude",
+        "model": "sonnet#stable"
+      }
+    },
+    {
+      "id": "basic-string-escape-grammar",
+      "source": "harness = \"codex\"\nmodel = \"quote:\\\" slash:\\\\ backspace:\\b tab:\\t newline:\\n formfeed:\\f carriage:\\r snowman:\\u2603 rocket:\\U0001F680\"\n",
+      "values": {
+        "harness": "codex",
+        "model": "quote:\" slash:\\ backspace:\b tab:\t newline:\n formfeed:\f carriage:\r snowman:☃ rocket:🚀"
+      }
+    },
+    {
+      "id": "crlf-and-end-of-file",
+      "source": "harness = \"prime\"\r\nmodel = \"openai/gpt-5.4\"\r\nauth_profile = \"prime-harness-login\"",
+      "values": {
+        "harness": "prime",
+        "model": "openai/gpt-5.4",
+        "authProfile": "prime-harness-login"
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "id": "unknown-key-redacts-value",
+      "source": "unknown_SHOULD_NOT_APPEAR_7be19c = \"SHOULD_NOT_APPEAR_7be19c\"\n",
+      "line": 1,
+      "reason": "Configuration contains an unknown key.",
+      "forbidden": "SHOULD_NOT_APPEAR_7be19c"
+    },
+    {
+      "id": "duplicate-key",
+      "source": "harness = \"codex\"\nharness = \"SHOULD_NOT_APPEAR_duplicate_5d41\"\n",
+      "line": 2,
+      "reason": "Duplicate configuration key: harness.",
+      "forbidden": "SHOULD_NOT_APPEAR_duplicate_5d41"
+    },
+    {
+      "id": "unsupported-harness-redacts-value",
+      "source": "harness = \"SHOULD_NOT_APPEAR_harness_a821\"\n",
+      "line": 1,
+      "reason": "Configuration key harness contains an unsupported value.",
+      "forbidden": "SHOULD_NOT_APPEAR_harness_a821"
+    },
+    {
+      "id": "unsupported-output-redacts-value",
+      "source": "harness = \"codex\"\n\noutput = \"SHOULD_NOT_APPEAR_output_b162\"\n",
+      "line": 3,
+      "reason": "Configuration key output contains an unsupported value.",
+      "forbidden": "SHOULD_NOT_APPEAR_output_b162"
+    },
+    {
+      "id": "invalid-timeout-redacts-value",
+      "source": "timeout = \"SHOULD_NOT_APPEAR_timeout_149d\"\n",
+      "line": 1,
+      "reason": "Configuration key timeout contains an invalid duration.",
+      "forbidden": "SHOULD_NOT_APPEAR_timeout_149d"
+    },
+    {
+      "id": "boolean-key-rejects-string",
+      "source": "verbose = \"SHOULD_NOT_APPEAR_type_928a\"\n",
+      "line": 1,
+      "reason": "Configuration key verbose requires a boolean value.",
+      "forbidden": "SHOULD_NOT_APPEAR_type_928a"
+    },
+    {
+      "id": "string-key-rejects-boolean",
+      "source": "model = true\n",
+      "line": 1,
+      "reason": "Configuration key model requires a string value."
+    },
+    {
+      "id": "empty-string-value",
+      "source": "model = \"\"\n",
+      "line": 1,
+      "reason": "Configuration key model must not be empty."
+    },
+    {
+      "id": "table",
+      "source": "[runner]\nharness = \"codex\"\n",
+      "line": 1,
+      "reason": "Configuration line must contain one known bare-key assignment."
+    },
+    {
+      "id": "dotted-key",
+      "source": "runner.harness = \"codex\"\n",
+      "line": 1,
+      "reason": "Configuration line must contain one known bare-key assignment."
+    },
+    {
+      "id": "quoted-key",
+      "source": "\"harness\" = \"codex\"\n",
+      "line": 1,
+      "reason": "Configuration line must contain one known bare-key assignment."
+    },
+    {
+      "id": "array",
+      "source": "model = [\"a\", \"b\"]\n",
+      "line": 1,
+      "reason": "Configuration value must be true, false, or a single-line string."
+    },
+    {
+      "id": "date",
+      "source": "model = 2026-09-01\n",
+      "line": 1,
+      "reason": "Configuration value must be true, false, or a single-line string."
+    },
+    {
+      "id": "multiline-basic-string",
+      "source": "model = \"\"\"first\nsecond\"\"\"\n",
+      "line": 1,
+      "reason": "Unexpected content after configuration value."
+    },
+    {
+      "id": "multiline-literal-string",
+      "source": "model = '''first\nsecond'''\n",
+      "line": 1,
+      "reason": "Literal strings cannot contain apostrophes."
+    },
+    {
+      "id": "literal-string-apostrophe",
+      "source": "model = 'a'b'\n",
+      "line": 1,
+      "reason": "Literal strings cannot contain apostrophes."
+    },
+    {
+      "id": "unsupported-basic-escape",
+      "source": "model = \"a\\eb\"\n",
+      "line": 1,
+      "reason": "Basic string contains an unsupported escape."
+    },
+    {
+      "id": "short-unicode-escape",
+      "source": "model = \"a\\u123\"\n",
+      "line": 1,
+      "reason": "Basic string contains an invalid Unicode escape."
+    },
+    {
+      "id": "surrogate-unicode-escape",
+      "source": "model = \"a\\uD800b\"\n",
+      "line": 1,
+      "reason": "Basic string contains an invalid Unicode escape."
+    },
+    {
+      "id": "out-of-range-unicode-escape",
+      "source": "model = \"a\\U00110000b\"\n",
+      "line": 1,
+      "reason": "Basic string contains an invalid Unicode escape."
+    },
+    {
+      "id": "raw-control-in-string",
+      "source": "model = \"a\u0007b\"\n",
+      "line": 1,
+      "reason": "Configuration strings cannot contain control characters."
+    },
+    {
+      "id": "multiple-assignments",
+      "source": "color = true verbose = false\n",
+      "line": 1,
+      "reason": "Unexpected content after configuration value."
+    },
+    {
+      "id": "numeric-boolean",
+      "source": "verbose = 1\n",
+      "line": 1,
+      "reason": "Configuration value must be true, false, or a single-line string."
+    },
+    {
+      "id": "unterminated-basic-string",
+      "source": "model = \"unterminated\n",
+      "line": 1,
+      "reason": "Basic string must close on the same physical line."
+    },
+    {
+      "id": "unterminated-literal-string",
+      "source": "model = 'unterminated\n",
+      "line": 1,
+      "reason": "Literal string must close on the same physical line."
+    },
+    {
+      "id": "line-continuation",
+      "source": "model = \"first\\\nsecond\"\n",
+      "line": 1,
+      "reason": "Basic string contains an unsupported escape."
+    },
+    {
+      "id": "extra-content-after-string",
+      "source": "model = \"one\" two\n",
+      "line": 1,
+      "reason": "Unexpected content after configuration value."
+    },
+    {
+      "id": "byte-order-mark",
+      "source": "﻿harness = \"codex\"\n",
+      "line": 1,
+      "reason": "Configuration line must contain one known bare-key assignment."
+    }
+  ],
+  "binaryRejected": [
+    {
+      "id": "invalid-utf8-on-second-line",
+      "sourceHex": "6861726e657373203d2022636f646578220a6d6f64656c203d202261ff62220a",
+      "line": 2,
+      "reason": "Configuration file is not valid UTF-8."
+    }
+  ]
+}

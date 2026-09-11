@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/echo/v0/task-envelope.schema.json",
+  "title": "OpenProse echo-placeholder task envelope",
+  "description": "Opaque CLI argv for transport echoing only; this schema assigns no OpenProse meaning.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "argv", "interactionMode"],
+  "properties": {
+    "schema": { "const": "openprose.task-envelope/1" },
+    "argv": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "interactionMode": { "const": "non-interactive" }
+  }
+}

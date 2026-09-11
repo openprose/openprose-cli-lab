@@ -1,0 +1,22 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.unavailable",
+  "revision": 1,
+  "immutable": true,
+  "summary": "A scripted service outage maps to HOSTED_UNAVAILABLE and never selects a BYO or mock fallback.",
+  "phase": 5,
+  "tags": ["availability", "no-fallback", "terminal"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "unavailable",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [{ "type": "start" }],
+  "expected": {
+    "exitCode": 10,
+    "terminalType": "run.rejected",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "not-emitted",
+    "requiredEventTypes": ["run.rejected"],
+    "error": { "code": "HOSTED_UNAVAILABLE", "exitCode": 10 }
+  }
+}

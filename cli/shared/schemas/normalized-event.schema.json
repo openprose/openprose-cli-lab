@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/normalized-event.schema.json",
+  "title": "OpenProse normalized runner event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "sequence", "timestamp", "invocationId", "type", "payload"],
+  "properties": {
+    "schema": { "const": "openprose.normalized-event/1" },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "timestamp": {
+      "$ref": "common.schema.json#/$defs/rfc3339",
+      "x-openprose-volatile": true
+    },
+    "invocationId": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString",
+      "x-openprose-volatile": true
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "runner.started", "harness.started", "assistant.delta",
+        "assistant.message", "tool.started", "tool.updated",
+        "tool.completed", "approval.requested", "usage.observed",
+        "diagnostic", "harness.completed", "runner.cancelled",
+        "runner.failed", "runner.completed"
+      ]
+    },
+    "payload": {
+      "oneOf": [
+        { "$ref": "#/$defs/runnerStarted" },
+        { "$ref": "#/$defs/harnessStarted" },
+        { "$ref": "#/$defs/assistantDelta" },
+        { "$ref": "#/$defs/assistantMessage" },
+        { "$ref": "#/$defs/toolStarted" },
+        { "$ref": "#/$defs/toolUpdated" },
+        { "$ref": "#/$defs/toolCompleted" },
+        { "$ref": "#/$defs/approvalRequested" },
+        { "$ref": "#/$defs/usageObserved" },
+        { "$ref": "#/$defs/diagnostic" },
+        { "$ref": "#/$defs/harnessCompleted" },
+        { "$ref": "#/$defs/runnerCancelled" },
+        { "$ref": "#/$defs/runnerFailed" },
+        { "$ref": "#/$defs/runnerCompleted" }
+      ]
+    },
+    "rawEvidenceRef": { "type": ["string", "null"] }
+  },
+  "allOf": [
+    { "if": { "properties": { "type": { "const": "runner.started" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runnerStarted" } } } },
+    { "if": { "properties": { "type": { "const": "harness.started" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/harnessStarted" } } } },
+    { "if": { "properties": { "type": { "const": "assistant.delta" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/assistantDelta" } } } },
+    { "if": { "properties": { "type": { "const": "assistant.message" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/assistantMessage" } } } },
+    { "if": { "properties": { "type": { "const": "tool.started" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/toolStarted" } } } },
+    { "if": { "properties": { "type": { "const": "tool.updated" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/toolUpdated" } } } },
+    { "if": { "properties": { "type": { "const": "tool.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/toolCompleted" } } } },
+    { "if": { "properties": { "type": { "const": "approval.requested" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/approvalRequested" } } } },
+    { "if": { "properties": { "type": { "const": "usage.observed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/usageObserved" } } } },
+    { "if": { "properties": { "type": { "const": "diagnostic" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/diagnostic" } } } },
+    { "if": { "properties": { "type": { "const": "harness.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/harnessCompleted" } } } },
+    { "if": { "properties": { "type": { "const": "runner.cancelled" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runnerCancelled" } } } },
+    { "if": { "properties": { "type": { "const": "runner.failed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runnerFailed" } } } },
+    { "if": { "properties": { "type": { "const": "runner.completed" } } }, "then": { "properties": { "payload": { "$ref": "#/$defs/runnerCompleted" } } } }
+  ],
+  "$defs": {
+    "runnerStarted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "runnerName", "runnerVersion"],
+      "properties": { "kind": { "const": "runner.started" }, "runnerName": { "enum": ["rust", "bun"] }, "runnerVersion": { "type": "string", "minLength": 1 } }
+    },
+    "harnessStarted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "harness", "transport"],
+      "properties": { "kind": { "const": "harness.started" }, "harness": { "type": "string", "minLength": 1 }, "transport": { "type": "string", "minLength": 1 }, "harnessVersion": { "type": ["string", "null"] } }
+    },
+    "assistantDelta": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": { "kind": { "const": "assistant.delta" }, "text": { "type": "string" } }
+    },
+    "assistantMessage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "text"],
+      "properties": { "kind": { "const": "assistant.message" }, "text": { "type": "string" } }
+    },
+    "toolStarted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "toolCallId", "name", "input"],
+      "properties": { "kind": { "const": "tool.started" }, "toolCallId": { "type": "string", "minLength": 1 }, "name": { "type": "string", "minLength": 1 }, "input": { "$ref": "common.schema.json#/$defs/jsonValue" } }
+    },
+    "toolUpdated": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "toolCallId", "update"],
+      "properties": { "kind": { "const": "tool.updated" }, "toolCallId": { "type": "string", "minLength": 1 }, "update": { "$ref": "common.schema.json#/$defs/jsonValue" } }
+    },
+    "toolCompleted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "toolCallId", "status", "output"],
+      "properties": { "kind": { "const": "tool.completed" }, "toolCallId": { "type": "string", "minLength": 1 }, "status": { "enum": ["success", "failed", "cancelled"] }, "output": { "$ref": "common.schema.json#/$defs/jsonValue" } }
+    },
+    "approvalRequested": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "approvalId", "description"],
+      "properties": { "kind": { "const": "approval.requested" }, "approvalId": { "type": "string", "minLength": 1 }, "description": { "type": "string", "minLength": 1 } }
+    },
+    "usageObserved": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "authoritative"],
+      "properties": { "kind": { "const": "usage.observed" }, "authoritative": { "type": "boolean" }, "inputTokens": { "type": "integer", "minimum": 0 }, "outputTokens": { "type": "integer", "minimum": 0 }, "cost": { "type": ["number", "null"], "minimum": 0 }, "currency": { "type": ["string", "null"] } }
+    },
+    "diagnostic": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "level", "boundary", "message"],
+      "properties": { "kind": { "const": "diagnostic" }, "level": { "enum": ["debug", "info", "warning", "error"] }, "boundary": { "type": "string", "minLength": 1 }, "message": { "type": "string", "minLength": 1 }, "code": { "type": ["string", "null"] } }
+    },
+    "harnessCompleted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "terminalEventObserved", "exitCode", "signal"],
+      "properties": { "kind": { "const": "harness.completed" }, "terminalEventObserved": { "type": "boolean" }, "exitCode": { "type": ["integer", "null"] }, "signal": { "type": ["string", "null"] } }
+    },
+    "runnerCancelled": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": { "kind": { "const": "runner.cancelled" }, "reason": { "enum": ["caller", "timeout", "termination"] } }
+    },
+    "runnerFailed": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "error"],
+      "properties": { "kind": { "const": "runner.failed" }, "error": { "$ref": "runner-error.schema.json" } }
+    },
+    "runnerCompleted": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "result"],
+      "properties": { "kind": { "const": "runner.completed" }, "result": { "$ref": "runner-result.schema.json" } }
+    }
+  }
+}

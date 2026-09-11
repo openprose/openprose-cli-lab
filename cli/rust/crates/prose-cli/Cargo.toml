@@ -1,0 +1,27 @@
+[package]
+name = "prose-cli"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[[bin]]
+name = "prose"
+path = "src/main.rs"
+
+[features]
+default = []
+test-seams = ["prose-runner-core/test-seams"]
+
+[dependencies]
+prose-runner-core = { path = "../prose-runner-core" }
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+rustix.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/harness-selection.schema.json",
+  "title": "OpenProse persisted harness selection v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "harness", "scope", "path", "changed"],
+  "properties": {
+    "schema": { "const": "openprose.harness-selection/1" },
+    "harness": { "enum": ["openprose", "prime", "omp", "codex", "claude"] },
+    "scope": { "const": "user" },
+    "path": { "type": "string", "minLength": 1 },
+    "changed": { "type": "boolean" }
+  }
+}

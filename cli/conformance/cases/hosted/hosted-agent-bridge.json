@@ -1,0 +1,24 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.hosted-agent-bridge",
+  "revision": 1,
+  "immutable": true,
+  "summary": "A hosted agent completes one correlated, workspace-confined generic read through the local capability bridge.",
+  "phase": 5,
+  "tags": ["hosted-agent", "capability-bridge", "correlation", "least-privilege", "image-exactness", "task-exactness", "terminal", "no-fallback"],
+  "placementCandidate": "hosted-agent-local-capability-bridge",
+  "serviceScenario": "hosted-agent-local-capability-bridge",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/hosted-agent-local-capability-bridge.json",
+  "actions": [{ "type": "start" }, { "type": "bridge.handle" }],
+  "expected": {
+    "exitCode": 23,
+    "terminalType": "run.terminal",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "fixture-authoritative",
+    "requiredEventTypes": ["run.accepted", "capability.request", "usage.report", "run.terminal"],
+    "error": { "code": "SEMANTIC_STATUS_UNKNOWN", "exitCode": 23 },
+    "exactImageBytes": true,
+    "exactTaskBytes": true
+  }
+}

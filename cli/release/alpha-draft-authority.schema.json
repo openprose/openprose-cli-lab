@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/alpha-draft-authority.schema.json",
+  "title": "OpenProse functional-alpha immutable draft handoff authority v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "repository",
+    "version",
+    "sourceSha",
+    "controlSha",
+    "tag",
+    "releaseId",
+    "draft",
+    "prerelease",
+    "publicationAuthorized",
+    "releaseBody",
+    "assetCount",
+    "assets",
+    "assetInventorySha256",
+    "workflowRun",
+    "outcome"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.alpha-draft-authority/1" },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-alpha\\.(0|[1-9][0-9]*)$"
+    },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "controlSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "tag": {
+      "type": "string",
+      "pattern": "^cli-v[0-9]+\\.[0-9]+\\.[0-9]+-alpha\\.[0-9]+$"
+    },
+    "releaseId": { "type": "integer", "minimum": 1 },
+    "draft": { "const": true },
+    "prerelease": { "const": true },
+    "publicationAuthorized": { "const": false },
+    "releaseBody": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["byteLength", "sha256"],
+      "properties": {
+        "byteLength": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "assetCount": { "const": 38 },
+    "assets": {
+      "type": "array",
+      "minItems": 38,
+      "maxItems": 38,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "sha256", "byteLength"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,254}$"
+          },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "byteLength": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 536870912
+          }
+        }
+      }
+    },
+    "assetInventorySha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "workflowRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "id", "attempt"],
+      "properties": {
+        "path": {
+          "const": ".github/workflows/openprose-cli-alpha-release.yml"
+        },
+        "id": { "type": "integer", "minimum": 1 },
+        "attempt": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "outcome": { "enum": ["created", "resumed"] }
+  }
+}

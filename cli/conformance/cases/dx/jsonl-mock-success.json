@@ -1,0 +1,38 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "dx.jsonl-mock-success",
+  "summary": "JSONL mock success emits the exact lifecycle and one final completed terminal carrying the result.",
+  "phase": 7,
+  "tags": ["jsonl", "mock", "terminal", "agent-dx", "differential"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": ["--harness", "mock", "--output", "jsonl", "run", "fixture.prose.md"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": {
+      "kind": "jsonl",
+      "eventTypes": ["runner.started", "harness.started", "harness.completed", "runner.completed"],
+      "terminalType": "runner.completed"
+    },
+    "stderr": { "kind": "empty" },
+    "startedHarness": true,
+    "resultMatches": {
+      "adapter": { "id": "mock/in-memory" },
+      "semantic": { "status": "not-applicable" },
+      "billing": { "owner": "test-fixture", "authCategory": "none-test-only" },
+      "runnerExitCode": 0
+    },
+    "forwardedTask": {
+      "argv": ["prose", "run", "fixture.prose.md"],
+      "interactionMode": "non-interactive"
+    }
+  }
+}

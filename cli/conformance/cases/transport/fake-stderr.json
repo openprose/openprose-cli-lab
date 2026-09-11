@@ -1,0 +1,27 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "transport.fake-stderr",
+  "summary": "Harness diagnostics stay on stderr while stdout remains one JSON result.",
+  "phase": 1,
+  "tags": ["fake-process", "stdout", "stderr", "separation"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied",
+    "fakeHarness": { "scenario": "stderr" }
+  },
+  "invocation": {
+    "argv": ["--harness", "mock", "--transport", "fake-process", "--output", "json", "run", "fixture.prose.md"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": { "kind": "json", "schema": "openprose.runner-result/1" },
+    "stderr": { "kind": "contains", "contains": ["fake harness diagnostic", "stderr remains separate"] },
+    "startedHarness": true,
+    "resultMatches": { "semantic": { "status": "not-applicable" }, "runnerExitCode": 0 },
+    "fakeObservation": { "exactImageBytes": true, "exactTaskBytes": true }
+  }
+}

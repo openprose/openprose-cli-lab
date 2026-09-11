@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.org/schemas/windows-process-host/request.v1.json",
+  "title": "OpenProse Windows process host request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "requestId",
+    "executable",
+    "wrapperExecutable",
+    "argv",
+    "cwd",
+    "environment",
+    "stdinBase64",
+    "limits",
+    "cancellation",
+    "runTimeoutMs"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.windows-process-host.request/1" },
+    "requestId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9_.:-]+$"
+    },
+    "executable": { "$ref": "#/$defs/executablePath" },
+    "wrapperExecutable": { "$ref": "#/$defs/executablePath" },
+    "argv": {
+      "type": "array",
+      "maxItems": 64,
+      "items": { "type": "string", "maxLength": 32766 }
+    },
+    "cwd": { "$ref": "#/$defs/absoluteWindowsPath" },
+    "environment": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 128,
+            "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+          },
+          "value": { "type": "string", "maxLength": 8192 }
+        }
+      }
+    },
+    "stdinBase64": {
+      "type": "string",
+      "maxLength": 22369620,
+      "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maxStdoutBytes", "maxStderrBytes", "maxQueuedChunks"],
+      "properties": {
+        "maxStdoutBytes": { "type": "integer", "minimum": 1, "maximum": 67108864 },
+        "maxStderrBytes": { "type": "integer", "minimum": 1, "maximum": 67108864 },
+        "maxQueuedChunks": { "type": "integer", "minimum": 1, "maximum": 1024 }
+      }
+    },
+    "cancellation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["graceful", "graceMs", "hardKillAfterMs"],
+      "properties": {
+        "graceful": { "enum": ["ctrl-break", "none"] },
+        "graceMs": { "type": "integer", "minimum": 0, "maximum": 60000 },
+        "hardKillAfterMs": { "type": "integer", "minimum": 1, "maximum": 60000 }
+      }
+    },
+    "runTimeoutMs": { "type": "integer", "minimum": 1, "maximum": 86400000 }
+  },
+  "$defs": {
+    "absoluteWindowsPath": {
+      "type": "string",
+      "maxLength": 32766,
+      "pattern": "^(?:[A-Za-z]:[\\\\/]|\\\\\\\\[^\\\\/]+[\\\\/][^\\\\/]+)"
+    },
+    "executablePath": {
+      "allOf": [
+        { "$ref": "#/$defs/absoluteWindowsPath" },
+        { "pattern": "\\.[eE][xX][eE]$" }
+      ]
+    }
+  }
+}

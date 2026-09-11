@@ -1,0 +1,50 @@
+{
+  "schema": "openprose.benchmark-policy/1",
+  "policyId": "shape-only-fixture",
+  "policyVersion": "fixture-v1",
+  "frozenAt": "2025-01-01T00:00:00Z",
+  "warmups": 1,
+  "repetitions": 5,
+  "randomizedPairing": {
+    "enabled": true,
+    "seedSource": "profile-fixed",
+    "recordSeed": true
+  },
+  "timeoutAccounting": {
+    "perRunMs": 60000,
+    "timeoutsCountAsFailures": true,
+    "includeElapsed": true
+  },
+  "noOutlierDrop": true,
+  "retainFailures": true,
+  "confidence": {
+    "method": "paired-bootstrap",
+    "level": 0.95,
+    "resamples": 10000
+  },
+  "machineQualification": {
+    "recordOs": true,
+    "recordArch": true,
+    "recordCpu": true,
+    "recordMemory": true,
+    "recordLoad": true,
+    "maximumLoadAveragePerCore": 0.5
+  },
+  "regressionBudgets": [
+    {
+      "metric": "startup-ms",
+      "direction": "lower-is-better",
+      "maximumRelativeRegression": 0.1
+    }
+  ],
+  "holdout": {
+    "requiredForPublicClaims": true,
+    "protectedExternally": true,
+    "identityHiddenFromImplementations": true
+  },
+  "residualTiming": {
+    "publishOnlyWithCompleteSpans": true,
+    "requireCommonOrCorrelatedClock": true,
+    "fallback": "publish-components-without-subtraction"
+  }
+}

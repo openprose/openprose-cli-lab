@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli-conformance/research/hosted-case-manifest.v1.schema.json",
+  "title": "OpenProse scripted hosted black-box case v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "revision", "immutable", "summary", "phase", "tags", "placementCandidate", "serviceScenario", "requestFixture", "actions", "expected"],
+  "properties": {
+    "schema": { "const": "openprose.hosted-oracle-case/1" },
+    "id": { "type": "string", "pattern": "^hosted\\.[a-z0-9][a-z0-9._-]+$" },
+    "revision": { "const": 1 },
+    "immutable": { "const": true },
+    "summary": { "type": "string", "minLength": 1 },
+    "phase": { "const": 5 },
+    "tags": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" } },
+    "placementCandidate": { "enum": ["local-loop-gateway", "hosted-agent-local-capability-bridge"] },
+    "serviceScenario": { "enum": ["local-loop-gateway", "hosted-agent-local-capability-bridge", "usage-unavailable", "auth-required", "quota-exceeded", "unavailable", "backpressure", "no-terminal", "capability-traversal", "capability-symlink", "capability-nul", "capability-shell"] },
+    "requestFixture": { "type": "string", "pattern": "^cli/shared/fixtures/hosted/requests/[a-z0-9-]+\\.json$" },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type"], "properties": { "type": { "const": "start" } }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type"], "properties": { "type": { "const": "bridge.handle" } }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type", "grant", "repeat"],
+            "properties": { "type": { "const": "stream.credit" }, "grant": { "type": "integer", "minimum": 1, "maximum": 16 }, "repeat": { "type": "integer", "minimum": 1, "maximum": 16 } }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type", "requestId"],
+            "properties": { "type": { "const": "replay" }, "requestId": { "type": "string", "minLength": 1 } }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type", "signals"],
+            "properties": {
+              "type": { "const": "lifecycle.race" },
+              "signals": {
+                "type": "array", "minItems": 2,
+                "items": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["cause", "atMs"],
+                  "properties": { "cause": { "enum": ["cancel", "timeout", "disconnect"] }, "atMs": { "type": "integer", "minimum": 0 } }
+                }
+              }
+            }
+          },
+          {
+            "type": "object", "additionalProperties": false,
+            "required": ["type"], "properties": { "type": { "const": "finalize" } }
+          }
+        ]
+      }
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["exitCode", "terminalType", "semanticStatus", "fallbackSelected", "usageAuthority", "requiredEventTypes"],
+      "properties": {
+        "exitCode": { "enum": [10, 21, 22, 23, 24] },
+        "terminalType": { "enum": ["run.terminal", "run.rejected", "missing-refused"] },
+        "semanticStatus": { "const": "unknown" },
+        "fallbackSelected": { "const": false },
+        "usageAuthority": { "enum": ["fixture-authoritative", "unavailable", "not-emitted"] },
+        "requiredEventTypes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "error": {
+          "type": "object", "additionalProperties": false,
+          "required": ["code", "exitCode"],
+          "properties": {
+            "code": { "enum": ["HOSTED_AUTH_REQUIRED", "HOSTED_QUOTA_EXCEEDED", "HOSTED_UNAVAILABLE", "SEMANTIC_STATUS_UNKNOWN", "PROTOCOL_TRUNCATED", "LOCAL_CAPABILITY_REJECTED"] },
+            "exitCode": { "enum": [10, 22, 23] }
+          }
+        },
+        "lifecycleWinner": { "enum": ["cancel", "timeout", "disconnect"] },
+        "capabilityError": { "enum": ["CAPABILITY_PATH_REJECTED", "CAPABILITY_SYMLINK_REJECTED", "CAPABILITY_SHELL_REJECTED"] },
+        "exactImageBytes": { "const": true },
+        "exactTaskBytes": { "const": true },
+        "maxInFlight": { "type": "integer", "minimum": 1, "maximum": 16 },
+        "sideEffectExecutions": { "const": 1 }
+      }
+    }
+  }
+}

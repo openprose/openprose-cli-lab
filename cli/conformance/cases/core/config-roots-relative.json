@@ -1,0 +1,29 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "core.config-roots-relative",
+  "summary": "Relative ambient user-configuration roots cannot resolve inside the workspace.",
+  "phase": 1,
+  "tags": ["config", "environment", "fail-closed"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": ["--output", "json", "cli", "config", "explain"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {
+      "HOME": "relative-home",
+      "XDG_CONFIG_HOME": "relative-config",
+      "APPDATA": "relative-appdata"
+    }
+  },
+  "expected": {
+    "exitCode": 2,
+    "stdout": { "kind": "json", "schema": "openprose.runner-error/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": { "code": "CONFIG_INVALID", "boundary": "configuration" }
+  }
+}

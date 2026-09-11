@@ -1,0 +1,360 @@
+{
+  "schema": "openprose.adapter-probe-scenario/1",
+  "scenarioVersion": "1.0.0",
+  "adapterId": "omp/rpc",
+  "recipe": "cli/shared/capabilities/adapters/recipes/omp-rpc.v1.json",
+  "placeholders": {
+    "executable": "{{EXECUTABLE}}",
+    "cwd": "{{WORKSPACE}}",
+    "imagePath": "{{IMAGE_PATH}}",
+    "taskJson": "{{TASK_JSON}}",
+    "model": "{{MODEL}}",
+    "invocationId": "fixture-invocation-0001",
+    "renderedConfigPath": "{{RENDERED_CONFIG_PATH}}"
+  },
+  "expectedArgv": [
+    "{{EXECUTABLE}}",
+    "--mode",
+    "rpc",
+    "--no-session",
+    "--no-extensions",
+    "--no-skills",
+    "--no-rules",
+    "--no-lsp",
+    "--no-title",
+    "--no-tools",
+    "--append-system-prompt",
+    "{{IMAGE_PATH}}",
+    "--config",
+    "{{RENDERED_CONFIG_PATH}}"
+  ],
+  "expectedArgvWithModel": [
+    "{{EXECUTABLE}}",
+    "--mode",
+    "rpc",
+    "--no-session",
+    "--no-extensions",
+    "--no-skills",
+    "--no-rules",
+    "--no-lsp",
+    "--no-title",
+    "--no-tools",
+    "--append-system-prompt",
+    "{{IMAGE_PATH}}",
+    "--model",
+    "{{MODEL}}",
+    "--config",
+    "{{RENDERED_CONFIG_PATH}}"
+  ],
+  "environment": {
+    "baseAllowlistRef": "oracle.v1.json#baseEnvironmentAllowlist",
+    "credentialGroup": "openrouter",
+    "additionalNames": [],
+    "forbiddenNames": [
+      "OPENPROSE_TOKEN",
+      "PROSE_TOKEN",
+      "PROSE_BILLING_TOKEN",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "ANTHROPIC_OAUTH_TOKEN",
+      "GEMINI_API_KEY",
+      "GOOGLE_APPLICATION_CREDENTIALS",
+      "GOOGLE_CLOUD_PROJECT",
+      "GOOGLE_CLOUD_LOCATION",
+      "GITHUB_TOKEN",
+      "GH_TOKEN",
+      "COPILOT_GITHUB_TOKEN",
+      "AWS_ACCESS_KEY_ID",
+      "AWS_SECRET_ACCESS_KEY",
+      "AWS_SESSION_TOKEN",
+      "AWS_PROFILE",
+      "AWS_REGION",
+      "AWS_DEFAULT_REGION"
+    ]
+  },
+  "files": [
+    {
+      "argument": "{{IMAGE_PATH}}",
+      "source": "cli/shared/image/echo-v0/manifest.json#modelVisibleBytes",
+      "mode": "0600",
+      "byteLength": 1310,
+      "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+    },
+    {
+      "argument": "{{RENDERED_CONFIG_PATH}}",
+      "source": "cli/shared/capabilities/adapters/recipes/omp-rpc.v1.json#launch.controls.ownedConfigOverlay.bytes",
+      "mode": "0600",
+      "byteLength": 200,
+      "sha256": "47b1a27639ab8d5ecd52abbb5326354419583b7b781ceb66935c822f789d2779"
+    }
+  ],
+  "stdin": {
+    "fixture": "cli/shared/fixtures/adapters/wire/omp-stdin.jsonl",
+    "byteLength": 349,
+    "sha256": "0ab32b036ae2b264344e8eb5de2afb564fb75b2e0270539205767008d45b92c9",
+    "decodedMessageSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc",
+    "stages": [
+      {
+        "after": "available_commands_update",
+        "requestId": "fixture-invocation-0001.omp.state.1",
+        "byteLength": 64,
+        "sha256": "b4d5266764bb4961acde71a9b367b99896ebdb5cb455170edf596ff199dadaf0"
+      },
+      {
+        "after": "get_state-response-empty-dumpTools",
+        "requestId": "fixture-invocation-0001.omp.prompt.1",
+        "byteLength": 285,
+        "sha256": "79374a759393c63ff59ddf9a3c56cb16a99c3a0469861a32a336aa6c8407a6eb"
+      }
+    ]
+  },
+  "fakeStdout": [
+    {
+      "type": "ready",
+      "protocolVersion": 1,
+      "supportedProtocolVersions": [
+        1,
+        2
+      ],
+      "maxFrameBytes": 1048576,
+      "maxReassembledFrameBytes": 67108864
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "widget-request-startup",
+      "method": "setWidget",
+      "widgetKey": "autoresearch"
+    },
+    {
+      "type": "available_commands_update",
+      "commands": []
+    },
+    {
+      "id": "fixture-invocation-0001.omp.state.1",
+      "type": "response",
+      "command": "get_state",
+      "success": true,
+      "data": {
+        "dumpTools": []
+      }
+    },
+    {
+      "type": "agent_start"
+    },
+    {
+      "type": "turn_start"
+    },
+    {
+      "type": "message_start",
+      "message": {
+        "role": "user",
+        "content": {
+          "argv": [
+            "prose",
+            "run",
+            "path with spaces/example.prose.md",
+            "--model",
+            "雪",
+            "",
+            "line\nbreak",
+            ";$(touch nope)"
+          ],
+          "interactionMode": "non-interactive",
+          "schema": "openprose.task-envelope/1"
+        }
+      }
+    },
+    {
+      "type": "message_end",
+      "message": {
+        "role": "user",
+        "content": {
+          "argv": [
+            "prose",
+            "run",
+            "path with spaces/example.prose.md",
+            "--model",
+            "雪",
+            "",
+            "line\nbreak",
+            ";$(touch nope)"
+          ],
+          "interactionMode": "non-interactive",
+          "schema": "openprose.task-envelope/1"
+        }
+      }
+    },
+    {
+      "type": "message_start",
+      "message": {
+        "role": "assistant",
+        "content": []
+      }
+    },
+    {
+      "type": "message_update",
+      "assistantMessageEvent": {
+        "type": "text_delta",
+        "delta": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+      },
+      "message": {
+        "role": "assistant",
+        "content": []
+      }
+    },
+    {
+      "type": "message_end",
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+          }
+        ]
+      }
+    },
+    {
+      "type": "turn_end",
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+          }
+        ]
+      },
+      "toolResults": []
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "widget-request-turn",
+      "method": "setWidget",
+      "widgetKey": "autoresearch",
+      "widgetLines": [
+        "status",
+        "running"
+      ],
+      "widgetPlacement": "belowEditor"
+    },
+    {
+      "type": "agent_end",
+      "messages": [
+        {
+          "role": "user",
+          "content": {
+            "argv": [
+              "prose",
+              "run",
+              "path with spaces/example.prose.md",
+              "--model",
+              "雪",
+              "",
+              "line\nbreak",
+              ";$(touch nope)"
+            ],
+            "interactionMode": "non-interactive",
+            "schema": "openprose.task-envelope/1"
+          }
+        },
+        {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+            }
+          ]
+        }
+      ],
+      "telemetry": {
+        "chats": {
+          "total": 1,
+          "byStopReason": {
+            "stop": 1
+          },
+          "totalLatencyMs": 12.5
+        },
+        "tools": {
+          "total": 0,
+          "ok": 0,
+          "error": 0,
+          "skipped": 0,
+          "blocked": 0,
+          "timeout": 0,
+          "aborted": 0,
+          "totalLatencyMs": 0,
+          "byName": {}
+        },
+        "usage": {
+          "inputTokens": 4,
+          "outputTokens": 2,
+          "cachedInputTokens": 0,
+          "cacheWriteTokens": 0,
+          "reasoningOutputTokens": 0,
+          "totalTokens": 6
+        },
+        "cost": {
+          "estimatedUsd": 0,
+          "unavailableReasons": [
+            "fixture-provider"
+          ]
+        },
+        "errors": {
+          "total": 0,
+          "byType": {}
+        },
+        "stepCount": 1
+      },
+      "coverage": {
+        "toolsAvailable": [],
+        "toolsInvoked": [],
+        "toolsUnused": [],
+        "modelsUsed": [
+          "fixture-model"
+        ],
+        "providersUsed": [
+          "openrouter"
+        ]
+      },
+      "isTerminal": true
+    },
+    {
+      "type": "extension_ui_request",
+      "id": "widget-request-settled",
+      "method": "setWidget",
+      "widgetKey": "autoresearch",
+      "widgetLines": [],
+      "widgetPlacement": "aboveEditor"
+    },
+    {
+      "id": "fixture-invocation-0001.omp.prompt.1",
+      "type": "response",
+      "command": "prompt",
+      "success": true
+    }
+  ],
+  "cancelStdin": "{\"id\":\"fixture-invocation-0001-cancel\",\"type\":\"abort\"}\n",
+  "expectedTerminal": "agent_end followed by process exit 0 after stdin close",
+  "expectedExitCode": 0,
+  "expectedLanguageTerminal": {
+    "schema": "openprose.echo-terminal/1",
+    "semanticStatus": "not-applicable",
+    "placeholder": true,
+    "marker": "OPENPROSE_ECHO_TERMINAL_V0",
+    "task": {
+      "argv": [
+        "prose",
+        "run",
+        "path with spaces/example.prose.md",
+        "--model",
+        "雪",
+        "",
+        "line\nbreak",
+        ";$(touch nope)"
+      ]
+    }
+  },
+  "stdinLifecycle": "close-after-terminal-event"
+}

@@ -1,0 +1,23 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.capability-symlink",
+  "revision": 1,
+  "immutable": true,
+  "summary": "The local bridge refuses a symlink component instead of following it outside the workspace.",
+  "phase": 5,
+  "tags": ["capability-bridge", "least-privilege", "symlink", "terminal", "no-fallback"],
+  "placementCandidate": "hosted-agent-local-capability-bridge",
+  "serviceScenario": "capability-symlink",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/hosted-agent-local-capability-bridge.json",
+  "actions": [{ "type": "start" }, { "type": "bridge.handle" }],
+  "expected": {
+    "exitCode": 22,
+    "terminalType": "run.terminal",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "not-emitted",
+    "requiredEventTypes": ["run.accepted", "capability.request", "run.terminal"],
+    "error": { "code": "LOCAL_CAPABILITY_REJECTED", "exitCode": 22 },
+    "capabilityError": "CAPABILITY_SYMLINK_REJECTED"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema": "openprose.transport-limits/1",
+  "maxRecordBytes": 1048576,
+  "maxAggregateStdoutBytes": 67108864,
+  "maxAggregateStderrBytes": 8388608,
+  "maxQueuedRecords": 256,
+  "maxDiagnosticRefs": 128,
+  "argv": {
+    "maxItems": 64,
+    "posix": {
+      "maxArgumentBytes": 131071,
+      "maxTotalBytes": 262144,
+      "counting": "UTF-8 bytes plus one NUL byte per argument, including executable"
+    },
+    "windows": {
+      "maxArgumentUtf16CodeUnits": 8191,
+      "maxTotalChargedUtf16CodeUnits": 30000,
+      "counting": "UTF-16 code units; total charges twice each argument plus three units for conservative quoting and separation, including executable"
+    }
+  },
+  "backpressureFailure": "HARNESS_FAILED",
+  "oversizedRecordFailure": "PROTOCOL_MALFORMED",
+  "silentDropPermitted": false
+}

@@ -1,0 +1,2 @@
+# Intentionally empty. Launch and build commands select this file explicitly so
+# a workspace or user bunfig.toml cannot alter the runner.

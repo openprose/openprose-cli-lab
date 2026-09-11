@@ -1,0 +1,51 @@
+{
+  "schema": "openprose.human-safe-scalars/1",
+  "escapeNotation": {
+    "backslash": "\\\\",
+    "lineFeed": "\\n",
+    "carriageReturn": "\\r",
+    "tab": "\\t",
+    "backspace": "\\b",
+    "formFeed": "\\f",
+    "otherControlTemplate": "\\u{XXXX}"
+  },
+  "unsafeCodePointRanges": [
+    {"start": 0, "end": 31},
+    {"start": 127, "end": 159},
+    {"start": 8232, "end": 8233}
+  ],
+  "cases": [
+    {
+      "id": "printable",
+      "input": "plain /tmp/OpenProse config.toml:7",
+      "rendered": "plain /tmp/OpenProse config.toml:7"
+    },
+    {
+      "id": "literal-backslashes",
+      "input": "literal\\n C:\\Users\\OpenProse",
+      "rendered": "literal\\\\n C:\\\\Users\\\\OpenProse"
+    },
+    {
+      "id": "named-controls",
+      "input": "lf:\n cr:\r tab:\t bs:\b ff:\f",
+      "rendered": "lf:\\n cr:\\r tab:\\t bs:\\b ff:\\f"
+    },
+    {
+      "id": "other-line-breaking-controls",
+      "input": "nul:\u0000 bel:\u0007 vt:\u000b esc:\u001b us:\u001f del:\u007f c1:\u0085 end:\u009f ls:\u2028 ps:\u2029",
+      "rendered": "nul:\\u{0000} bel:\\u{0007} vt:\\u{000B} esc:\\u{001B} us:\\u{001F} del:\\u{007F} c1:\\u{0085} end:\\u{009F} ls:\\u{2028} ps:\\u{2029}"
+    }
+  ],
+  "multilineCases": [
+    {
+      "id": "ordinary-multiline-prose",
+      "input": "first line\nsecond line\n",
+      "rendered": "first line\nsecond line\n"
+    },
+    {
+      "id": "hostile-terminal-sequence",
+      "input": "literal\\path\nosc:\u001b]0;owned\u0007\rnext\tbs:\b ff:\f c1:\u0085 ls:\u2028 ps:\u2029",
+      "rendered": "literal\\\\path\nosc:\\u{001B}]0;owned\\u{0007}\\rnext\\tbs:\\b ff:\\f c1:\\u{0085} ls:\\u{2028} ps:\\u{2029}"
+    }
+  ]
+}

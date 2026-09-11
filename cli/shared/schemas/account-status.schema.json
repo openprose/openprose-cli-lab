@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/account-status.schema.json",
+  "title": "OpenProse account status v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "availability", "authenticated", "authCategory", "billingOwner", "credentialStorage", "problem"],
+  "properties": {
+    "schema": { "const": "openprose.account-status/1" },
+    "availability": { "enum": ["available", "unavailable"] },
+    "authenticated": { "type": ["boolean", "null"] },
+    "authCategory": { "const": "openprose-account" },
+    "billingOwner": { "const": "openprose" },
+    "credentialStorage": { "enum": ["os-credential-store", "unavailable"] },
+    "problem": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "runner-error.schema.json" }
+      ]
+    }
+  }
+}

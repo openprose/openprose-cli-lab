@@ -1,0 +1,27 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "transport.fake-delay",
+  "summary": "A bounded delayed stream completes without changing its result.",
+  "phase": 1,
+  "tags": ["fake-process", "delay", "streaming"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied",
+    "fakeHarness": { "scenario": "delay", "delayMs": 25 }
+  },
+  "invocation": {
+    "argv": ["--harness", "mock", "--transport", "fake-process", "--timeout", "2s", "--output", "json", "run", "fixture.prose.md"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": { "kind": "json", "schema": "openprose.runner-result/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": true,
+    "resultMatches": { "semantic": { "status": "not-applicable" }, "runnerExitCode": 0 },
+    "fakeObservation": { "exactImageBytes": true, "exactTaskBytes": true }
+  }
+}

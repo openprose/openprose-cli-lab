@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/launch-adapter.schema.json",
+  "title": "OpenProse mechanical launch-adapter descriptor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "id", "runtime", "promptPlacement",
+    "preservesHarnessBasePrompt", "sourceBytesVerified",
+    "adapterInputContentVerified", "modelRequestObserved", "streaming",
+    "cancellation", "terminal", "resume", "isolation", "auth",
+    "billingOwner", "observedBy", "platforms", "versionRange",
+    "transportClaims"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.launch-adapter/1" },
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$" },
+    "runtime": { "$ref": "common.schema.json#/$defs/runtime" },
+    "promptPlacement": { "type": "string", "pattern": "^[a-z][a-z0-9._-]*$" },
+    "preservesHarnessBasePrompt": { "$ref": "common.schema.json#/$defs/guarantee" },
+    "sourceBytesVerified": { "$ref": "common.schema.json#/$defs/guarantee" },
+    "adapterInputContentVerified": { "$ref": "common.schema.json#/$defs/guarantee" },
+    "modelRequestObserved": { "$ref": "common.schema.json#/$defs/guarantee" },
+    "streaming": { "type": "string", "enum": ["structured", "buffered-structured", "unsupported"] },
+    "cancellation": { "type": "string", "enum": ["protocol-and-process-tree", "process-tree", "cooperative", "unsupported"] },
+    "terminal": { "type": "string", "enum": ["structured", "process-exit", "unsupported"] },
+    "resume": { "$ref": "common.schema.json#/$defs/guarantee" },
+    "isolation": {
+      "type": "string",
+      "enum": ["managed-policy-preserving", "partial", "unsupported", "test-fixture"]
+    },
+    "auth": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/authCategory" }
+    },
+    "billingOwner": { "$ref": "common.schema.json#/$defs/billingOwner" },
+    "observedBy": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+    },
+    "platforms": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/platform" }
+    },
+    "versionRange": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "transportClaims": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["base-transport-compatible", "strict-wrapper-conformant"]
+      }
+    },
+    "normalizationBoundary": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "schema": "openprose.real-harness-matrix/1",
+  "id": "prime-agent-0.7.0-research-2026-08-27",
+  "frozenAt": "2026-08-27T22:55:00-04:00",
+  "harness": {
+    "name": "prime-agent",
+    "expectedObservedVersion": "0.7.0",
+    "stableRecipeVersion": "0.8.1",
+    "stableRecipeCompatible": false,
+    "classification": "research-only-incompatible"
+  },
+  "task": {
+    "kind": "exact-output-harmless-canary",
+    "generatorVersion": "exact-ascii-token/1"
+  },
+  "routes": [
+    {
+      "id": "prime-openai-luna",
+      "provider": "prime-inference",
+      "model": "openai/gpt-5.6-luna",
+      "expectedOutput": "OPCANARY_OAI_7B3A",
+      "plannedCostCeilingUsd": 0.25,
+      "credentialEnvironment": []
+    },
+    {
+      "id": "prime-anthropic-haiku",
+      "provider": "prime-inference",
+      "model": "anthropic/claude-haiku-4.5",
+      "expectedOutput": "OPCANARY_ANT_5D91",
+      "plannedCostCeilingUsd": 0.25,
+      "credentialEnvironment": []
+    },
+    {
+      "id": "openrouter-qwen",
+      "provider": "openrouter",
+      "model": "qwen/qwen3.7-flash",
+      "expectedOutput": "OPCANARY_QWEN_2F84",
+      "plannedCostCeilingUsd": 0.25,
+      "credentialEnvironment": ["OPENROUTER_API_KEY"]
+    },
+    {
+      "id": "openrouter-deepseek",
+      "provider": "openrouter",
+      "model": "deepseek/deepseek-v4-flash-0731",
+      "expectedOutput": "OPCANARY_DS_9C26",
+      "plannedCostCeilingUsd": 0.25,
+      "credentialEnvironment": ["OPENROUTER_API_KEY"]
+    }
+  ],
+  "priorResearchMetadata": {
+    "source": "bounded metadata-only extraction from retained ~/.claude test logs",
+    "transcriptsCopied": false,
+    "modelsObserved": [
+      "anthropic/claude-fable-5",
+      "anthropic/claude-opus-5",
+      "openai/gpt-5.6-luna",
+      "openai/gpt-5.6-sol",
+      "openai/gpt-5.6-terra",
+      "openrouter/deepseek/deepseek-v4-flash"
+    ]
+  },
+  "claims": {
+    "strictWrapperAdmission": false,
+    "semanticConformance": "unknown",
+    "proseComplete": "unknown",
+    "releaseEligible": false
+  }
+}

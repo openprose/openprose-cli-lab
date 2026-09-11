@@ -1,0 +1,44 @@
+{
+  "schema": "openprose.runner-dry-run-report/1",
+  "wouldStartModel": false,
+  "cwd": "{{WORKSPACE}}",
+  "selection": {
+    "harness": "openprose",
+    "transport": "hosted",
+    "adapterId": "openprose/hosted",
+    "runtimeVersion": null,
+    "model": null
+  },
+  "prompt": { "placement": null, "strictness": "unsupported" },
+  "isolation": "unsupported",
+  "auth": { "category": "openprose-account", "readiness": "unknown" },
+  "billingOwner": "openprose",
+  "languageImage": {
+    "formatVersion": "openprose.skill-runtime-image/1",
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00",
+    "releaseEligible": false
+  },
+  "configuration": [
+    { "key": "cwd", "source": "default", "location": "process cwd", "redacted": false },
+    { "key": "harness", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "transport", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "model", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "timeout", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "output", "source": "flag", "location": "--output", "redacted": false },
+    { "key": "color", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "verbose", "source": "default", "location": "built-in", "redacted": false },
+    { "key": "authProfile", "source": "default", "location": "built-in", "redacted": true }
+  ],
+  "readiness": "blocked",
+  "blockingError": {
+    "schema": "openprose.runner-error/1",
+    "code": "HOSTED_UNAVAILABLE",
+    "boundary": "hosted-service",
+    "exitCode": 10,
+    "retryable": false,
+    "message": "OpenProse-billed execution is not available in this build.",
+    "action": "Select an available BYO harness with the `cli harness use <id>` runner operation, then invoke the `cli doctor` runner operation.",
+    "details": { "billingOwner": "openprose", "fallbackSelected": false }
+  }
+}

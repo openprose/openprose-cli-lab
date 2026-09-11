@@ -1,0 +1,580 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/alpha-promotion-settlement.schema.json",
+  "title": "OpenProse functional-alpha publication settlement v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "operation", "status", "version", "sourceSha", "repository",
+    "releaseId", "tag", "registry", "stableLatest", "alphaTag",
+    "assemblySha256", "draftAuthority", "startedAt", "updatedAt", "githubArtifactAttestations",
+    "npmMutationToolchain", "packages", "github"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.alpha-promotion-settlement/1" },
+    "operation": {
+      "enum": ["bootstrap", "stage-platforms", "stage-meta", "settle-and-promote"]
+    },
+    "status": {
+      "enum": [
+        "initialized", "in-progress", "awaiting-platform-approval",
+        "awaiting-meta-approval", "npm-settled", "complete", "failed", "ambiguous",
+        "partial-publication"
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-alpha\\.(0|[1-9][0-9]*)$"
+    },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "releaseId": { "type": "integer", "minimum": 1 },
+    "tag": { "type": "string", "pattern": "^cli-v[0-9]+\\.[0-9]+\\.[0-9]+-alpha\\.[0-9]+$" },
+    "registry": { "const": "https://registry.npmjs.org" },
+    "stableLatest": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "alphaTag": { "const": "alpha" },
+    "assemblySha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "draftAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256", "artifact", "controlSha", "releaseBody",
+        "assetInventorySha256", "workflowRun", "outcome"
+      ],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "artifact": {
+          "type": "string",
+          "pattern": "^openprose-cli-alpha-draft-authority-run-[1-9][0-9]*-attempt-[1-9][0-9]*$"
+        },
+        "controlSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "releaseBody": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["byteLength", "sha256"],
+          "properties": {
+            "byteLength": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        "assetInventorySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "workflowRun": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "id", "attempt"],
+          "properties": {
+            "path": { "const": ".github/workflows/openprose-cli-alpha-release.yml" },
+            "id": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "outcome": { "enum": ["created", "resumed"] }
+      }
+    },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "githubArtifactAttestations": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status", "repository", "sourceSha", "sourceRef", "predicateType",
+        "signerWorkflow", "signerDigest", "expectedAssetCount",
+        "verifiedAssetCount", "bytesReauthenticated", "workflowRunId",
+        "workflowRunAttempt", "evidenceSha256", "tool", "assets"
+      ],
+      "properties": {
+        "status": { "enum": ["not-attempted", "verified", "failed"] },
+        "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "sourceRef": { "const": "refs/heads/main" },
+        "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+        "signerWorkflow": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/\\.github/workflows/openprose-cli-alpha-release\\.yml$"
+        },
+        "signerDigest": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "expectedAssetCount": { "const": 38 },
+        "verifiedAssetCount": { "type": "integer", "minimum": 0, "maximum": 38 },
+        "bytesReauthenticated": { "type": "boolean" },
+        "workflowRunId": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "integer", "minimum": 1 }
+          ]
+        },
+        "workflowRunAttempt": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "integer", "minimum": 1 }
+          ]
+        },
+        "evidenceSha256": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          ]
+        },
+        "tool": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["authority", "version", "executableByteLength", "executableSha256"],
+              "properties": {
+                "authority": { "const": "externally-provisioned-github-cli" },
+                "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+                "executableByteLength": { "type": "integer", "minimum": 1, "maximum": 268435456 },
+                "executableSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+              }
+            }
+          ]
+        },
+        "assets": {
+          "type": "array",
+          "minItems": 38,
+          "maxItems": 38,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "byteLength", "sha256", "outcome"],
+            "properties": {
+              "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,254}$" },
+              "byteLength": { "type": "integer", "minimum": 1, "maximum": 536870912 },
+              "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+              "outcome": { "enum": ["not-attempted", "verified", "failed"] }
+            }
+          }
+        }
+      }
+    },
+    "npmMutationToolchain": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "npmVersion", "npmTarballUrl", "npmTarballByteLength",
+            "npmTarballSha1", "npmTarballSha256", "npmTarballSha512",
+            "npmTarballIntegrity", "npmTreeSha256", "npmEntrySha256", "nodeVersion",
+            "nodeExecutableSha256"
+          ],
+          "properties": {
+            "npmVersion": { "const": "11.15.0" },
+            "npmTarballUrl": { "const": "https://registry.npmjs.org/npm/-/npm-11.15.0.tgz" },
+            "npmTarballByteLength": { "const": 2901197 },
+            "npmTarballSha1": { "const": "d1a5bc920f2068774ae4d802916379fad266ba0d" },
+            "npmTarballSha256": { "const": "c15ed81d98f5f4c45e30f71e5dcf83ae24e9af5beb5db8b1d58becea97ba38cc" },
+            "npmTarballSha512": { "const": "fa4d2d93b9519e93143e70bb913b94ff2ad5fe69c5a0f84943be557cbb59e9fc1bcce55768fb1313f225f4f9f50c78b8f366f2332aa41effd7b10efa98d8d72f" },
+            "npmTarballIntegrity": { "const": "sha512-+k0tk7lRnpMUPnC7kTuU/yrV/mnFoPhJQ75VfLtZ6fwbzOVXaPsTE/Il9Pn1DHi482byMyqkHv/XsQ76mNjXLw==" },
+            "npmTreeSha256": { "const": "a625dc0d20bcb3c26ed2e607376b0b723dea713881e3d63a31e871526103e9f6" },
+            "npmEntrySha256": { "const": "8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7" },
+            "nodeVersion": { "const": "24.20.0" },
+            "nodeExecutableSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        }
+      ]
+    },
+    "packages": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name", "role", "artifact", "sha256", "shasum", "integrity",
+          "attempted", "action", "outcome", "registryIntegrity",
+          "provenancePredicateType"
+        ],
+        "properties": {
+          "name": { "type": "string", "pattern": "^@openprose/prose-cli(?:-[a-z0-9-]+)?$" },
+          "role": { "enum": ["platform", "meta"] },
+          "artifact": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*\\.tgz$" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "shasum": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+          "integrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+          "attempted": { "type": "boolean" },
+          "action": { "enum": ["none", "publish", "stage", "verify"] },
+          "outcome": {
+            "enum": ["not-attempted", "published", "staged", "verified", "failed", "ambiguous"]
+          },
+          "registryIntegrity": {
+            "oneOf": [
+              { "type": "null" },
+              { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" }
+            ]
+          },
+          "provenancePredicateType": {
+            "oneOf": [
+              { "type": "null" },
+              { "const": "https://slsa.dev/provenance/v1" }
+            ]
+          }
+        }
+      }
+    },
+    "github": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["draftVerified", "promotionAttempted", "promoted", "outcome"],
+      "properties": {
+        "draftVerified": { "type": "boolean" },
+        "promotionAttempted": { "type": "boolean" },
+        "promoted": { "type": "boolean" },
+        "outcome": { "enum": ["not-attempted", "promoted", "ambiguous"] }
+      }
+    }
+  },
+  "$defs": {
+    "attestationVerified": {
+      "type": "object",
+      "properties": {
+        "status": { "const": "verified" },
+        "verifiedAssetCount": { "const": 38 },
+        "bytesReauthenticated": { "const": true },
+        "workflowRunId": { "type": "integer", "minimum": 1 },
+        "workflowRunAttempt": { "type": "integer", "minimum": 1 },
+        "evidenceSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "tool": { "not": { "type": "null" } },
+        "assets": {
+          "items": {
+            "type": "object",
+            "properties": { "outcome": { "const": "verified" } },
+            "required": ["outcome"]
+          }
+        }
+      },
+      "required": [
+        "status", "verifiedAssetCount", "bytesReauthenticated", "workflowRunId",
+        "workflowRunAttempt", "evidenceSha256", "tool", "assets"
+      ]
+    },
+    "attestationFailedAfterByteDrift": {
+      "type": "object",
+      "properties": {
+        "status": { "const": "failed" },
+        "verifiedAssetCount": { "const": 38 },
+        "bytesReauthenticated": { "const": false },
+        "workflowRunId": { "type": "integer", "minimum": 1 },
+        "workflowRunAttempt": { "type": "integer", "minimum": 1 },
+        "evidenceSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "tool": { "not": { "type": "null" } },
+        "assets": {
+          "items": {
+            "type": "object",
+            "properties": { "outcome": { "const": "verified" } },
+            "required": ["outcome"]
+          }
+        }
+      },
+      "required": [
+        "status", "verifiedAssetCount", "bytesReauthenticated", "workflowRunId",
+        "workflowRunAttempt", "evidenceSha256", "tool", "assets"
+      ]
+    },
+    "githubIdle": {
+      "type": "object",
+      "properties": {
+        "draftVerified": { "const": true },
+        "promotionAttempted": { "const": false },
+        "promoted": { "const": false },
+        "outcome": { "const": "not-attempted" }
+      },
+      "required": ["draftVerified", "promotionAttempted", "promoted", "outcome"]
+    },
+    "githubAmbiguous": {
+      "type": "object",
+      "properties": {
+        "draftVerified": { "const": true },
+        "promotionAttempted": { "const": true },
+        "promoted": { "const": false },
+        "outcome": { "const": "ambiguous" }
+      },
+      "required": ["draftVerified", "promotionAttempted", "promoted", "outcome"]
+    },
+    "githubPromoted": {
+      "type": "object",
+      "properties": {
+        "draftVerified": { "const": true },
+        "promotionAttempted": { "const": true },
+        "promoted": { "const": true },
+        "outcome": { "const": "promoted" }
+      },
+      "required": ["draftVerified", "promotionAttempted", "promoted", "outcome"]
+    },
+    "packagePending": {
+      "type": "object",
+      "properties": {
+        "attempted": { "const": false },
+        "action": { "const": "none" },
+        "outcome": { "const": "not-attempted" },
+        "registryIntegrity": { "type": "null" },
+        "provenancePredicateType": { "type": "null" }
+      },
+      "required": ["attempted", "action", "outcome", "registryIntegrity", "provenancePredicateType"]
+    },
+    "packageStaged": {
+      "type": "object",
+      "properties": {
+        "attempted": { "const": true },
+        "action": { "const": "stage" },
+        "outcome": { "const": "staged" },
+        "registryIntegrity": { "type": "null" },
+        "provenancePredicateType": { "type": "null" }
+      },
+      "required": ["attempted", "action", "outcome", "registryIntegrity", "provenancePredicateType"]
+    },
+    "packageVerified": {
+      "type": "object",
+      "properties": {
+        "attempted": { "const": false },
+        "action": { "const": "verify" },
+        "outcome": { "const": "verified" },
+        "registryIntegrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+        "provenancePredicateType": { "const": "https://slsa.dev/provenance/v1" }
+      },
+      "required": ["attempted", "action", "outcome", "registryIntegrity", "provenancePredicateType"]
+    },
+    "packagePublished": {
+      "type": "object",
+      "properties": {
+        "attempted": { "const": true },
+        "action": { "const": "publish" },
+        "outcome": { "const": "published" },
+        "registryIntegrity": { "type": "string", "pattern": "^sha512-[A-Za-z0-9+/]+={0,2}$" },
+        "provenancePredicateType": { "const": "https://slsa.dev/provenance/v1" }
+      },
+      "required": ["attempted", "action", "outcome", "registryIntegrity", "provenancePredicateType"]
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "operation": { "const": "bootstrap" } }, "required": ["operation"] },
+      "then": {
+        "properties": {
+          "packages": { "items": { "properties": { "action": { "enum": ["none", "publish"] } } } },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "stage-platforms" } }, "required": ["operation"] },
+      "then": {
+        "properties": {
+          "packages": {
+            "prefixItems": [
+              { "properties": { "action": { "enum": ["none", "stage"] } } },
+              { "properties": { "action": { "enum": ["none", "stage"] } } },
+              { "properties": { "action": { "enum": ["none", "stage"] } } },
+              { "properties": { "action": { "enum": ["none", "stage"] } } },
+              { "$ref": "#/$defs/packagePending" }
+            ],
+            "items": false
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "stage-meta" } }, "required": ["operation"] },
+      "then": {
+        "properties": {
+          "packages": {
+            "prefixItems": [
+              { "properties": { "action": { "enum": ["none", "verify"] } } },
+              { "properties": { "action": { "enum": ["none", "verify"] } } },
+              { "properties": { "action": { "enum": ["none", "verify"] } } },
+              { "properties": { "action": { "enum": ["none", "verify"] } } },
+              { "properties": { "action": { "enum": ["none", "stage"] } } }
+            ],
+            "items": false
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "operation": { "const": "settle-and-promote" } }, "required": ["operation"] },
+      "then": {
+        "properties": {
+          "npmMutationToolchain": { "type": "null" },
+          "packages": { "items": { "properties": { "action": { "enum": ["none", "verify"] } } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "initialized" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "githubArtifactAttestations": {
+            "properties": {
+              "status": { "const": "not-attempted" },
+              "tool": { "type": "null" },
+              "verifiedAssetCount": { "const": 0 },
+              "bytesReauthenticated": { "const": false },
+              "workflowRunId": { "type": "null" },
+              "workflowRunAttempt": { "type": "null" },
+              "evidenceSha256": { "type": "null" },
+              "assets": { "items": { "properties": { "outcome": { "const": "not-attempted" } } } }
+            }
+          },
+          "npmMutationToolchain": { "type": "null" },
+          "packages": { "items": { "$ref": "#/$defs/packagePending" } },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "in-progress" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+          "github": { "properties": { "outcome": { "enum": ["not-attempted", "ambiguous"] } } }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "awaiting-platform-approval" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "operation": { "const": "stage-platforms" },
+          "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+          "npmMutationToolchain": { "$ref": "#/properties/npmMutationToolchain/oneOf/1" },
+          "packages": {
+            "prefixItems": [
+              { "$ref": "#/$defs/packageStaged" }, { "$ref": "#/$defs/packageStaged" },
+              { "$ref": "#/$defs/packageStaged" }, { "$ref": "#/$defs/packageStaged" },
+              { "$ref": "#/$defs/packagePending" }
+            ],
+            "items": false
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "awaiting-meta-approval" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "operation": { "const": "stage-meta" },
+          "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+          "npmMutationToolchain": { "$ref": "#/properties/npmMutationToolchain/oneOf/1" },
+          "packages": {
+            "prefixItems": [
+              { "$ref": "#/$defs/packageVerified" }, { "$ref": "#/$defs/packageVerified" },
+              { "$ref": "#/$defs/packageVerified" }, { "$ref": "#/$defs/packageVerified" },
+              { "$ref": "#/$defs/packageStaged" }
+            ],
+            "items": false
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "npm-settled" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "operation": { "const": "bootstrap" },
+          "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+          "npmMutationToolchain": { "$ref": "#/properties/npmMutationToolchain/oneOf/1" },
+          "packages": { "items": { "$ref": "#/$defs/packagePublished" } },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "complete" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "operation": { "const": "settle-and-promote" },
+          "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+          "npmMutationToolchain": { "type": "null" },
+          "packages": { "items": { "$ref": "#/$defs/packageVerified" } },
+          "github": { "$ref": "#/$defs/githubPromoted" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "failed" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "githubArtifactAttestations": {
+            "oneOf": [
+              { "$ref": "#/$defs/attestationVerified" },
+              { "$ref": "#/$defs/attestationFailedAfterByteDrift" }
+            ]
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "ambiguous" } }, "required": ["status"] },
+      "then": {
+        "oneOf": [
+          {
+            "properties": {
+              "operation": { "const": "settle-and-promote" },
+              "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+              "npmMutationToolchain": { "type": "null" },
+              "packages": { "items": { "$ref": "#/$defs/packageVerified" } },
+              "github": { "$ref": "#/$defs/githubAmbiguous" }
+            }
+          },
+          {
+            "properties": {
+              "operation": { "enum": ["stage-platforms", "stage-meta"] },
+              "githubArtifactAttestations": { "$ref": "#/$defs/attestationVerified" },
+              "npmMutationToolchain": { "$ref": "#/properties/npmMutationToolchain/oneOf/1" },
+              "packages": {
+                "contains": {
+                  "properties": {
+                    "attempted": { "const": true },
+                    "action": { "const": "stage" },
+                    "outcome": { "const": "ambiguous" }
+                  },
+                  "required": ["attempted", "action", "outcome"]
+                },
+                "minContains": 1
+              },
+              "github": { "$ref": "#/$defs/githubIdle" }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "partial-publication" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "operation": { "const": "bootstrap" },
+          "githubArtifactAttestations": {
+            "oneOf": [
+              { "$ref": "#/$defs/attestationVerified" },
+              { "$ref": "#/$defs/attestationFailedAfterByteDrift" }
+            ]
+          },
+          "npmMutationToolchain": { "$ref": "#/properties/npmMutationToolchain/oneOf/1" },
+          "packages": {
+            "contains": {
+              "properties": {
+                "attempted": { "const": true },
+                "action": { "const": "publish" },
+                "outcome": { "enum": ["published", "ambiguous"] }
+              },
+              "required": ["attempted", "action", "outcome"]
+            },
+            "minContains": 1
+          },
+          "github": { "$ref": "#/$defs/githubIdle" }
+        }
+      }
+    }
+  ]
+}

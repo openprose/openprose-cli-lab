@@ -1,0 +1,138 @@
+{
+  "schema": "openprose.doctor-report/1",
+  "runner": {
+    "name": "rust",
+    "version": "0.1.0-fixture",
+    "commit": "fixture-commit"
+  },
+  "build": {
+    "profile": "development",
+    "testSeamsEnabled": true
+  },
+  "ready": false,
+  "cwd": "/workspace",
+  "selectedHarness": "openprose",
+  "selectedHarnessVersion": null,
+  "selectedTransport": "hosted",
+  "selectedAdapterId": "openprose/hosted",
+  "promptPlacement": null,
+  "isolation": "unsupported",
+  "authCategory": "openprose-account",
+  "selectedAuthReadiness": "unknown",
+  "billingOwner": "openprose",
+  "image": {
+    "formatVersion": "openprose.skill-runtime-image/1",
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00",
+    "releaseEligible": false
+  },
+  "configuration": {
+    "schema": "openprose.configuration-explanation/1",
+    "cwd": { "value": "/workspace", "source": { "kind": "default", "location": "process cwd" } },
+    "projectConfigPath": null,
+    "userConfigPath": "/workspace/config/openprose/cli.toml",
+    "values": {
+      "harness": { "value": "openprose", "source": { "kind": "default", "location": "built-in" } },
+      "transport": { "value": "auto", "source": { "kind": "default", "location": "built-in" } },
+      "model": { "value": null, "source": { "kind": "default", "location": "built-in" } },
+      "timeout": { "value": "10m", "source": { "kind": "default", "location": "built-in" } },
+      "output": { "value": "json", "source": { "kind": "flag", "location": "--output" } },
+      "color": { "value": false, "source": { "kind": "default", "location": "built-in" } },
+      "verbose": { "value": false, "source": { "kind": "default", "location": "built-in" } },
+      "authProfile": { "value": null, "source": { "kind": "default", "location": "built-in" } }
+    }
+  },
+  "harnesses": [
+    {
+      "id": "openprose",
+      "runtime": "hosted-runtime",
+      "availability": "not-implemented",
+      "detectedVersion": null,
+      "transports": ["hosted"],
+      "authCategory": "openprose-account",
+      "billingOwner": "openprose",
+      "strictWrapperConformant": false,
+      "testOnly": false
+    },
+    {
+      "id": "prime",
+      "runtime": "installed-process",
+      "availability": "not-implemented",
+      "detectedVersion": null,
+      "transports": ["rpc"],
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "strictWrapperConformant": false,
+      "testOnly": false,
+      "admissionBlock": "prompt-channel"
+    },
+    {
+      "id": "omp",
+      "runtime": "installed-process",
+      "availability": "not-implemented",
+      "detectedVersion": null,
+      "transports": ["rpc"],
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "strictWrapperConformant": false,
+      "testOnly": false,
+      "runtimePrerequisites": [
+        {
+          "runtime": "bun",
+          "versionRange": ">=1.3.14",
+          "detectedVersion": null,
+          "availability": "missing",
+          "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+        }
+      ],
+      "admissionBlock": "strict-admission"
+    },
+    {
+      "id": "codex",
+      "runtime": "installed-process",
+      "availability": "not-implemented",
+      "detectedVersion": null,
+      "transports": ["exec-json"],
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "strictWrapperConformant": false,
+      "testOnly": false,
+      "admissionBlock": "prompt-channel"
+    },
+    {
+      "id": "claude",
+      "runtime": "installed-process",
+      "availability": "not-implemented",
+      "detectedVersion": null,
+      "transports": ["print-stream-json"],
+      "authCategory": "harness-managed",
+      "billingOwner": "user-provider",
+      "strictWrapperConformant": false,
+      "testOnly": false,
+      "admissionBlock": "strict-admission"
+    },
+    {
+      "id": "mock",
+      "runtime": "deterministic-mock",
+      "availability": "available",
+      "detectedVersion": "1.0.0",
+      "transports": ["deterministic", "fake-process"],
+      "authCategory": "none-test-only",
+      "billingOwner": "test-fixture",
+      "strictWrapperConformant": true,
+      "testOnly": true
+    }
+  ],
+  "problems": [
+    {
+      "schema": "openprose.runner-error/1",
+      "code": "HOSTED_UNAVAILABLE",
+      "boundary": "hosted-service",
+      "message": "OpenProse-billed execution is not available in this build.",
+      "action": "Select an available BYO harness with the `cli harness use <id>` runner operation, then invoke the `cli doctor` runner operation.",
+      "exitCode": 10,
+      "retryable": false,
+      "details": { "billingOwner": "openprose", "fallbackSelected": false }
+    }
+  ]
+}

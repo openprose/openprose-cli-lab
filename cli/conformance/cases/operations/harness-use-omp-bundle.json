@@ -1,0 +1,51 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "operations.harness-use-omp-bundle",
+  "summary": "Both products atomically persist an explicit OMP harness, model, and auth-profile bundle without starting it.",
+  "phase": 6,
+  "tags": ["cli", "configuration", "agent-dx", "differential", "saved-selection"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": [
+      "--output",
+      "json",
+      "cli",
+      "harness",
+      "use",
+      "omp",
+      "--model",
+      "fixture/model",
+      "--auth-profile",
+      "omp-harness-login"
+    ],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {
+      "HOME": "{{WORKSPACE}}/home",
+      "XDG_CONFIG_HOME": "{{WORKSPACE}}/config"
+    }
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": { "kind": "json", "schema": "openprose.harness-selection/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": {
+      "schema": "openprose.harness-selection/1",
+      "harness": "omp",
+      "scope": "user",
+      "path": "{{WORKSPACE}}/config/openprose/cli.toml",
+      "changed": true
+    },
+    "fileEffects": [
+      {
+        "path": "{{WORKSPACE}}/config/openprose/cli.toml",
+        "utf8": "auth_profile = \"omp-harness-login\"\nharness = \"omp\"\nmodel = \"fixture/model\"\n"
+      }
+    ]
+  }
+}

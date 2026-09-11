@@ -1,0 +1,45 @@
+import packageManifest from "../../package.json" with { type: "json" };
+
+declare const OPENPROSE_BUILD_COMMIT: string | undefined;
+declare const OPENPROSE_BUILD_VERSION: string | undefined;
+declare const OPENPROSE_BUILD_PROFILE: "development" | "release" | undefined;
+declare const OPENPROSE_TEST_SEAMS: boolean | undefined;
+declare const OPENPROSE_WINDOWS_HOST_SHA256: string | undefined;
+declare const OPENPROSE_WINDOWS_HOST_ADMISSION: boolean | undefined;
+
+export const RUNNER_BUILD_COMMIT =
+  typeof OPENPROSE_BUILD_COMMIT === "string" && OPENPROSE_BUILD_COMMIT.length > 0
+    ? OPENPROSE_BUILD_COMMIT
+    : "development";
+
+// Standalone builds replace this identifier with a validated exact SemVer.
+// Source-level tests deliberately fall back to the workspace package version.
+export const RUNNER_VERSION =
+  typeof OPENPROSE_BUILD_VERSION === "string" && OPENPROSE_BUILD_VERSION.length > 0
+    ? OPENPROSE_BUILD_VERSION
+    : packageManifest.version;
+
+// Source-level tests deliberately retain hermetic seams. Every standalone
+// build injects this constant explicitly, and release builds inject false.
+export const TEST_SEAMS_ENABLED =
+  typeof OPENPROSE_TEST_SEAMS === "boolean" ? OPENPROSE_TEST_SEAMS : true;
+
+// Standalone builds inject this independently from test-seam admission. An
+// ordinary local build is development-profile even though its seams are off;
+// only the explicit release build reports release.
+export const BUILD_PROFILE =
+  typeof OPENPROSE_BUILD_PROFILE === "string"
+    ? OPENPROSE_BUILD_PROFILE
+    : "development";
+
+const compiledWindowsHostSha256 =
+  typeof OPENPROSE_WINDOWS_HOST_SHA256 === "string" ? OPENPROSE_WINDOWS_HOST_SHA256 : "";
+
+export const WINDOWS_HOST_EXPECTED_SHA256 = /^[0-9a-f]{64}$/.test(compiledWindowsHostSha256)
+  ? compiledWindowsHostSha256
+  : null;
+
+// This is a compile-time promotion decision. Runtime environment variables and
+// helper self-report can never turn the Windows path on.
+export const WINDOWS_HOST_ADMISSION_ENABLED =
+  typeof OPENPROSE_WINDOWS_HOST_ADMISSION === "boolean" ? OPENPROSE_WINDOWS_HOST_ADMISSION : false;

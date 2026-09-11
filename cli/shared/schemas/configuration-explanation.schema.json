@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/configuration-explanation.schema.json",
+  "title": "OpenProse effective runner configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "cwd", "projectConfigPath", "userConfigPath", "values"],
+  "properties": {
+    "schema": { "const": "openprose.configuration-explanation/1" },
+    "cwd": { "$ref": "#/$defs/sourcedPath" },
+    "projectConfigPath": { "type": ["string", "null"] },
+    "userConfigPath": { "type": "string", "minLength": 1 },
+    "values": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["harness", "transport", "model", "timeout", "output", "color", "verbose", "authProfile"],
+      "properties": {
+        "harness": { "$ref": "#/$defs/sourcedString" },
+        "transport": { "$ref": "#/$defs/sourcedString" },
+        "model": { "$ref": "#/$defs/sourcedNullableString" },
+        "timeout": { "$ref": "#/$defs/sourcedString" },
+        "output": {
+          "allOf": [
+            { "$ref": "#/$defs/sourced" },
+            { "properties": { "value": { "enum": ["human", "json", "jsonl"] } } }
+          ]
+        },
+        "color": { "$ref": "#/$defs/sourcedBoolean" },
+        "verbose": { "$ref": "#/$defs/sourcedBoolean" },
+        "authProfile": { "$ref": "#/$defs/sourcedNullableString" }
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "location"],
+      "properties": {
+        "kind": { "enum": ["default", "user-config", "project-config", "environment", "flag"] },
+        "location": { "type": "string", "minLength": 1 }
+      }
+    },
+    "sourced": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "source"],
+      "properties": {
+        "value": { "$ref": "common.schema.json#/$defs/jsonValue" },
+        "source": { "$ref": "#/$defs/source" }
+      }
+    },
+    "sourcedPath": {
+      "allOf": [
+        { "$ref": "#/$defs/sourced" },
+        { "properties": { "value": { "type": "string", "minLength": 1 } } }
+      ]
+    },
+    "sourcedString": {
+      "allOf": [
+        { "$ref": "#/$defs/sourced" },
+        { "properties": { "value": { "type": "string", "minLength": 1 } } }
+      ]
+    },
+    "sourcedNullableString": {
+      "allOf": [
+        { "$ref": "#/$defs/sourced" },
+        { "properties": { "value": { "type": ["string", "null"] } } }
+      ]
+    },
+    "sourcedBoolean": {
+      "allOf": [
+        { "$ref": "#/$defs/sourced" },
+        { "properties": { "value": { "type": "boolean" } } }
+      ]
+    }
+  }
+}

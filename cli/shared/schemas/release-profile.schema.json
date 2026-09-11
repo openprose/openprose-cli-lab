@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/release-profile.schema.json",
+  "title": "OpenProse real-harness release profile v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "profileId", "profileVersion", "frozenAt", "image",
+    "terminalEnvelope", "semanticCorpus", "requiredMatrix", "trialPolicy",
+    "costCeiling", "quarantinePolicy"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.release-profile/1" },
+    "profileId": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" },
+    "profileVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "frozenAt": { "$ref": "common.schema.json#/$defs/rfc3339" },
+    "image": {
+      "type": "object", "additionalProperties": false,
+      "required": ["version", "sha256", "purpose"],
+      "properties": { "version": { "type": "string", "minLength": 1 }, "sha256": { "$ref": "common.schema.json#/$defs/sha256" }, "purpose": { "const": "canonical-language-runtime" } }
+    },
+    "terminalEnvelope": { "$ref": "#/$defs/versionedArtifact" },
+    "semanticCorpus": { "$ref": "#/$defs/versionedArtifact" },
+    "requiredMatrix": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["harness", "transport", "platform", "versionRange", "claim", "semanticProfile"],
+        "properties": {
+          "harness": { "type": "string", "minLength": 1 },
+          "transport": { "type": "string", "minLength": 1 },
+          "platform": { "$ref": "common.schema.json#/$defs/platform" },
+          "versionRange": { "type": "string", "minLength": 1 },
+          "claim": { "const": "strict-wrapper-conformant" },
+          "semanticProfile": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "trialPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["trials", "retries", "retryableConditions"],
+      "properties": {
+        "trials": { "type": "integer", "minimum": 1 },
+        "retries": { "type": "integer", "minimum": 0 },
+        "retryableConditions": { "type": "array", "uniqueItems": true, "items": { "enum": ["provider-transient", "network-transient", "rate-limit"] } }
+      }
+    },
+    "costCeiling": {
+      "type": "object", "additionalProperties": false,
+      "required": ["currency", "perRun", "total"],
+      "properties": { "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }, "perRun": { "type": "number", "minimum": 0 }, "total": { "type": "number", "minimum": 0 } }
+    },
+    "quarantinePolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requiresOwner", "requiresReason", "requiresExpiry", "maximumDays"],
+      "properties": { "requiresOwner": { "const": true }, "requiresReason": { "const": true }, "requiresExpiry": { "const": true }, "maximumDays": { "type": "integer", "minimum": 1 } }
+    }
+  },
+  "$defs": {
+    "versionedArtifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "version", "sha256"],
+      "properties": { "id": { "type": "string", "minLength": 1 }, "version": { "type": "string", "minLength": 1 }, "sha256": { "$ref": "common.schema.json#/$defs/sha256" } }
+    }
+  }
+}

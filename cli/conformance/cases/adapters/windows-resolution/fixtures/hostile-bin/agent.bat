@@ -1,0 +1,3 @@
+@echo off
+echo BATCH_SHIM_WAS_EXECUTED> SHELL_EXECUTED
+exit /b 98

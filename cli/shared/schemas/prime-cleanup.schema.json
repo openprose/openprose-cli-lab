@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/prime-cleanup.schema.json",
+  "title": "OpenProse Prime owned-service cleanup result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "adapterId",
+    "cleanupHandle",
+    "status",
+    "serviceSettlement",
+    "sensitiveFilesRemoved",
+    "directoryRemoved"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.prime-cleanup/1" },
+    "adapterId": { "const": "prime/rpc" },
+    "cleanupHandle": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^prime-v1\\.openprose-prime-[A-Za-z0-9-]{6,64}\\.[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89aAbB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+    },
+    "status": { "const": "cleaned" },
+    "serviceSettlement": { "const": "verified" },
+    "sensitiveFilesRemoved": { "const": true },
+    "directoryRemoved": { "const": true }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "openprose.skill-runtime-image-manifest/1",
+  "imageFormatVersion": "openprose.skill-runtime-image/1",
+  "imageVersion": "echo-v0",
+  "languageVersion": "placeholder-not-openprose-language",
+  "skillVersion": "echo-placeholder-v0",
+  "runtimeContractVersion": "echo-transport-placeholder-v0",
+  "semanticSourceRevision": "user-authorized-nonsemantic-placeholder-2026-08-28",
+  "purpose": "functional-alpha-placeholder",
+  "releaseEligible": true,
+  "normalization": {
+    "encoding": "utf-8",
+    "newlines": "lf",
+    "byteOrderMark": "forbidden",
+    "pathSeparator": "/"
+  },
+  "payload": [
+    {
+      "path": "payload/00-echo-placeholder.md",
+      "mediaType": "text/markdown; charset=utf-8",
+      "byteLength": 1310,
+      "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+    }
+  ],
+  "modelVisibleBytes": {
+    "serialization": "ordered-raw-concatenation-v1",
+    "byteLength": 1310,
+    "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+  },
+  "aggregateSha256": {
+    "algorithm": "sha256-path-length-nul-v1",
+    "sha256": "daf3fab11a27b6c982efdad0d223823b35bd7c8de05d9b1d464a30ed8ec146f2"
+  },
+  "instructionPlacements": [
+    {
+      "id": "developer",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    {
+      "id": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    {
+      "id": "user-prefix-framed",
+      "strictness": "degraded",
+      "preservesHarnessBasePrompt": true
+    }
+  ],
+  "taskEnvelope": {
+    "schemaId": "openprose.task-envelope/1",
+    "path": "contracts/task-envelope.schema.json",
+    "sha256": "8e3ddfe3dff60ef7ba9df67133214ed7cd265839d363c5d4c76589eebf7b9de4"
+  },
+  "oneFieldFraming": {
+    "id": "openprose.echo-one-field-framing/1",
+    "path": "contracts/one-field-framing.txt",
+    "sha256": "b6fbc605f057783ffed34fe85536c39cf7853278fb04432855620207f3c97dc7"
+  },
+  "terminalEnvelope": {
+    "schemaId": "openprose.echo-terminal/1",
+    "path": "contracts/terminal-envelope.schema.json",
+    "sha256": "5025ee67db55d02d178fb46e1967962ba6a8b57e5c4bd534f50e8f623bd8ce6e"
+  },
+  "minimumTransportRequirements": {
+    "nonInteractive": "required",
+    "structuredOutput": "required",
+    "ambientIsolation": "required",
+    "terminalEnvelope": "required",
+    "boundedStreaming": "required"
+  }
+}

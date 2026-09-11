@@ -1,0 +1,79 @@
+{
+  "schema": "openprose.skill-runtime-image-manifest/1",
+  "imageFormatVersion": "openprose.skill-runtime-image/1",
+  "imageVersion": "sentinel-v1",
+  "languageVersion": "sentinel-not-a-language-release",
+  "skillVersion": "sentinel-not-a-skill-release",
+  "runtimeContractVersion": "sentinel-runtime-contract-v1",
+  "semanticSourceRevision": "sentinel-fixture-1",
+  "purpose": "sentinel-transport-test",
+  "releaseEligible": false,
+  "normalization": {
+    "encoding": "utf-8",
+    "newlines": "lf",
+    "byteOrderMark": "forbidden",
+    "pathSeparator": "/"
+  },
+  "payload": [
+    {
+      "path": "payload/00-sentinel.md",
+      "mediaType": "text/markdown; charset=utf-8",
+      "byteLength": 186,
+      "sha256": "7e8489fe9478d445733c54d04d69bedd2edb57d474358130217007d924b0d69f"
+    },
+    {
+      "path": "payload/10-byte-canary.md",
+      "mediaType": "text/markdown; charset=utf-8",
+      "byteLength": 160,
+      "sha256": "1c40e3cecc0ec97c999a658b5748de3c62e4079b9c8819a17ee60e04633a07a2"
+    }
+  ],
+  "modelVisibleBytes": {
+    "serialization": "ordered-raw-concatenation-v1",
+    "byteLength": 346,
+    "sha256": "893b6aa34556ce0a1b647caff68605e2801035a0e9f28bb3a12a948a5d3c3486"
+  },
+  "aggregateSha256": {
+    "algorithm": "sha256-path-length-nul-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00"
+  },
+  "instructionPlacements": [
+    {
+      "id": "developer",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    {
+      "id": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    {
+      "id": "user-prefix-framed",
+      "strictness": "degraded",
+      "preservesHarnessBasePrompt": true
+    }
+  ],
+  "taskEnvelope": {
+    "schemaId": "openprose.task-envelope/1",
+    "path": "contracts/task-envelope.schema.json",
+    "sha256": "aa19360b38fc3f93ada8b783df4422c9443de437307a73fecbc5e7f5af898261"
+  },
+  "oneFieldFraming": {
+    "id": "openprose.sentinel-one-field-framing/1",
+    "path": "contracts/one-field-framing.txt",
+    "sha256": "bfe0e63487574edccd6e1f168d89aea6324bf15a4554976784d636f7b7c7610e"
+  },
+  "terminalEnvelope": {
+    "schemaId": "openprose.sentinel-terminal-envelope/1",
+    "path": "contracts/terminal-envelope.schema.json",
+    "sha256": "4927ef7ffd5c3d22286590a00f33b7fe9ddcaa109ac90e3358e1be79aba06477"
+  },
+  "minimumTransportRequirements": {
+    "nonInteractive": "required",
+    "structuredOutput": "required",
+    "ambientIsolation": "required",
+    "terminalEnvelope": "required",
+    "boundedStreaming": "required"
+  }
+}

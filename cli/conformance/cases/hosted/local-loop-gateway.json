@@ -1,0 +1,24 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.local-loop-gateway",
+  "revision": 1,
+  "immutable": true,
+  "summary": "A locally supervised agent loop sends exact image and task channels through a fake OpenProse gateway and stops at semantic unknown.",
+  "phase": 5,
+  "tags": ["local-loop", "gateway", "image-exactness", "task-exactness", "billing", "usage", "terminal", "no-fallback"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "local-loop-gateway",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [{ "type": "start" }],
+  "expected": {
+    "exitCode": 23,
+    "terminalType": "run.terminal",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "fixture-authoritative",
+    "requiredEventTypes": ["run.accepted", "assistant.delta", "usage.report", "run.terminal"],
+    "error": { "code": "SEMANTIC_STATUS_UNKNOWN", "exitCode": 23 },
+    "exactImageBytes": true,
+    "exactTaskBytes": true
+  }
+}

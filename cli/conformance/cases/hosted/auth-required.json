@@ -1,0 +1,22 @@
+{
+  "schema": "openprose.hosted-oracle-case/1",
+  "id": "hosted.auth-required",
+  "revision": 1,
+  "immutable": true,
+  "summary": "A missing OpenProse account maps to HOSTED_AUTH_REQUIRED without transmitting a secret or selecting a fallback.",
+  "phase": 5,
+  "tags": ["auth", "no-secret", "no-fallback", "terminal"],
+  "placementCandidate": "local-loop-gateway",
+  "serviceScenario": "auth-required",
+  "requestFixture": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+  "actions": [{ "type": "start" }],
+  "expected": {
+    "exitCode": 10,
+    "terminalType": "run.rejected",
+    "semanticStatus": "unknown",
+    "fallbackSelected": false,
+    "usageAuthority": "not-emitted",
+    "requiredEventTypes": ["run.rejected"],
+    "error": { "code": "HOSTED_AUTH_REQUIRED", "exitCode": 10 }
+  }
+}

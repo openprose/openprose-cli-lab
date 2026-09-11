@@ -1,0 +1,149 @@
+{
+  "schema": "openprose.benchmark-profile/2",
+  "profileId": "installed-development-sentinel-smoke",
+  "profileVersion": "2.0.0",
+  "policyArtifact": "local-smoke.policy.json",
+  "policyArtifactSha256": "d49db82238eec8075fb0fe0d0ac192a7a6e8bddec4e8de85aad838c5184d2ff6",
+  "benchmarkPolicySchemaSha256": "a800f83f9c48be43aad2afa30d6b5d71f9ae9840df8f1639542c41957cfb032e",
+  "seed": 734537251,
+  "releaseEligible": false,
+  "semanticStatus": "not-applicable",
+  "proseCompleteClaim": false,
+  "image": {
+    "version": "sentinel-v1",
+    "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00",
+    "manifestArtifact": "../../shared/image/sentinel-v1/manifest.json",
+    "manifestSha256": "a73f723b6b7bf4ab7d98e30b3ce32c242c61554465cc4b28669cd02e1672d1d3",
+    "releaseEligible": false
+  },
+  "corpus": {
+    "status": "unavailable",
+    "id": null,
+    "sha256": null
+  },
+  "program": {
+    "id": "sentinel-transport-write",
+    "artifact": "../programs/sentinel-transport.v1.json",
+    "sha256": "08cbd5c40b82930ec1a19d305567b9603128f3976f5ad5ce7b5ea9373242d78f"
+  },
+  "validator": {
+    "kind": "mechanical-transport-only",
+    "id": "runner-result-shape-v1",
+    "artifact": "../validators/runner-result-shape.v1.json",
+    "sha256": "33c22bbbd4fb530a4da9cd975aaba8803fd89e5bf52badb2686e6f7779f62f9c"
+  },
+  "fixture": {
+    "path": "../../conformance/fake-harness/fake_harness.py",
+    "sha256": "b5aedc3ac9b805ec3670fd950c2cd5c7342ad9d3cb17b5ddcc25c215276638f9",
+    "bytes": 8955,
+    "scenario": "success",
+    "providerCalls": false
+  },
+  "stopConditions": {
+    "maximumAuthoritativeCostUsd": 1.0,
+    "maximumTimeouts": 1
+  },
+  "retryAccounting": {
+    "declaredRetriesAllowed": 0,
+    "hiddenRetrySuspicionDisqualifies": true,
+    "unavailableIsNotZero": true
+  },
+  "cacheQualification": {
+    "cold": "new-process-fresh-config-os-cache-uncontrolled",
+    "warm": "new-process-shared-empty-config-os-cache-warmed",
+    "releaseGrade": false
+  },
+  "actions": [
+    {
+      "id": "cold-startup-version",
+      "scorecard": "dx",
+      "cacheState": "cold",
+      "expectation": "version",
+      "argv": ["--version"]
+    },
+    {
+      "id": "warm-startup-version",
+      "scorecard": "dx",
+      "cacheState": "warm",
+      "expectation": "version",
+      "argv": ["--version"]
+    },
+    {
+      "id": "doctor",
+      "scorecard": "dx",
+      "cacheState": "warm",
+      "expectation": "doctor",
+      "argv": ["--harness", "mock", "--transport", "fake-process", "cli", "doctor", "--json"]
+    },
+    {
+      "id": "dry-run",
+      "scorecard": "dx",
+      "cacheState": "warm",
+      "expectation": "dry-run",
+      "argv": ["--harness", "mock", "--transport", "fake-process", "--dry-run", "--output", "json", "write", "benchmark-sentinel"]
+    },
+    {
+      "id": "transport-run",
+      "scorecard": "transport",
+      "cacheState": "warm",
+      "expectation": "runner-result",
+      "argv": ["--harness", "mock", "--transport", "fake-process", "--output", "json", "write", "benchmark-sentinel"]
+    }
+  ],
+  "targets": [
+    {
+      "id": "rust-development",
+      "implementation": "rust",
+      "surface": "wrapper",
+      "comparisonGroup": "installed-development-products",
+      "artifact": "../../rust/target/debug/prose",
+      "artifactSha256": "bfcdb0cb2972b624fdb1e3a0c471eb15bce21f6e175e8bc1edd95a51f21f3f47",
+      "artifactBytes": 6123384,
+      "artifactKind": "development-binary",
+      "installSurface": {
+        "status": "development-artifact-only",
+        "launchArtifactCount": 1,
+        "packageInstallMeasured": false
+      },
+      "harness": "mock",
+      "harnessDescriptorSha256": "d29305f10f77e3e56bcd1dc88f561b964431994244f0f7cff0065129481b693a",
+      "transport": "fake-process",
+      "model": {
+        "status": "not-applicable",
+        "id": null,
+        "sha256": null
+      },
+      "billing": {
+        "owner": "test-fixture",
+        "costStatus": "unavailable"
+      }
+    },
+    {
+      "id": "bun-development",
+      "implementation": "bun",
+      "surface": "wrapper",
+      "comparisonGroup": "installed-development-products",
+      "artifact": "../../bun/dist/prose",
+      "artifactSha256": "5d1b0ab15c0a41432af0e14a7ea17aa112a0980b13c35705cc6d9bb186435a1c",
+      "artifactBytes": 60034032,
+      "artifactKind": "development-binary",
+      "installSurface": {
+        "status": "development-artifact-only",
+        "launchArtifactCount": 1,
+        "packageInstallMeasured": false
+      },
+      "harness": "mock",
+      "harnessDescriptorSha256": "d29305f10f77e3e56bcd1dc88f561b964431994244f0f7cff0065129481b693a",
+      "transport": "fake-process",
+      "model": {
+        "status": "not-applicable",
+        "id": null,
+        "sha256": null
+      },
+      "billing": {
+        "owner": "test-fixture",
+        "costStatus": "unavailable"
+      }
+    }
+  ]
+}

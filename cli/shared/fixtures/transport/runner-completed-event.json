@@ -1,0 +1,28 @@
+{
+  "schema": "openprose.normalized-event/1",
+  "sequence": 4,
+  "timestamp": "2025-01-01T00:00:00Z",
+  "invocationId": "fixture-invocation-0001",
+  "type": "runner.completed",
+  "payload": {
+    "kind": "runner.completed",
+    "result": {
+      "schema": "openprose.runner-result/1",
+      "invocationId": "fixture-invocation-0001",
+      "runner": { "name": "rust", "version": "0.1.0-fixture", "commit": "fixture-commit" },
+      "adapter": { "id": "mock/fake-process", "harnessVersion": "1.0.0", "descriptorDigestSha256": "d29305f10f77e3e56bcd1dc88f561b964431994244f0f7cff0065129481b693a" },
+      "transport": "fake-process",
+      "negotiatedCapabilities": { "promptPlacement": "developer", "isolation": "test-fixture", "streaming": "structured", "cancellation": "process-tree", "terminal": "structured" },
+      "languageImage": { "formatVersion": "openprose.skill-runtime-image/1", "version": "sentinel-v1", "sha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00" },
+      "digests": { "invocationSha256": "722f5d3b835b296feccc2a277cf9d2123370f626fd9820bdd42a4defdba71f7c", "taskSha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc", "normalizedEventsSha256": "d1f3e86a667ca1109f56355fb3b223cd5d76a1ec3cba1a697d541720795fce0c", "deliveredImageSha256": "ee13d1cbba24d1623523f4fe8747b4a3387cd6880f5d6fb4a360d2a7949ddf00", "renderedPayloadSha256": null },
+      "cwd": { "path": "/workspace", "identitySha256": "c52ddf65534b7b46035084358ab7902be4bfef220bdb503ac7039cc861905b05" },
+      "timing": { "startedAt": "2025-01-01T00:00:00Z", "firstEventAt": "2025-01-01T00:00:00Z", "cancellationAt": null, "terminalAt": "2025-01-01T00:00:00Z", "durationMs": 0 },
+      "terminal": { "classification": "success", "transportCompleted": true, "terminalEventObserved": true, "exitCode": 0, "signal": null },
+      "semantic": { "status": "not-applicable", "terminalSchemaSha256": "4927ef7ffd5c3d22286590a00f33b7fe9ddcaa109ac90e3358e1be79aba06477", "terminalEnvelopeDigestSha256": "637e07e3440bf91dff3928331aa30935b4277bf18d35ccd11e9e2934dcbe6342" },
+      "usage": { "status": "unavailable" },
+      "billing": { "owner": "test-fixture", "authCategory": "none-test-only" },
+      "diagnosticRefs": [],
+      "runnerExitCode": 0
+    }
+  }
+}

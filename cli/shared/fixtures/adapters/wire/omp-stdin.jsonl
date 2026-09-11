@@ -1,0 +1,2 @@
+{"id":"fixture-invocation-0001.omp.state.1","type":"get_state"}
+{"id":"fixture-invocation-0001.omp.prompt.1","message":"{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"],\"interactionMode\":\"non-interactive\",\"schema\":\"openprose.task-envelope/1\"}","type":"prompt"}

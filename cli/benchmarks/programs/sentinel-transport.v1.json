@@ -1,0 +1,9 @@
+{
+  "schema": "openprose.benchmark-program-descriptor/1",
+  "id": "sentinel-transport-write",
+  "surface": "wrapper",
+  "argv": ["write", "benchmark-sentinel"],
+  "purpose": "transport-only",
+  "semanticStatus": "not-applicable",
+  "canonicalLanguageProgram": false
+}

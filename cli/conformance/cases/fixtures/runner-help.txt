@@ -1,0 +1,37 @@
+OpenProse outer runner
+
+Usage:
+  prose [OPTIONS] <LANGUAGE_COMMAND> [OPAQUE_ARGS]...
+  prose [OPTIONS] -- <OPAQUE_LANGUAGE_ARGV>...
+  prose cli <COMMAND>
+
+Runner commands:
+  cli doctor                 Report harness and runner readiness
+  cli harness list           List supported harness transports
+  cli harness use <ID>       Persist a default harness selection for this user
+  cli cleanup prime <HANDLE> Settle one failed owned Prime service
+  cli config explain         Explain effective runner configuration
+  cli auth <COMMAND>         Manage only the OpenProse account
+
+Runner options:
+  --harness <ID>             Select a harness (default: openprose)
+  --transport <ID|auto>      Select a transport (default: auto)
+  --cwd <PATH>               Set the canonical working directory
+  --model <ID>               Select a model without changing billing owner
+  --auth-profile <ID>        Select an explicit harness credential route
+  --timeout <DURATION>       Set the noninteractive run deadline
+  --output <human|json|jsonl>
+  --dry-run                  Probe and negotiate without starting a model run
+  --no-color                 Disable terminal color
+  --verbose                  Emit bounded sanitized diagnostics
+  --help                     Show runner help
+  --version                  Show runner version
+
+For Prime and OMP, append `--model <provider/model>` and
+`--auth-profile <ID>` to `cli harness use <ID>`; the three identifiers are
+validated and saved atomically. Codex and Claude use their frozen installed-
+login defaults when those selection options are omitted.
+
+The first language-command token ends runner-option parsing. `prose help` is
+forwarded to OpenProse; use `prose --help` for this runner help. Use
+`prose -- cli ...` to forward a language command named `cli`.

@@ -1,0 +1,125 @@
+{
+  "schema": "openprose.adapter-probe-scenario/1",
+  "scenarioVersion": "1.0.0",
+  "adapterId": "claude/print-stream-json",
+  "recipe": "cli/shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json",
+  "placeholders": {
+    "executable": "{{EXECUTABLE}}",
+    "cwd": "{{WORKSPACE}}",
+    "imagePath": "{{IMAGE_PATH}}",
+    "taskJson": "{{TASK_JSON}}",
+    "model": "{{MODEL}}",
+    "invocationId": "fixture-invocation-0001"
+  },
+  "expectedArgv": [
+    "{{EXECUTABLE}}",
+    "--safe-mode",
+    "--print",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--no-session-persistence",
+    "--append-system-prompt-file",
+    "{{IMAGE_PATH}}",
+    "{{TASK_JSON}}"
+  ],
+  "expectedArgvWithModel": [
+    "{{EXECUTABLE}}",
+    "--safe-mode",
+    "--print",
+    "--output-format",
+    "stream-json",
+    "--verbose",
+    "--no-session-persistence",
+    "--append-system-prompt-file",
+    "{{IMAGE_PATH}}",
+    "--model",
+    "{{MODEL}}",
+    "{{TASK_JSON}}"
+  ],
+  "environment": {
+    "baseAllowlistRef": "oracle.v1.json#baseEnvironmentAllowlist",
+    "credentialGroup": "claude-subscription",
+    "additionalNames": [],
+    "forbiddenNames": [
+      "OPENPROSE_TOKEN",
+      "PROSE_TOKEN",
+      "PROSE_BILLING_TOKEN",
+      "ANTHROPIC_API_KEY",
+      "ANTHROPIC_AUTH_TOKEN",
+      "ANTHROPIC_BASE_URL",
+      "CLAUDE_CODE_USE_BEDROCK",
+      "CLAUDE_CODE_USE_VERTEX",
+      "CLAUDE_CODE_USE_FOUNDRY",
+      "OPENAI_API_KEY",
+      "OPENROUTER_API_KEY"
+    ]
+  },
+  "files": [
+    {
+      "argument": "{{IMAGE_PATH}}",
+      "source": "cli/shared/image/echo-v0/manifest.json#modelVisibleBytes",
+      "mode": "0600",
+      "byteLength": 1310,
+      "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+    }
+  ],
+  "stdin": null,
+  "decodedTask": {
+    "source": "cli/shared/fixtures/transport/sentinel-task.json",
+    "canonicalByteLength": 183,
+    "sha256": "a8a31920b47485944535dc7e1a742f424884922861ec85771ab699124dfc83fc"
+  },
+  "fakeStdout": [
+    {
+      "type": "system",
+      "subtype": "init",
+      "session_id": "fake-session-0001",
+      "model": "fake",
+      "tools": [],
+      "mcp_servers": [],
+      "plugins": []
+    },
+    {
+      "type": "assistant",
+      "session_id": "fake-session-0001",
+      "message": {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+          }
+        ]
+      }
+    },
+    {
+      "type": "result",
+      "subtype": "success",
+      "session_id": "fake-session-0001",
+      "is_error": false,
+      "result": "Echoed task argv: [\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]\n{\"schema\":\"openprose.echo-terminal/1\",\"semanticStatus\":\"not-applicable\",\"placeholder\":true,\"marker\":\"OPENPROSE_ECHO_TERMINAL_V0\",\"task\":{\"argv\":[\"prose\",\"run\",\"path with spaces/example.prose.md\",\"--model\",\"雪\",\"\",\"line\\nbreak\",\";$(touch nope)\"]}}"
+    }
+  ],
+  "expectedTerminal": "result(subtype=success,is_error=false)",
+  "expectedExitCode": 0,
+  "expectedLanguageTerminal": {
+    "schema": "openprose.echo-terminal/1",
+    "semanticStatus": "not-applicable",
+    "placeholder": true,
+    "marker": "OPENPROSE_ECHO_TERMINAL_V0",
+    "task": {
+      "argv": [
+        "prose",
+        "run",
+        "path with spaces/example.prose.md",
+        "--model",
+        "雪",
+        "",
+        "line\nbreak",
+        ";$(touch nope)"
+      ]
+    }
+  },
+  "stdinLifecycle": "close-after-write"
+}

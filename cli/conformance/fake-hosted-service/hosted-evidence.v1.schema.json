@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli-conformance/research/hosted-evidence.v1.schema.json",
+  "title": "OpenProse scripted hosted research evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "scenario", "placementCandidate", "requestId", "invocationId", "runId", "delivery", "auth", "billing", "usage", "correlation", "stream", "idempotency", "capabilities", "lifecycle", "terminal", "fallbackSelected"],
+  "properties": {
+    "schema": { "const": "openprose.hosted-evidence/1" },
+    "scenario": { "type": "string", "minLength": 1 },
+    "placementCandidate": { "enum": ["local-loop-gateway", "hosted-agent-local-capability-bridge"] },
+    "requestId": { "type": "string", "minLength": 1 },
+    "invocationId": { "type": "string", "minLength": 1 },
+    "runId": { "type": "string", "minLength": 1 },
+    "delivery": {
+      "type": "object", "additionalProperties": false,
+      "required": ["channelsSeparated", "exactImageBytes", "exactTaskBytes", "imageSha256", "taskSha256"],
+      "properties": {
+        "channelsSeparated": { "const": true },
+        "exactImageBytes": { "type": "boolean" },
+        "exactTaskBytes": { "type": "boolean" },
+        "imageSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "taskSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "auth": {
+      "type": "object", "additionalProperties": false,
+      "required": ["category", "credentialTransport", "secretObserved"],
+      "properties": {
+        "category": { "const": "none-test-only" },
+        "credentialTransport": { "const": "none" },
+        "secretObserved": { "const": false }
+      }
+    },
+    "billing": {
+      "type": "object", "additionalProperties": false,
+      "required": ["owner", "authority"],
+      "properties": { "owner": { "const": "openprose" }, "authority": { "const": "test-fixture-only" } }
+    },
+    "usage": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authority"],
+      "properties": {
+        "authority": { "enum": ["fixture-authoritative", "unavailable"] },
+        "inputTokens": { "type": "integer", "minimum": 0 },
+        "outputTokens": { "type": "integer", "minimum": 0 },
+        "currency": { "const": "USD" },
+        "amountMicros": { "type": "integer", "minimum": 0 },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "correlation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["allRecordsCorrelated", "failures"],
+      "properties": { "allRecordsCorrelated": { "type": "boolean" }, "failures": { "type": "integer", "minimum": 0 } }
+    },
+    "stream": {
+      "type": "object", "additionalProperties": false,
+      "required": ["maxInFlightConfigured", "maxInFlightObserved", "maxFrameBytes", "maxQueuedFramesConfigured", "maxQueuedFramesObserved", "recordsDropped"],
+      "properties": {
+        "maxInFlightConfigured": { "type": "integer", "minimum": 1 },
+        "maxInFlightObserved": { "type": "integer", "minimum": 0 },
+        "maxFrameBytes": { "type": "integer", "minimum": 256 },
+        "maxQueuedFramesConfigured": { "type": "integer", "minimum": 1 },
+        "maxQueuedFramesObserved": { "type": "integer", "minimum": 0 },
+        "recordsDropped": { "const": 0 }
+      }
+    },
+    "idempotency": {
+      "type": "object", "additionalProperties": false,
+      "required": ["key", "replays", "sideEffectExecutions"],
+      "properties": { "key": { "type": "string", "minLength": 1 }, "replays": { "type": "integer", "minimum": 0 }, "sideEffectExecutions": { "const": 1 } }
+    },
+    "capabilities": {
+      "type": "object", "additionalProperties": false,
+      "required": ["requested", "completed", "rejected", "correlationFailures", "localEvidenceAuthority"],
+      "properties": {
+        "requested": { "type": "integer", "minimum": 0 },
+        "completed": { "type": "integer", "minimum": 0 },
+        "rejected": { "type": "integer", "minimum": 0 },
+        "correlationFailures": { "type": "integer", "minimum": 0 },
+        "localEvidenceAuthority": { "enum": ["not-applicable", "external-bridge-required"] }
+      }
+    },
+    "lifecycle": {
+      "type": "object", "additionalProperties": false,
+      "required": ["settledOnce", "winner"],
+      "properties": { "settledOnce": { "type": "boolean" }, "winner": { "enum": ["none", "cancel", "timeout", "disconnect"] } }
+    },
+    "terminal": {
+      "type": "object", "additionalProperties": false,
+      "required": ["present", "semanticStatus", "externalSchemaAvailable"],
+      "properties": { "present": { "type": "boolean" }, "semanticStatus": { "const": "unknown" }, "externalSchemaAvailable": { "const": false } }
+    },
+    "fallbackSelected": { "const": false }
+  }
+}

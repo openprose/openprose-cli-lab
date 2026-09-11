@@ -1,0 +1,14 @@
+{
+  "schema": "openprose.task-envelope/1",
+  "argv": [
+    "prose",
+    "run",
+    "path with spaces/example.prose.md",
+    "--model",
+    "雪",
+    "",
+    "line\nbreak",
+    ";$(touch nope)"
+  ],
+  "interactionMode": "non-interactive"
+}

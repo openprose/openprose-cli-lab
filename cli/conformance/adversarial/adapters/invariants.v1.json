@@ -1,0 +1,21 @@
+{
+  "schema": "openprose.adapter-adversarial-invariants/1",
+  "version": "1.0.0",
+  "checks": [
+    { "id": "recipes-validate", "test": "test_recipes_validate_and_remain_unclaimed" },
+    { "id": "evidence-is-primary-and-typed", "test": "test_oracle_evidence_and_blockers_are_closed" },
+    { "id": "exact-direct-argv", "test": "test_recipe_templates_equal_scenario_argv" },
+    { "id": "no-shell", "test": "test_recipes_validate_and_remain_unclaimed" },
+    { "id": "no-outer-pty", "test": "test_recipes_validate_and_remain_unclaimed" },
+    { "id": "no-silent-fallback", "test": "test_oracle_evidence_and_blockers_are_closed" },
+    { "id": "one-credential-group", "test": "test_environment_policy_selects_one_group_and_strips_others" },
+    { "id": "no-openprose-token", "test": "test_environment_policy_selects_one_group_and_strips_others" },
+    { "id": "exact-wire-bytes", "test": "test_wire_fixtures_are_exact_and_decodable" },
+    { "id": "private-prompt-file", "test": "test_provider_free_probe_records_exact_launch" },
+    { "id": "structured-terminal-plus-exit", "test": "test_provider_free_probe_records_exact_launch" },
+    { "id": "unknown-fails-closed", "test": "test_oracle_evidence_and_blockers_are_closed" },
+    { "id": "strict-claim-requires-admission", "test": "test_strict_claim_mutation_is_rejected_by_oracle" },
+    { "id": "schema-inline-prompt-gap-visible", "test": "test_schema_extension_blocker_is_explicit" },
+    { "id": "real-providers-never-invoked", "test": "test_probe_fixture_is_the_only_executable" }
+  ]
+}

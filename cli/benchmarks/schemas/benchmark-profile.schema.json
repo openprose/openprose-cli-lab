@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/benchmarks/benchmark-profile.v2.json",
+  "title": "OpenProse benchmark execution profile v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "profileId",
+    "profileVersion",
+    "policyArtifact",
+    "policyArtifactSha256",
+    "benchmarkPolicySchemaSha256",
+    "seed",
+    "releaseEligible",
+    "semanticStatus",
+    "proseCompleteClaim",
+    "image",
+    "corpus",
+    "program",
+    "validator",
+    "fixture",
+    "stopConditions",
+    "retryAccounting",
+    "cacheQualification",
+    "actions",
+    "targets"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.benchmark-profile/2" },
+    "profileId": { "$ref": "#/$defs/id" },
+    "profileVersion": { "type": "string", "minLength": 1 },
+    "policyArtifact": { "type": "string", "minLength": 1 },
+    "policyArtifactSha256": { "$ref": "#/$defs/sha256" },
+    "benchmarkPolicySchemaSha256": { "$ref": "#/$defs/sha256" },
+    "seed": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "releaseEligible": { "const": false },
+    "semanticStatus": { "enum": ["unknown", "not-applicable"] },
+    "proseCompleteClaim": { "const": false },
+    "image": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "sha256", "manifestArtifact", "manifestSha256", "releaseEligible"],
+      "properties": {
+        "version": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "manifestArtifact": { "type": "string", "minLength": 1 },
+        "manifestSha256": { "$ref": "#/$defs/sha256" },
+        "releaseEligible": { "const": false }
+      }
+    },
+    "corpus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "id", "sha256"],
+      "properties": {
+        "status": { "const": "unavailable" },
+        "id": { "type": "null" },
+        "sha256": { "type": "null" }
+      }
+    },
+    "program": { "$ref": "#/$defs/digestedIdentity" },
+    "validator": {
+      "allOf": [
+        { "$ref": "#/$defs/digestedIdentity" },
+        {
+          "type": "object",
+          "required": ["kind"],
+          "properties": { "kind": { "const": "mechanical-transport-only" } }
+        }
+      ]
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "bytes", "scenario", "providerCalls"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "bytes": { "type": "integer", "minimum": 1 },
+        "scenario": { "const": "success" },
+        "providerCalls": { "const": false }
+      }
+    },
+    "stopConditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["maximumAuthoritativeCostUsd", "maximumTimeouts"],
+      "properties": {
+        "maximumAuthoritativeCostUsd": { "type": "number", "exclusiveMinimum": 0 },
+        "maximumTimeouts": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "retryAccounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["declaredRetriesAllowed", "hiddenRetrySuspicionDisqualifies", "unavailableIsNotZero"],
+      "properties": {
+        "declaredRetriesAllowed": { "const": 0 },
+        "hiddenRetrySuspicionDisqualifies": { "const": true },
+        "unavailableIsNotZero": { "const": true }
+      }
+    },
+    "cacheQualification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cold", "warm", "releaseGrade"],
+      "properties": {
+        "cold": { "type": "string", "minLength": 1 },
+        "warm": { "type": "string", "minLength": 1 },
+        "releaseGrade": { "const": false }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "scorecard", "cacheState", "expectation", "argv"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "scorecard": { "enum": ["transport", "dx", "agent"] },
+          "cacheState": { "enum": ["cold", "warm", "not-applicable"] },
+          "expectation": { "enum": ["version", "doctor", "dry-run", "runner-result"] },
+          "argv": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "implementation",
+          "surface",
+          "comparisonGroup",
+          "artifact",
+          "artifactSha256",
+          "artifactBytes",
+          "artifactKind",
+          "installSurface",
+          "harness",
+          "harnessDescriptorSha256",
+          "transport",
+          "model",
+          "billing"
+        ],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "implementation": { "type": "string", "minLength": 1 },
+          "surface": { "enum": ["wrapper", "direct-skill"] },
+          "comparisonGroup": { "$ref": "#/$defs/id" },
+          "artifact": { "type": "string", "minLength": 1 },
+          "artifactSha256": { "$ref": "#/$defs/sha256" },
+          "artifactBytes": { "type": "integer", "minimum": 1 },
+          "artifactKind": { "type": "string", "minLength": 1 },
+          "installSurface": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "launchArtifactCount", "packageInstallMeasured"],
+            "properties": {
+              "status": { "type": "string", "minLength": 1 },
+              "launchArtifactCount": { "type": "integer", "minimum": 1 },
+              "packageInstallMeasured": { "type": "boolean" }
+            }
+          },
+          "harness": { "type": "string", "minLength": 1 },
+          "harnessDescriptorSha256": { "$ref": "#/$defs/sha256" },
+          "transport": { "type": "string", "minLength": 1 },
+          "model": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["status", "id", "sha256"],
+            "properties": {
+              "status": { "const": "not-applicable" },
+              "id": { "type": "null" },
+              "sha256": { "type": "null" }
+            }
+          },
+          "billing": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["owner", "costStatus"],
+            "properties": {
+              "owner": { "type": "string", "minLength": 1 },
+              "costStatus": { "enum": ["authoritative", "unavailable"] }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9._-]+$" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "digestedIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "artifact", "sha256"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "artifact": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "kind": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+@echo off
+echo SHELL_SHIM_WAS_EXECUTED> SHELL_EXECUTED
+exit /b 97

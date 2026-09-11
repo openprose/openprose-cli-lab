@@ -1,0 +1,52 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "adapters.codex-version-probe-wrong-stream",
+  "summary": "A successful Codex version probe on the wrong stream fails closed with exact repair metadata and no fallback.",
+  "phase": 7,
+  "tags": ["adapter", "codex", "version-probe", "provider-free", "differential", "fail-closed"],
+  "platforms": ["unix"],
+  "controls": {
+    "fixedInvocationId": "00000000-0000-7000-8000-000000000713",
+    "fixedTimestamp": "2026-01-01T00:00:00.000Z",
+    "fixedMonotonicMs": 713,
+    "network": "denied",
+    "installedAdapter": {
+      "adapterId": "codex/exec-json",
+      "versionProbeScenario": "wrong-stream-success"
+    }
+  },
+  "invocation": {
+    "argv": ["--harness", "codex", "--transport", "exec-json", "--output", "json", "cli", "doctor"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {
+      "HOME": "{{WORKSPACE}}/home",
+      "XDG_CONFIG_HOME": "{{WORKSPACE}}/config"
+    }
+  },
+  "expected": {
+    "exitCode": 10,
+    "stdout": { "kind": "json", "schema": "openprose.doctor-report/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": {
+      "ready": false,
+      "selectedHarness": "codex",
+      "selectedAdapterId": "codex/exec-json",
+      "problems": [{
+        "schema": "openprose.runner-error/1",
+        "code": "HARNESS_INCOMPATIBLE",
+        "boundary": "adapter",
+        "message": "The selected harness version is incompatible with this adapter.",
+        "action": "Run the exact Repair command reported with this error, then retry.",
+        "exitCode": 10,
+        "retryable": false,
+        "details": {
+          "adapterId": "codex/exec-json",
+          "admittedVersions": ["0.149.0-alpha.4.1"],
+          "fallbackAttempted": false,
+          "repairCommand": "npm install --global @openai/codex@0.149.0-alpha.4.1"
+        }
+      }]
+    }
+  }
+}

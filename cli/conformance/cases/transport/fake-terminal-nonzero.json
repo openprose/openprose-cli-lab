@@ -1,0 +1,28 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "transport.fake-terminal-nonzero",
+  "summary": "A nominal terminal record cannot hide an unacceptable nonzero process exit.",
+  "phase": 2,
+  "tags": ["fake-process", "process-exit", "terminal", "failure"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied",
+    "fakeHarness": { "scenario": "terminal-nonzero" }
+  },
+  "invocation": {
+    "argv": ["--harness", "mock", "--transport", "fake-process", "--output", "json", "run", "fixture.prose.md"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 22,
+    "stdout": { "kind": "json", "schema": "openprose.runner-result/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": true,
+    "errorCode": "HARNESS_FAILED",
+    "errorAction": "Inspect the harness diagnostic on stderr and invoke the `cli doctor` runner operation.",
+    "fakeObservation": { "exactImageBytes": true, "exactTaskBytes": true }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema": "openprose.adapter-product-runner-metadata/1",
+  "version": "1.0.0",
+  "names": [
+    "OPENPROSE_INVOCATION_ID",
+    "OPENPROSE_RECURSION_TOKEN",
+    "OPENPROSE_RUN_NONCE"
+  ],
+  "constraints": {
+    "source": "runner-generated",
+    "modelVisible": false,
+    "credential": false,
+    "callerOverride": false,
+    "diagnosticValues": "redacted",
+    "purpose": "recursion rejection and owned-process identity auditing"
+  }
+}

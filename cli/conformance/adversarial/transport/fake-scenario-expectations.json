@@ -1,0 +1,18 @@
+{
+  "schema": "openprose.fake-scenario-expectations/1",
+  "scenarios": [
+    { "scenario": "success", "processExit": 0, "terminalRecords": 1, "classification": "success" },
+    { "scenario": "malformed", "processExit": 0, "terminalRecords": 0, "errorCode": "PROTOCOL_MALFORMED" },
+    { "scenario": "truncated", "processExit": 0, "terminalRecords": 0, "errorCode": "PROTOCOL_TRUNCATED" },
+    { "scenario": "eof-without-terminal", "processExit": 0, "terminalRecords": 0, "errorCode": "PROTOCOL_TRUNCATED" },
+    { "scenario": "nonzero", "processExit": 17, "terminalRecords": 0, "errorCode": "PROTOCOL_TRUNCATED" },
+    { "scenario": "terminal-nonzero", "processExit": 17, "terminalRecords": 1, "errorCode": "HARNESS_FAILED" },
+    { "scenario": "delay", "processExit": 0, "terminalRecords": 1, "classification": "success" },
+    { "scenario": "stderr", "processExit": 0, "terminalRecords": 1, "classification": "success" },
+    { "scenario": "fragmented", "processExit": 0, "terminalRecords": 1, "classification": "success" },
+    { "scenario": "crlf", "processExit": 0, "terminalRecords": 1, "classification": "success" },
+    { "scenario": "duplicate-terminal", "processExit": 0, "terminalRecords": 2, "errorCode": "PROTOCOL_MALFORMED" },
+    { "scenario": "reordered", "processExit": 0, "terminalRecords": 1, "errorCode": "PROTOCOL_MALFORMED" },
+    { "scenario": "descendant", "processExit": null, "terminalRecords": 0, "errorCode": "CANCELLED" }
+  ]
+}

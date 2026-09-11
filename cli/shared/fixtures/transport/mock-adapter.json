@@ -1,0 +1,28 @@
+{
+  "schema": "openprose.launch-adapter/1",
+  "id": "mock/fake-process",
+  "runtime": "deterministic-mock",
+  "promptPlacement": "developer",
+  "preservesHarnessBasePrompt": "enforced",
+  "sourceBytesVerified": "enforced",
+  "adapterInputContentVerified": "enforced",
+  "modelRequestObserved": "unsupported",
+  "streaming": "structured",
+  "cancellation": "process-tree",
+  "terminal": "structured",
+  "resume": "unsupported",
+  "isolation": "test-fixture",
+  "auth": ["none-test-only"],
+  "billingOwner": "test-fixture",
+  "observedBy": ["fake-harness-byte-equality", "sentinel-terminal-envelope"],
+  "platforms": [
+    "darwin-arm64",
+    "darwin-x64",
+    "linux-x64-gnu",
+    "linux-arm64-gnu",
+    "win32-x64"
+  ],
+  "versionRange": "=1.0.0",
+  "transportClaims": ["base-transport-compatible"],
+  "normalizationBoundary": "fake-harness decoded image-file and task-file bytes"
+}

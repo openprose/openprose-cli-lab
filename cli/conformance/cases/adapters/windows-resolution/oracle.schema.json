@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.dev/schemas/windows-resolution-oracle-v1.json",
+  "title": "OpenProse provider-free Windows resolution oracle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "oracleVersion", "frozenAt", "scope", "invariants", "claims",
+    "researchProfiles", "providerFreeProfiles", "blockedAdapters", "sources"
+  ],
+  "properties": {
+    "schema": {"const": "openprose.windows-resolution-oracle/1"},
+    "oracleVersion": {"const": "1.0.0"},
+    "frozenAt": {"type": "string", "format": "date"},
+    "scope": {"type": "string", "minLength": 1},
+    "invariants": {
+      "type": "object", "additionalProperties": false,
+      "required": ["shell", "outerPty", "shimPolicy", "application", "probeAuthority", "ambiguity", "packageMetadata", "runtimeEntrypoint", "credentials", "languageOpacity"],
+      "properties": {
+        "shell": {"const": false},
+        "outerPty": {"const": false},
+        "shimPolicy": {"const": "cmd-bat-ps1-never-read-never-executed"},
+        "application": {"const": "absolute-authenticated-exe-only"},
+        "probeAuthority": {"const": "artifact-profile-before-version-probe"},
+        "ambiguity": {"const": "fail-closed"},
+        "packageMetadata": {"const": "evidence-matching-frozen-profile-not-self-admission"},
+        "runtimeEntrypoint": {"const": "application-entrypoint-manifest-and-complete-load-bearing-closure-required"},
+        "credentials": {"const": "names-only-closed-environment-never-argv-or-evidence"},
+        "languageOpacity": {"const": true}
+      }
+    },
+    "claims": {
+      "type": "object", "additionalProperties": false,
+      "required": ["productAdmission", "strictWrapperAdmission", "semanticConformance", "releaseEligibility"],
+      "properties": {
+        "productAdmission": {"const": false},
+        "strictWrapperAdmission": {"const": false},
+        "semanticConformance": {"const": false},
+        "releaseEligibility": {"const": false}
+      }
+    },
+    "researchProfiles": {
+      "type": "array", "minItems": 2, "items": {"$ref": "windows-launch-profile-v1.json"}
+    },
+    "providerFreeProfiles": {
+      "type": "array", "minItems": 2, "items": {"$ref": "windows-launch-profile-v1.json"}
+    },
+    "blockedAdapters": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["adapterId", "frozenIdentity", "windowsLaunchFeasible", "reasons", "futureSafeRoute"],
+        "properties": {
+          "adapterId": {"type": "string", "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"},
+          "frozenIdentity": {"type": "string", "minLength": 1},
+          "windowsLaunchFeasible": {"const": false},
+          "reasons": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+          "futureSafeRoute": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "sources": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "kind", "location", "fact"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "kind": {"type": "string", "minLength": 1},
+          "location": {"type": "string", "minLength": 1},
+          "fact": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

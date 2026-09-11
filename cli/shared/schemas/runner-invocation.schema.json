@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/runner-invocation.schema.json",
+  "title": "OpenProse runner invocation record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "invocationId",
+    "cwd",
+    "languageImage",
+    "runner",
+    "harness",
+    "transport",
+    "recursionToken",
+    "task",
+    "taskDigestSha256"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.runner-invocation/1" },
+    "invocationId": {
+      "$ref": "common.schema.json#/$defs/nonEmptyString",
+      "x-openprose-volatile": true
+    },
+    "cwd": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "languageImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formatVersion", "version", "sha256"],
+      "properties": {
+        "formatVersion": { "const": "openprose.skill-runtime-image/1" },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "runner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "commit"],
+      "properties": {
+        "name": { "type": "string", "enum": ["rust", "bun"] },
+        "version": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "commit": { "$ref": "common.schema.json#/$defs/nonEmptyString" }
+      }
+    },
+    "harness": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "transport": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "recursionToken": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "task": {
+      "description": "Opaque language-owned task envelope. This schema intentionally does not inspect its fields.",
+      "type": "object",
+      "minProperties": 1
+    },
+    "taskDigestSha256": { "$ref": "common.schema.json#/$defs/sha256" }
+  }
+}

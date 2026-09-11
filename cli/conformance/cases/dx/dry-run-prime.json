@@ -1,0 +1,26 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "dx.dry-run-prime",
+  "summary": "A BYO Prime dry run reports the ready provider-free installed adapter without starting a model.",
+  "phase": 7,
+  "tags": ["dry-run", "adapter", "prime", "configuration", "agent-dx", "differential"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied",
+    "installedAdapter": { "adapterId": "prime/rpc" }
+  },
+  "invocation": {
+    "argv": ["--harness", "prime", "--transport", "rpc", "--model", "fixture/model:alpha", "--auth-profile", "openrouter", "--output", "json", "--dry-run", "write", "fixture request"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": { "kind": "json", "schema": "openprose.runner-dry-run-report/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultFixture": "cli/shared/fixtures/dx/dry-run-prime.json"
+  }
+}

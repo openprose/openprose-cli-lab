@@ -1,0 +1,47 @@
+{
+  "schema": "openprose.release-profile/1",
+  "profileId": "shape-only-fixture",
+  "profileVersion": "fixture-v1",
+  "frozenAt": "2025-01-01T00:00:00Z",
+  "image": {
+    "version": "canonical-placeholder-v1",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "purpose": "canonical-language-runtime"
+  },
+  "terminalEnvelope": {
+    "id": "terminal-placeholder",
+    "version": "fixture-v1",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "semanticCorpus": {
+    "id": "corpus-placeholder",
+    "version": "fixture-v1",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "requiredMatrix": [
+    {
+      "harness": "codex",
+      "transport": "exec-json",
+      "platform": "linux-x64-gnu",
+      "versionRange": ">=0.0.0",
+      "claim": "strict-wrapper-conformant",
+      "semanticProfile": "minimum-placeholder"
+    }
+  ],
+  "trialPolicy": {
+    "trials": 3,
+    "retries": 1,
+    "retryableConditions": ["provider-transient", "rate-limit"]
+  },
+  "costCeiling": {
+    "currency": "USD",
+    "perRun": 1.0,
+    "total": 100.0
+  },
+  "quarantinePolicy": {
+    "requiresOwner": true,
+    "requiresReason": true,
+    "requiresExpiry": true,
+    "maximumDays": 14
+  }
+}

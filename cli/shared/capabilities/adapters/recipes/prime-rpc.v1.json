@@ -1,0 +1,101 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "prime-rpc-v1",
+  "adapterId": "prime/rpc",
+  "state": "frozen",
+  "runtime": "installed-process",
+  "identity": {
+    "kind": "executable",
+    "executableNames": ["prime-agent"],
+    "packageIdentity": "official versioned prime-agent release tarball (functional alpha exact 0.7.0 or 0.8.1)"
+  },
+  "support": {
+    "versionRange": "=0.7.0 || =0.8.1",
+    "admittedVersions": ["0.7.0", "0.8.1"],
+    "repairCommand": "curl -fsSL https://app.primeintellect.ai/prime-agent/install.sh | sh -s -- 0.8.1",
+    "platforms": ["darwin-arm64"]
+  },
+  "probe": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--version" }
+    ],
+    "timeoutMs": 5000,
+    "versionPattern": "^(?:prime-agent )?[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$",
+    "versionStream": "stderr"
+  },
+  "launch": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--mode" },
+      { "literal": "rpc" },
+      { "literal": "--no-session" },
+      { "literal": "--no-extensions" },
+      { "literal": "--no-skills" },
+      { "literal": "--no-prompt-templates" },
+      { "literal": "--no-themes" },
+      { "literal": "--no-context-files" },
+      { "literal": "--daemon-socket" },
+      { "value": "daemon-socket-path" },
+      { "literal": "--cwd" },
+      { "value": "cwd" },
+      { "literal": "--append-system-prompt" },
+      { "value": "image-utf8" }
+    ],
+    "optionalArgv": [
+      {
+        "when": "model-present",
+        "placement": "append",
+        "argv": [
+          { "literal": "--model" },
+          { "value": "model" }
+        ]
+      }
+    ],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "protocol",
+    "stdinLifecycle": "close-after-terminal-event",
+    "stdoutProtocol": "json-rpc",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    "imageDelivery": {
+      "mechanism": "argv",
+      "field": "--append-system-prompt",
+      "encoding": "utf8"
+    },
+    "taskDelivery": {
+      "mechanism": "rpc-field",
+      "field": "prompt.message",
+      "encoding": "json-utf8"
+    }
+  },
+  "isolation": {
+    "guarantee": "advisory",
+    "ambientDisabled": ["user-skills", "project-skills", "instruction-files", "auto-discovered-openprose"],
+    "preserved": ["native-safety-prompt", "managed-policy", "selected-permissions", "harness-auth"]
+  },
+  "cancellation": {
+    "protocol": "documented-protocol",
+    "containment": "unsupported",
+    "graceMs": 2000,
+    "hardKillAfterMs": 5000
+  },
+  "auth": {
+    "category": "harness-managed",
+    "readinessProbe": "none; actual run is the first authentication authority",
+    "secretsInArgv": false
+  },
+  "billingOwner": "user-provider",
+  "requiredTerminal": {
+    "event": "correlated prompt acknowledgement, then one closed no-tool agent/turn/user/assistant/turn_end lifecycle, then terminal agent_end followed by process exit 0 after stdin close",
+    "acceptableExitCodes": [0],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": []
+}

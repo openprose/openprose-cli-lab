@@ -1,0 +1,33 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "core.bare-delimiter-rejected",
+  "summary": "A bare runner delimiter fails closed instead of inventing a language command.",
+  "phase": 1,
+  "tags": ["argv", "reservation", "fail-closed"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": ["--output", "json", "--"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 2,
+    "stdout": { "kind": "json", "schema": "openprose.runner-error/1" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "resultMatches": {
+      "code": "INVOCATION_INVALID",
+      "boundary": "invocation",
+      "message": "Runner invocation is invalid.",
+      "action": "Review the runner syntax with the --help option, place global options before cli, and retry the command.",
+      "exitCode": 2,
+      "retryable": false,
+      "details": { "reason": "`--` must be followed by a language command" }
+    }
+  }
+}

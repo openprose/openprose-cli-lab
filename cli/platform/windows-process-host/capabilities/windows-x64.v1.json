@@ -1,0 +1,75 @@
+{
+  "schema": "openprose.windows-process-host.capability/1",
+  "component": "openprose-windows-process-host",
+  "componentVersion": "0.1.0",
+  "target": "x86_64-pc-windows-msvc",
+  "sourceRevision": "uncommitted-working-tree",
+  "generatedDate": "2026-08-28",
+  "providerCallsMade": false,
+  "toolchain": {
+    "declaredRust": "1.87.0",
+    "dependenciesLocked": true,
+    "windowsSys": "0.61.2",
+    "serde": "1.0.228",
+    "serdeJson": "1.0.145"
+  },
+  "evidence": {
+    "hostNeutralLibraryCompiled": true,
+    "hostNeutralUnitTestsRun": true,
+    "hostNeutralUnitTestsPassed": 16,
+    "windowsTargetTypeChecked": true,
+    "windowsTargetTypeCheckedAtMsrv": true,
+    "windowsClippyWarningsDenied": true,
+    "windowsPeBinaryProduced": false,
+    "windowsPeLinkBlocker": "macOS worker has no Microsoft Windows SDK import libraries",
+    "windowsRuntimeTestsCompiled": false,
+    "windowsRuntimeTestsTypeChecked": true,
+    "windowsRuntimeTestsRun": false,
+    "windowsRuntimeBlocker": "no native Windows worker or emulator was in scope",
+    "staticAuditPassed": true
+  },
+  "protocol": {
+    "requestSchema": "openprose.windows-process-host.request/1",
+    "controlSchema": "openprose.windows-process-host.control/1",
+    "eventSchema": "openprose.windows-process-host.event/1",
+    "errorSchema": "openprose.windows-process-host.error/1",
+    "identitySchema": "openprose.windows-process-host.identity/1",
+    "maxRequestBytes": 67108864,
+    "maxSchemaRequestBytes": 55083084,
+    "maxControlBytes": 4096,
+    "maxDecodedChildStdinBytes": 16777215,
+    "maxEnvironmentBlockBytes": 4194304
+  },
+  "implementation": {
+    "explicitExeNoShell": "implemented-static-and-cross-checked",
+    "closedArgvCwdEnvironmentStdin": "implemented-static-and-cross-checked",
+    "createSuspended": "implemented-static-and-cross-checked",
+    "strictThreeHandleInheritanceList": "implemented-static-and-cross-checked",
+    "killOnJobClose": "implemented-static-and-cross-checked",
+    "assignJobBeforeResume": "implemented-static-and-cross-checked",
+    "newProcessGroup": "implemented-static-and-cross-checked",
+    "boundedStreamsAndEventQueue": "implemented-static-and-cross-checked",
+    "gracefulThenJobTermination": "implemented-static-and-cross-checked",
+    "jobAccountingCleanupEvidence": "implemented-static-and-cross-checked",
+    "ambientAndFileIdentityRecursionRejection": "implemented-static-and-cross-checked",
+    "nativeExitEvidence": "implemented-static-and-cross-checked",
+    "closedEventSequencing": "implemented-host-neutral-and-cross-checked",
+    "malformedDisconnectBackpressureClassification": "implemented-host-neutral-and-cross-checked",
+    "stableVersionAndMachineIdentity": "implemented-host-neutral-and-cross-checked"
+  },
+  "providerFreeWindowsTests": [
+    "exact argv, closed environment, cwd, binary stdin, separated stdout/stderr, native exit",
+    "cancel after descendant creation, deny breakaway, empty whole Job",
+    "output limit terminates and empties whole Job",
+    "malformed control terminates and empties whole Job",
+    "parent disconnect terminates and empties whole Job",
+    "hard-link wrapper recursion rejected before spawn",
+    "ambient wrapper recursion rejected before request"
+  ],
+  "claims": {
+    "strictWindowsContainmentReady": false,
+    "raceFreeWindowsBehaviorVerified": false,
+    "tier1WindowsPromotionReady": false,
+    "nextRequiredGate": "run the provider-free integration suite on native Windows x64 CI and retain its event evidence"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/alpha-promotion-attestation-evidence.schema.json",
+  "title": "OpenProse functional-alpha attestation preverification evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "status", "repository", "releaseId", "version", "sourceSha",
+    "tag", "assemblySha256", "draftAuthority", "sourceRef", "predicateType", "signerWorkflow",
+    "signerDigest", "workflowRunId", "workflowRunAttempt", "expectedAssetCount",
+    "verifiedAssetCount", "bytesReauthenticated", "tool", "assets"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.alpha-promotion-attestation-evidence/1" },
+    "status": { "const": "verified" },
+    "repository": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "releaseId": { "type": "integer", "minimum": 1 },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-alpha\\.(0|[1-9][0-9]*)$"
+    },
+    "sourceSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "tag": {
+      "type": "string",
+      "pattern": "^cli-v[0-9]+\\.[0-9]+\\.[0-9]+-alpha\\.[0-9]+$"
+    },
+    "assemblySha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "draftAuthority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sha256", "artifact", "controlSha", "releaseBody",
+        "assetInventorySha256", "workflowRun", "outcome"
+      ],
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "artifact": {
+          "type": "string",
+          "pattern": "^openprose-cli-alpha-draft-authority-run-[1-9][0-9]*-attempt-[1-9][0-9]*$"
+        },
+        "controlSha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "releaseBody": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["byteLength", "sha256"],
+          "properties": {
+            "byteLength": { "type": "integer", "minimum": 1, "maximum": 1048576 },
+            "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+          }
+        },
+        "assetInventorySha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "workflowRun": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "id", "attempt"],
+          "properties": {
+            "path": { "const": ".github/workflows/openprose-cli-alpha-release.yml" },
+            "id": { "type": "integer", "minimum": 1 },
+            "attempt": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "outcome": { "enum": ["created", "resumed"] }
+      }
+    },
+    "sourceRef": { "const": "refs/heads/main" },
+    "predicateType": { "const": "https://slsa.dev/provenance/v1" },
+    "signerWorkflow": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/\\.github/workflows/openprose-cli-alpha-release\\.yml$"
+    },
+    "signerDigest": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "workflowRunId": { "type": "integer", "minimum": 1 },
+    "workflowRunAttempt": { "type": "integer", "minimum": 1 },
+    "expectedAssetCount": { "const": 38 },
+    "verifiedAssetCount": { "const": 38 },
+    "bytesReauthenticated": { "const": true },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authority", "version", "executableByteLength", "executableSha256"
+      ],
+      "properties": {
+        "authority": { "const": "externally-provisioned-github-cli" },
+        "version": {
+          "type": "string",
+          "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+        },
+        "executableByteLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "executableSha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 38,
+      "maxItems": 38,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "byteLength", "sha256", "outcome"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]{0,254}$"
+          },
+          "byteLength": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 536870912
+          },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "outcome": { "const": "verified" }
+        }
+      }
+    }
+  }
+}

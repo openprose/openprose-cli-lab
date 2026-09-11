@@ -1,0 +1,98 @@
+# OpenProse Rust runner
+
+This standalone Rust 1.87 workspace contains the native `prose` outer runner.
+It is an outer transport runner, not an OpenProse interpreter, and has no
+dependency on the repository's language or kernel packages.
+
+## Local verification
+
+```sh
+cd cli/rust
+cargo test --workspace --all-targets --features prose-cli/test-seams --locked --offline
+cargo clippy --workspace --all-targets --features prose-cli/test-seams --locked -- -D warnings
+cargo fmt --all -- --check
+```
+
+Build and inspect an installed harness without starting a model run:
+
+```sh
+cargo build --locked -p prose-cli
+./target/debug/prose --output json cli harness list
+./target/debug/prose --harness codex --dry-run --output json run example.prose.md
+```
+
+The functional alpha can run installed `prime-agent`, `omp`, `codex`, and
+`claude` executables directly, without a shell or outer PTY. Prime and OMP
+require an explicit fully qualified `provider/model` and credential route.
+Their HOME-backed harness caches are available only through the explicit
+`prime-harness-login` and `omp-harness-login` auth profiles; those routes pass
+no provider credential environment variables. Every Prime/OMP environment-key
+profile instead receives a fresh runner-owned mode-0700 config directory for
+the complete child/service lifetime, so an ambient harness store cannot
+silently outrank it. Prime/OMP preflight never runs model-list/help auth probes;
+all profiles report auth readiness as unknown and actual execution is the first
+auth authority. Every actual Prime child also receives the adapter-owned
+`PRIME_AGENT_TELEMETRY=0` opt-out; an ambient conflicting value is overwritten,
+the selected credential route is unchanged, and no other adapter receives it.
+Every actual OMP child receives exact `--no-tools`, exact `--no-lsp`, and a final private
+mode-0600 config overlay that disables retry and the exact OMP 18.0.9 MCP discovery
+providers. The runner withholds the prompt until
+a correlated post-start `get_state` response proves `dumpTools` is empty.
+Interactive UI, control drift, a nonempty tool inventory, and nonterminal
+`agent_end` fail closed; the latter reports
+`unsupported_nonterminal_settlement` rather than being mistaken for success.
+Codex and Claude retain their separately documented behavior.
+Selection never falls back to another harness or credential environment group.
+Functional-alpha admission is an exact audited allowlist: Prime `0.7.0` or
+`0.8.1`, OMP `18.0.9`, Codex `0.149.0-alpha.4.1`, and Claude `2.1.243`.
+Nearby patches and prereleases are detected but refused rather than admitted by
+range extrapolation. Machine errors include the detected identity, exact
+allowlist, and repair command; human doctor/run output prints the same copyable
+repair command.
+
+Prime runs use one private per-run daemon socket. If its owned service cannot
+be settled, OpenProse recursively removes prompt, image, task, credential, and
+cache artifacts within bounded entry, byte, and depth limits. Symlinks are
+unlinked without being followed. It then reports an opaque cleanup handle and
+the fixed `cli cleanup prime <handle>` argument suffix. Set `PROSE` to the exact
+downloaded executable that reported the failure and run `"$PROSE" cli cleanup
+prime <handle>`. Recovery accepts
+only the original mode-0700, current-user directory and mode-0600 marker under
+the process's same canonical temporary root, reauthenticates Prime's exact
+socket/version handshake, and refuses symlinks, unexpected entries, changed
+markers, or alternate roots. A private retry ticket keeps the same handle valid
+if final directory removal is interrupted. Use `"$PROSE" --output json cli
+cleanup prime <handle>` for the single closed machine report. If `TMPDIR` or the platform
+temporary root changes before recovery, restore that environment first; the
+command fails safely rather than searching other directories.
+
+Without `--harness`, the selected harness is always `openprose`. Until the
+OpenProse-billed adapter exists, a language run fails with
+`HOSTED_UNAVAILABLE` and exit code 10. It never falls back to a third-party
+harness.
+
+Ordinary builds embed the release-eligible `echo-v0` Skill Runtime Image. It is
+a functional-alpha placeholder: it asks the selected harness to echo the task
+and produce a structurally verified terminal envelope, so successful runs have
+semantic status `not-applicable`. It does not implement the OpenProse language.
+Strict wrapper admission and a full semantic release still require the future
+canonical, language-owned runtime image plus versioned real-harness evidence.
+
+An ordinary `cargo build` reports the development profile with test seams
+disabled. An ordinary `cargo build --release` reports the release profile with
+test seams disabled. The deterministic mock and release-ineligible
+`sentinel-v1` image are enabled only by the explicit development test build:
+
+```sh
+cargo build --locked -p prose-cli --features prose-cli/test-seams
+```
+
+The build rejects `--release` combined with `prose-cli/test-seams`. Release
+workflows can set an exact validated prerelease version without editing Cargo
+metadata:
+
+```sh
+OPENPROSE_BUILD_VERSION=0.1.0-alpha.1 \
+OPENPROSE_REQUIRE_RELEASE_IMAGE=1 \
+cargo build --release --locked -p prose-cli
+```

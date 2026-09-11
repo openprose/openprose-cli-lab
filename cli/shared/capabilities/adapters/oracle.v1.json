@@ -1,0 +1,527 @@
+{
+  "schema": "openprose.adapter-admission-oracle/1",
+  "oracleVersion": "1.0.0",
+  "retrievedAt": "2026-08-31",
+  "recipeSchema": "cli/shared/schemas/adapter-admission-recipe.schema.json",
+  "transportLimits": "cli/shared/capabilities/transport-limits.v1.json",
+  "method": {
+    "providerRuns": false,
+    "networkedModelCalls": false,
+    "documented": "A current official document or upstream implementation states the fact.",
+    "observed": "Local executable identity or help text was inspected without starting a model run.",
+    "unknown": "No current primary source inspected by this oracle proves the fact. Unknown fails closed."
+  },
+  "globalInvariants": {
+    "spawn": "direct-argv-only",
+    "shell": false,
+    "outerPty": false,
+    "fallback": "forbidden",
+    "stdout": "structured-protocol-only",
+    "stderr": "bounded-sanitized-diagnostics-only",
+    "environment": "base allowlist plus exactly one explicitly selected credential group; Prime/OMP environment-key routes also receive one runner-owned private config-directory override; every Prime child receives the adapter-owned PRIME_AGENT_TELEMETRY=0 control",
+    "terminal": "harness terminal and exit code are necessary; language terminal-envelope recovery is separately required",
+    "ordinaryExecution": "explicit functional-alpha or strict-wrapper-conformant; never silently upgraded between tiers"
+  },
+  "baseEnvironmentAllowlist": [
+    "PATH",
+    "HOME",
+    "USER",
+    "USERPROFILE",
+    "SystemRoot",
+    "WINDIR",
+    "COMSPEC",
+    "PATHEXT",
+    "TMPDIR",
+    "TMP",
+    "TEMP",
+    "LANG",
+    "LC_ALL",
+    "LC_CTYPE",
+    "TZ",
+    "XDG_CONFIG_HOME",
+    "XDG_CACHE_HOME",
+    "XDG_DATA_HOME",
+    "SSH_AUTH_SOCK",
+    "__CF_USER_TEXT_ENCODING"
+  ],
+  "environmentRules": {
+    "nameMatching": "case-sensitive on Unix and case-insensitive on Windows; USER is the POSIX account-name input required by installed harness login probes, while USERPROFILE remains the independent Windows profile-path input, and both are public non-credential values",
+    "credentialSelection": "Pass only the names in the one credential group selected by an explicit auth-profile decision. If selection is ambiguous, fail before spawn.",
+    "credentialPresence": "An explicitly selected token/key group must contain a non-empty credential before any harness launch. AWS Bedrock requires either AWS_PROFILE or both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY; region and session-token values are routing metadata and never credentials. Google requires GEMINI_API_KEY or GOOGLE_APPLICATION_CREDENTIALS. Every Prime and OMP profile skips installed auth probes and retains unknown readiness; harness-login keeps the ordinary HOME-backed store, while environment-key routes receive a fresh runner-owned private config directory, never inherit ambient config-directory overrides, and never fall back to another credential route. Every OMP run strips ambient PI_CONFIG_FILES and uses a final wrapper-owned --config overlay that disables retry and the exact MCP-capable discovery-provider set without mutating user, global, or project configuration.",
+    "additionalNames": "Only names explicitly configured by the user for this adapter invocation; values are never emitted.",
+    "adapterOwnedControls": {
+      "prime/rpc": { "PRIME_AGENT_TELEMETRY": "0" }
+    },
+    "adapterOwnedControlPolicy": "Adapter-owned controls are exact non-credential child settings, never selected from ambient input. PRIME_AGENT_TELEMETRY=0 overwrites any ambient conflicting value for every actual Prime run; it is absent from OMP, Codex, and Claude run children and does not alter the selected credential group. Closed version inventory does not require this run-only control.",
+    "alwaysStrip": ["OPENPROSE_TOKEN", "PROSE_TOKEN", "PROSE_BILLING_TOKEN"],
+    "secretHandling": "Secret values never enter argv, reports, diagnostics, observations, or benchmark artifacts. Tests compare names and redacted presence only.",
+    "unknownNames": "strip"
+  },
+  "proposedRecipeSchemaExtension": {
+    "status": "applied",
+    "reason": "Codex developer_instructions and Prime --append-system-prompt accept inline UTF-8, while argvTemplate currently represents only image-path.",
+    "newArgvValues": ["image-utf8", "rendered-config-path", "daemon-socket-path"],
+    "constraints": [
+      "image-utf8 expands to exactly one argv element without shell parsing",
+      "image-utf8 is allowed only for a digest-verified non-secret image payload",
+      "NUL is rejected and platform argv byte limits are checked before spawn",
+      "a configured conservative byte cap is enforced; overflow returns IMAGE_TOO_LARGE rather than changing placement",
+      "rendered-config-path names a mode-0600 file in an owned private directory and never a user or project config file",
+      "rendered config bytes are mechanically produced from a closed harness template and the verified image; no language text is invented",
+      "daemon-socket-path expands to one fresh absolute path beneath an owned mode-0700 directory retained until the child and its exact owned service settle; allocation failure stops before spawn and never falls back to a harness default socket",
+      "a present Prime daemon socket must be a Unix socket in that exact directory and complete a bounded identity-checked protocol-v7 forced-shutdown exchange before private files are removed; cleanup failure preserves those files and overrides the run result",
+      "evidence stores source image, rendered config, and decoded model-visible image digests separately",
+      "argv and diagnostic evidence redact image content even though the canonical image is not a credential",
+      "the temporary file is removed only after the child no longer needs it",
+      "these delivery values are available only in the explicitly labeled functional-alpha tier until a recipe and both products pass strict adapter admission"
+    ]
+  },
+  "sources": [
+    {
+      "id": "openprose.decision-0007",
+      "url": "local://cli/protocol/decisions/0007-harness-credential-routing.md",
+      "kind": "architecture-decision",
+      "status": "documented",
+      "retrievedAt": "2026-08-30",
+      "notes": "Accepted functional-alpha policy: Prime/OMP harness-login remains HOME-backed, environment-key routes receive fresh runner-owned private config directories, and all Prime/OMP preflight auth readiness remains unknown until actual execution."
+    },
+    {
+      "id": "codex.local-help-0.149.0-alpha.4.1",
+      "url": "local://codex/0.149.0-alpha.4.1/--help",
+      "kind": "local-help",
+      "status": "observed",
+      "retrievedAt": "2026-08-27",
+      "notes": "Observed codex-cli 0.149.0-alpha.4.1. `exec --json`, `--ephemeral`, `--ignore-user-config`, `--ignore-rules`, `--cd`, prompt `-`, and login status were present."
+    },
+    {
+      "id": "codex.exec-events-source",
+      "url": "https://github.com/openai/codex/blob/035295b46ee4a5962d0e01a66a888d5bf5da4de4/codex-rs/exec/src/exec_events.rs",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Defines JSONL thread.started, turn.started, item events, turn.completed, turn.failed, and error."
+    },
+    {
+      "id": "codex.config-source",
+      "url": "https://github.com/openai/codex/blob/035295b46ee4a5962d0e01a66a888d5bf5da4de4/codex-rs/config/src/config_toml.rs",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Documents developer_instructions as a developer-role message and identifies prompt/config controls."
+    },
+    {
+      "id": "codex.platform-source",
+      "url": "https://github.com/openai/codex/blob/035295b46ee4a5962d0e01a66a888d5bf5da4de4/README.md",
+      "kind": "upstream-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Documents darwin arm64/x86_64 and Linux musl arm64/x86_64 release archives plus Windows installation. No Linux GNU archive is named, so the recipe does not claim a GNU release target; a static musl target may run on a GNU host."
+    },
+    {
+      "id": "claude.local-help-2.1.243",
+      "url": "local://claude/2.1.243/--help",
+      "kind": "local-help",
+      "status": "observed",
+      "retrievedAt": "2026-08-27",
+      "notes": "Observed --safe-mode disabling customizations while retaining normal auth, model, built-in tools, permissions, and managed policy; also observed print and stream-json flags."
+    },
+    {
+      "id": "claude.cli-reference",
+      "url": "https://code.claude.com/docs/en/cli-reference",
+      "kind": "official-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Documents -p, stream-json, no-session-persistence, and append-system-prompt-file preserving the default prompt."
+    },
+    {
+      "id": "claude.headless-reference",
+      "url": "https://code.claude.com/docs/en/headless",
+      "kind": "official-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Documents noninteractive operation, JSONL streaming, and system/init metadata. It documents --bare but bare changes subscription auth, so this recipe does not use it."
+    },
+    {
+      "id": "claude.sdk-result-reference",
+      "url": "https://code.claude.com/docs/en/agent-sdk/typescript",
+      "kind": "official-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Defines result success/error variants and result metadata."
+    },
+    {
+      "id": "prime.local-help-0.7.0",
+      "url": "local://prime-agent/0.7.0/--help",
+      "kind": "local-help",
+      "status": "observed",
+      "retrievedAt": "2026-08-27",
+      "notes": "Observed the installed 0.7.0 executable, including RPC, no-session/resource suppression, public --daemon-socket path selection, cwd, model/provider, and inline append-system-prompt flags. Version 0.7.0 is one of the two exact functional-alpha versions (0.7.0 and 0.8.1). No model run was made by this provider-free oracle."
+    },
+    {
+      "id": "prime.package-0.8.1",
+      "url": "https://github.com/PrimeIntellect-ai/prime-agent/blob/bc0fa7606abb3b7af0f765319518d255e6ae553d/packages/coding-agent/package.json",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Pins the audited current source package identity and version to 0.8.1."
+    },
+    {
+      "id": "prime.telemetry-control-0.8.1",
+      "url": "local://prime-agent/0.8.1/telemetry-opt-out-source",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-30",
+      "notes": "The installed Prime 0.8.1 diagnostic and source identify PRIME_AGENT_TELEMETRY=0 as the exact pseudonymous-telemetry opt-out. No model call was made by this provider-free oracle."
+    },
+    {
+      "id": "prime.text-only-stream-source-0.8.1",
+      "url": "local://prime-agent/0.8.1/text-only-stream-and-private-daemon-projection",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact installed 0.8.1 RPC documentation and prime-agent-ai source define text-only assistant streaming as text_start, zero or more text_delta records, then text_end at contentIndex 0 when no thinking block precedes text. The agent loop projects those provider events as message_update records, and the private daemon compactor/reconstructor removes provider-internal partial while rebuilding a single current text content block at index 0. This provider-free source audit made no model call, does not retain any live candidate record, and does not establish strict admission."
+    },
+    {
+      "id": "prime.usage-reference",
+      "url": "https://github.com/PrimeIntellect-ai/prime-agent/blob/bc0fa7606abb3b7af0f765319518d255e6ae553d/packages/coding-agent/docs/usage.md",
+      "kind": "upstream-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Documents RPC/JSON modes, resource suppression flags, --cwd, --no-session, and inline system prompt flags."
+    },
+    {
+      "id": "prime.rpc-reference",
+      "url": "https://github.com/PrimeIntellect-ai/prime-agent/blob/bc0fa7606abb3b7af0f765319518d255e6ae553d/packages/coding-agent/docs/rpc.md",
+      "kind": "upstream-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-27",
+      "notes": "Defines LF-delimited JSON RPC, prompt acknowledgement, the ordinary agent/turn/message lifecycle, abort, terminal agent_end, and extension UI side channels."
+    },
+    {
+      "id": "prime.agent-event-source-0.7.0",
+      "url": "local://prime-agent/0.7.0/AgentEvent-and-compact-session-stream",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-30",
+      "notes": "The installed 0.7.0 AgentEvent types and loop implementation define agent_start, turn_start, paired user message events, assistant stream updates, assistant message_end, turn_end with toolResults, and terminal agent_end with messages. Its compact daemon stream source explicitly removes the provider-internal partial member, then reconstructs each message_update with the projected assistantMessageEvent beside the current rich assistant message; thinking_delta and text_delta repeat variably and cumulatively. The installed OpenAI Responses adapter appends one `\\n\\n` delta when each reasoning-summary part ends, then settles thinking from those parts joined by `\\n\\n`, so the final cumulative stream may have exactly one trailing blank-line delimiter absent from thinking_end. This source audit made no provider call."
+    },
+    {
+      "id": "prime.daemon-protocol-0.7.0",
+      "url": "local://prime-agent/0.7.0/daemon-protocol-v7-and-owned-shutdown",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-30",
+      "notes": "Observed exact daemon_hello identity fields and the protocol-v7 shutdown envelope/response in installed source, then completed a provider-free real 0.7.0 daemon lifecycle on one private Unix socket without starting a model."
+    },
+    {
+      "id": "omp.local-package-18.0.9",
+      "url": "local://omp/18.0.9/--help-and-version",
+      "kind": "local-help",
+      "status": "observed",
+      "retrievedAt": "2026-08-28",
+      "notes": "Observed the ordinary npm package under Bun 1.3.14: omp --version emits omp/18.0.9, omp --help exposes the frozen RPC launch flags, and the former --list-models flag is unsupported. No model run was made."
+    },
+    {
+      "id": "omp.package-18.0.9",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/packages/coding-agent/package.json",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Pins @oh-my-pi/pi-coding-agent 18.0.9, its ordinary omp binary entrypoint, and Bun >=1.3.14."
+    },
+    {
+      "id": "omp.cli-source",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/packages/coding-agent/src/cli/args.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Defines RPC, no-session, no-extensions, no-skills, no-rules, no-title, version, and append-system-prompt options."
+    },
+    {
+      "id": "omp.prompt-source",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/packages/coding-agent/src/main.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Shows file-or-text prompt resolution and the exact effects of no-skills, no-rules, and no-extensions."
+    },
+    {
+      "id": "omp.rpc-reference",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/docs/rpc.md",
+      "kind": "upstream-documentation",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Defines ready-first JSONL RPC, immediate prompt acknowledgement with order-independent event correlation, the ordinary agent/turn/message lifecycle, terminal agent_end, EOF behavior, and interactive or tool side channels."
+    },
+    {
+      "id": "omp.rpc-source",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/packages/coding-agent/src/modes/rpc/rpc-mode.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Emits the bounded ready metadata and startup available_commands_update; prompt schedules agent work without awaiting it, stdin EOF disposes the session after accepted command handlers drain, and setWidget emits a fire-and-forget presentation notification only for absent content or string arrays."
+    },
+    {
+      "id": "omp.rpc-ui-types-source-18.0.9",
+      "url": "https://github.com/can1357/oh-my-pi/blob/v18.0.9/packages/coding-agent/src/modes/rpc/rpc-types.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact 18.0.9 extension UI union defines setWidget with required string id and widgetKey, optional string-array widgetLines, and optional aboveEditor or belowEditor widgetPlacement, separately from interactive select, confirm, input, editor, and open_url requests."
+    },
+    {
+      "id": "omp.agent-end-core-source-18.0.9",
+      "url": "https://github.com/can1357/oh-my-pi/blob/v18.0.9/packages/agent/src/agent-loop.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact 18.0.9 agent loop emits messages plus paired telemetry and coverage summaries when telemetry is enabled, and emits neither optional summary when it is disabled."
+    },
+    {
+      "id": "omp.agent-end-session-source-18.0.9",
+      "url": "https://github.com/can1357/oh-my-pi/blob/v18.0.9/packages/coding-agent/src/session/agent-session.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact 18.0.9 session layer forwards the agent_end payload and adds isTerminal; false means maintenance or async delivery will continue and is not a terminal settle."
+    },
+    {
+      "id": "omp.rpc-frame-source-18.0.9",
+      "url": "https://github.com/can1357/oh-my-pi/blob/v18.0.9/packages/coding-agent/src/modes/rpc/rpc-frame.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact 18.0.9 one-MiB frame encoder may compact an oversized agent_end messages array and add the original nonnegative messageCount while preserving the other terminal fields."
+    },
+    {
+      "id": "omp.deterministic-launch-source-18.0.9",
+      "url": "local://omp/18.0.9/no-tools-config-precedence-and-get-state",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-31",
+      "notes": "The exact installed 18.0.9 help and source define --no-tools as an empty built-in tool selection and --no-lsp as disabling LSP tools, formatting, diagnostics, and background LSP startup; RPC mode already disables title generation and the explicit --no-title keeps that launch intent visible. The source loads PI_CONFIG_FILES before ordered CLI --config overlays, merges the final overlay at highest file precedence, initializes capability discovery from top-level disabledProviders, and exposes get_state data.dumpTools from the actual registered agent tools. The wrapper-owned mode-0600 overlay disables retry and the exact MCP-capable provider IDs native, omp-plugins, claude, agent-plugins, claude-plugins, codex, gemini, opencode, cursor, windsurf, vscode, and mcp-json; ambient PI_CONFIG_FILES is stripped, and the wrapper never writes user, global, or project configuration. A provider-free exact-18.0.9 startup probe observed three ambient Codex-imported MCP tools before the overlay and zero tools with the final overlay. disabledProviders is global rather than capability-scoped: cursor is the only listed ID that also intersects the standard model-provider descriptors, so Cursor-backed models are unavailable through this OMP adapter; no functional-alpha credential route uses that provider. The staged control remains available_commands_update then correlated get_state with empty dumpTools then prompt, so future provider drift fails closed. No model call was made."
+    },
+    {
+      "id": "omp.nonterminal-settlement-source-18.0.9",
+      "url": "local://omp/18.0.9/agent-end-nonterminal-continuation-audit",
+      "kind": "installed-source",
+      "status": "observed",
+      "retrievedAt": "2026-08-30",
+      "notes": "The exact installed 18.0.9 session emitter adds boolean agent_end.isTerminal. False is a valid continuation boundary, not successful settlement, but multiple source paths continue through different retry, compaction, queued, maintenance, and async grammars, including paths with no causal start event. Functional alpha therefore fails closed as unsupported_nonterminal_settlement immediately on false and never records success. No model call was made."
+    },
+    {
+      "id": "omp.models-source",
+      "url": "https://github.com/can1357/oh-my-pi/blob/196cee84df7b9257af34d358577d69f61f2b62eb/packages/coding-agent/src/cli/models-cli.ts",
+      "kind": "upstream-source",
+      "status": "documented",
+      "retrievedAt": "2026-08-28",
+      "notes": "Shows models listing can use online-if-uncached catalog resolution and settings/extensions. Functional-alpha runs neither model inventory nor omp --help as an auth probe; executable identity and exact version remain separate mechanical checks, and the actual run is the first authentication authority."
+    }
+  ],
+  "adapters": [
+    {
+      "adapterId": "codex/exec-json",
+      "recipe": "cli/shared/capabilities/adapters/recipes/codex-exec-json.v1.json",
+      "scenario": "cli/shared/fixtures/adapters/scenarios/codex-exec-json.v1.json",
+      "auditTarget": {
+      "version": "=0.149.0-alpha.4.1",
+        "sourceRevision": "035295b46ee4a5962d0e01a66a888d5bf5da4de4",
+        "localObservedVersion": "0.149.0-alpha.4.1"
+      },
+      "credentialGroups": {
+        "cached-chatgpt-login": ["CODEX_HOME", "CODEX_SQLITE_HOME"],
+        "openai-api-key": ["CODEX_HOME", "CODEX_SQLITE_HOME", "OPENAI_API_KEY"],
+        "codex-access-token": ["CODEX_HOME", "CODEX_SQLITE_HOME", "CODEX_ACCESS_TOKEN"]
+      },
+      "credentialRequirements": {
+        "cached-chatgpt-login": { "kind": "probe-owned" },
+        "openai-api-key": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
+        "codex-access-token": { "kind": "any-nonempty", "alternatives": [["CODEX_ACCESS_TOKEN"]] }
+      },
+      "facts": [
+        { "id": "noninteractive-jsonl", "status": "documented", "sources": ["codex.local-help-0.149.0-alpha.4.1", "codex.exec-events-source"] },
+        { "id": "developer-role-injection-exists", "status": "documented", "sources": ["codex.config-source"] },
+        { "id": "developer-role-image-representable-by-recipe-schema", "status": "unknown", "sources": [] },
+        { "id": "all-ambient-customizations-disabled", "status": "unknown", "sources": [] },
+        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
+        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+      ],
+      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "strictAdmission": {
+        "status": "blocked",
+        "blockers": [
+          "Recipe schema cannot represent the documented inline developer_instructions payload without lying that a path is the payload.",
+          "The inspected flags do not prove suppression of AGENTS.md, skills, plugins, MCP, memories, or every project instruction source.",
+          "No provider-free evidence proves exact language terminal-envelope carriage through final agent-message content.",
+          "No audited Unix process-group and race-free Windows Job containment result exists for this adapter.",
+          "The readiness probe must expose the effective auth route so an API-key environment cannot silently replace cached subscription billing."
+        ]
+      }
+    },
+    {
+      "adapterId": "claude/print-stream-json",
+      "recipe": "cli/shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json",
+      "scenario": "cli/shared/fixtures/adapters/scenarios/claude-print-stream-json.v1.json",
+      "auditTarget": {
+      "version": "=2.1.243",
+        "sourceRevision": "cad6304e85e2767eac20044e752b010fff1bb4c3",
+        "localObservedVersion": "2.1.243"
+      },
+      "credentialGroups": {
+        "claude-subscription": []
+      },
+      "credentialRequirements": {
+        "claude-subscription": { "kind": "probe-owned" }
+      },
+      "forcedStrips": [
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_BASE_URL",
+        "CLAUDE_CODE_USE_BEDROCK",
+        "CLAUDE_CODE_USE_VERTEX",
+        "CLAUDE_CODE_USE_FOUNDRY"
+      ],
+      "facts": [
+        { "id": "noninteractive-jsonl", "status": "documented", "sources": ["claude.cli-reference", "claude.headless-reference"] },
+        { "id": "system-append-file-preserves-base-prompt", "status": "documented", "sources": ["claude.cli-reference"] },
+        { "id": "safe-mode-disables-ambient-and-preserves-normal-auth", "status": "observed", "sources": ["claude.local-help-2.1.243"] },
+        { "id": "safe-mode-subscription-behavior-primary-doc-guarantee", "status": "unknown", "sources": [] },
+        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
+        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+      ],
+      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "strictAdmission": {
+        "status": "blocked",
+        "blockers": [
+          "Safe mode's ambient-suppression plus subscription-auth preservation is observed in 2.1.243 help but is not yet frozen by inspected official web documentation or a real-harness canary.",
+          "The selected permission mode and unattended permission-denial behavior need an explicit mapping and canary.",
+          "No provider-free evidence proves exact language terminal-envelope carriage through the result message.",
+          "No audited Unix process-group and race-free Windows Job containment result exists for this adapter.",
+          "Only darwin-arm64 was locally observed; every additional release platform needs its own versioned admission run."
+        ]
+      }
+    },
+    {
+      "adapterId": "prime/rpc",
+      "recipe": "cli/shared/capabilities/adapters/recipes/prime-rpc.v1.json",
+      "scenario": "cli/shared/fixtures/adapters/scenarios/prime-rpc.v1.json",
+      "auditTarget": {
+      "version": "=0.7.0 || =0.8.1",
+        "sourceRevision": "bc0fa7606abb3b7af0f765319518d255e6ae553d",
+        "localObservedVersion": "0.7.0 (functional-alpha compatible; strict source pin remains 0.8.1)"
+      },
+      "credentialGroups": {
+        "prime-harness-login": [],
+        "anthropic": ["ANTHROPIC_API_KEY"],
+        "openai": ["OPENAI_API_KEY"],
+        "openrouter": ["OPENROUTER_API_KEY"],
+        "google": ["GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION"],
+        "github-copilot": ["GITHUB_TOKEN", "GH_TOKEN", "COPILOT_GITHUB_TOKEN"],
+        "aws-bedrock": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE", "AWS_REGION", "AWS_DEFAULT_REGION"]
+      },
+      "credentialRequirements": {
+        "prime-harness-login": { "kind": "probe-owned" },
+        "anthropic": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"]] },
+        "openai": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
+        "openrouter": { "kind": "any-nonempty", "alternatives": [["OPENROUTER_API_KEY"]] },
+        "google": { "kind": "any-nonempty", "alternatives": [["GEMINI_API_KEY"], ["GOOGLE_APPLICATION_CREDENTIALS"]] },
+        "github-copilot": { "kind": "any-nonempty", "alternatives": [["GITHUB_TOKEN"], ["GH_TOKEN"], ["COPILOT_GITHUB_TOKEN"]] },
+        "aws-bedrock": { "kind": "any-nonempty", "alternatives": [["AWS_PROFILE"], ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]] }
+      },
+      "facts": [
+        { "id": "noninteractive-json-rpc", "status": "documented", "sources": ["prime.rpc-reference"] },
+        { "id": "abort-command", "status": "documented", "sources": ["prime.rpc-reference"] },
+        { "id": "resource-flags-disable-skills-extensions-prompts-context", "status": "documented", "sources": ["prime.usage-reference"] },
+        { "id": "inline-system-append-exists", "status": "documented", "sources": ["prime.usage-reference"] },
+        { "id": "inline-system-append-representable-by-recipe-schema", "status": "observed", "sources": ["prime.local-help-0.7.0", "prime.usage-reference"] },
+        { "id": "private-daemon-socket-path", "status": "observed", "sources": ["prime.local-help-0.7.0"] },
+        { "id": "private-daemon-protocol-v7-shutdown-settlement", "status": "observed", "sources": ["prime.daemon-protocol-0.7.0"] },
+        { "id": "no-tool-rpc-lifecycle", "status": "documented", "sources": ["prime.rpc-reference", "prime.agent-event-source-0.7.0"] },
+        { "id": "text-only-index-zero-no-tool-rpc-lifecycle", "status": "observed", "sources": ["prime.rpc-reference", "prime.text-only-stream-source-0.8.1"] },
+        { "id": "harness-login-provider-account-and-billing-identity", "status": "unknown", "sources": [] },
+        { "id": "harness-login-cache-readiness", "status": "unknown", "sources": [] },
+        { "id": "environment-key-private-config-isolation", "status": "documented", "sources": ["openprose.decision-0007"] },
+        { "id": "pseudonymous-telemetry-disabled", "status": "observed", "sources": ["prime.telemetry-control-0.8.1"] },
+        { "id": "mcp-memory-package-daemon-ambient-disabled", "status": "unknown", "sources": [] },
+        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
+        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+      ],
+      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "strictAdmission": {
+        "status": "blocked",
+        "blockers": [
+          "The functional-alpha recipe represents inline --append-system-prompt exactly, but strict carriage still needs a versioned real-harness canary for every accepted version.",
+          "No inspected control proves MCP, memories, packages, daemon state, and every non-skill ambient source are disabled.",
+          "RPC extension UI requests can require user input; the wrapper needs a tested fail-closed mapping and must never synthesize approval.",
+          "The explicit prime-harness-login route passes no provider credential environment variables and preserves the HOME-backed harness store, but no inspected probe identifies which cached provider, account, or billing route would be used.",
+          "Every Prime profile deliberately skips model inventory and remains at unknown auth readiness; the actual run is the first authentication authority, with no route fallback.",
+          "No provider-free evidence proves exact language terminal-envelope carriage through agent_end messages.",
+          "No audited Unix process-group and race-free Windows Job containment result exists for this adapter.",
+          "The functional-alpha range includes locally observed 0.7.0, while strict admission still needs source and live evidence for each accepted version."
+        ]
+      }
+    },
+    {
+      "adapterId": "omp/rpc",
+      "recipe": "cli/shared/capabilities/adapters/recipes/omp-rpc.v1.json",
+      "scenario": "cli/shared/fixtures/adapters/scenarios/omp-rpc.v1.json",
+      "auditTarget": {
+        "version": "=18.0.9",
+        "distributionVersion": "@oh-my-pi/pi-coding-agent@18.0.9",
+        "sourceRevision": "196cee84df7b9257af34d358577d69f61f2b62eb",
+        "localObservedVersion": "omp/18.0.9"
+      },
+      "credentialGroups": {
+        "omp-harness-login": [],
+        "anthropic": ["ANTHROPIC_API_KEY", "ANTHROPIC_OAUTH_TOKEN"],
+        "openai": ["OPENAI_API_KEY"],
+        "openrouter": ["OPENROUTER_API_KEY"],
+        "google": ["GEMINI_API_KEY", "GOOGLE_APPLICATION_CREDENTIALS", "GOOGLE_CLOUD_PROJECT", "GOOGLE_CLOUD_LOCATION"],
+        "github-copilot": ["GITHUB_TOKEN", "GH_TOKEN", "COPILOT_GITHUB_TOKEN"],
+        "aws-bedrock": ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY", "AWS_SESSION_TOKEN", "AWS_PROFILE", "AWS_REGION", "AWS_DEFAULT_REGION"]
+      },
+      "credentialRequirements": {
+        "omp-harness-login": { "kind": "probe-owned" },
+        "anthropic": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"], ["ANTHROPIC_OAUTH_TOKEN"]] },
+        "openai": { "kind": "any-nonempty", "alternatives": [["OPENAI_API_KEY"]] },
+        "openrouter": { "kind": "any-nonempty", "alternatives": [["OPENROUTER_API_KEY"]] },
+        "google": { "kind": "any-nonempty", "alternatives": [["GEMINI_API_KEY"], ["GOOGLE_APPLICATION_CREDENTIALS"]] },
+        "github-copilot": { "kind": "any-nonempty", "alternatives": [["GITHUB_TOKEN"], ["GH_TOKEN"], ["COPILOT_GITHUB_TOKEN"]] },
+        "aws-bedrock": { "kind": "any-nonempty", "alternatives": [["AWS_PROFILE"], ["AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"]] }
+      },
+      "facts": [
+        { "id": "ordinary-package-and-executable", "status": "observed", "sources": ["omp.local-package-18.0.9", "omp.package-18.0.9"] },
+        { "id": "noninteractive-json-rpc", "status": "documented", "sources": ["omp.rpc-reference", "omp.rpc-source"] },
+        { "id": "set-widget-fire-and-forget-presentation", "status": "documented", "sources": ["omp.rpc-source", "omp.rpc-ui-types-source-18.0.9"] },
+        { "id": "closed-terminal-frame-shape", "status": "documented", "sources": ["omp.rpc-reference", "omp.agent-end-core-source-18.0.9", "omp.agent-end-session-source-18.0.9", "omp.rpc-frame-source-18.0.9"] },
+        { "id": "abort-command", "status": "documented", "sources": ["omp.rpc-reference"] },
+        { "id": "system-append-file", "status": "documented", "sources": ["omp.prompt-source"] },
+        { "id": "skills-rules-extensions-disabled", "status": "documented", "sources": ["omp.cli-source", "omp.prompt-source"] },
+        { "id": "wrapper-owned-retry-and-mcp-provider-disabled-final-config-overlay", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
+        { "id": "ambient-mcp-discovery-disabled", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
+        { "id": "no-tools-launch-and-preprompt-empty-tool-state", "status": "observed", "sources": ["omp.deterministic-launch-source-18.0.9"] },
+        { "id": "nonterminal-agent-end-fails-closed", "status": "observed", "sources": ["omp.nonterminal-settlement-source-18.0.9"] },
+        { "id": "harness-login-provider-account-and-billing-identity", "status": "unknown", "sources": [] },
+        { "id": "harness-login-cache-readiness", "status": "unknown", "sources": [] },
+        { "id": "environment-key-private-config-isolation", "status": "documented", "sources": ["openprose.decision-0007"] },
+        { "id": "mcp-memory-plugins-context-files-agents-disabled", "status": "unknown", "sources": [] },
+        { "id": "extension-ui-unresolved-input-fails-closed", "status": "unknown", "sources": [] },
+        { "id": "language-terminal-envelope-reliably-recovered", "status": "unknown", "sources": [] },
+        { "id": "cross-platform-owned-tree-cleanup", "status": "unknown", "sources": [] }
+      ],
+      "baseAdmission": { "status": "functional-alpha", "claim": "echo-v0 transport only; no OpenProse semantic or strict-wrapper claim" },
+      "strictAdmission": {
+        "status": "blocked",
+        "blockers": [
+          "No inspected control proves memory, every plugin/context-file/custom-agent source, and all universal non-MCP discovery providers are disabled together.",
+          "RPC extension UI requests can resolve with defaults; OpenProse must instead surface unresolved input without approving or guessing.",
+          "The explicit omp-harness-login route passes no provider credential environment variables and preserves the HOME-backed harness store, but no inspected probe identifies which cached provider, account, or billing route would be used.",
+          "Every OMP profile deliberately skips help/model inventory auth probes and remains at unknown auth readiness; the actual run is the first authentication authority, with no route fallback.",
+          "No provider-free evidence proves exact language terminal-envelope carriage through agent_end messages.",
+          "No audited Unix process-group and race-free Windows Job containment result exists for this adapter.",
+          "The local package/help probe and provider-free protocol fixtures do not substitute for a versioned real-model carriage and auth-route admission run."
+        ]
+      }
+    }
+  ]
+}

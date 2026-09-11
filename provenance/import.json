@@ -1,0 +1,2613 @@
+{
+  "source": "/Users/sl/code/openprose-cli-vm",
+  "sourceHead": "48de5b7b01107638d897a9c9ebaacc6d667c7404",
+  "sourceClean": false,
+  "selection": "Current working-tree cli/ files; excludes generated/build/dependency/evidence directories, env files, logs, symlinks, files over 5MB",
+  "files": [
+    {
+      "path": "cli/.gitignore",
+      "bytes": 23,
+      "sha256": "6feaded4e28ea86e001a6751b4e3d960e8b7c31b9616ff9936b79297086e809b"
+    },
+    {
+      "path": "cli/AGENTS.md",
+      "bytes": 1594,
+      "sha256": "9e07705a6afa47b8e190f3214a1884722be889f4b144a84364347bf57585f6c0"
+    },
+    {
+      "path": "cli/CHANGELOG.md",
+      "bytes": 1901,
+      "sha256": "55705ee208dfef4328d5e8c8d7672f343091c90d05024a953796955686e6dafb"
+    },
+    {
+      "path": "cli/CONTRIBUTING.md",
+      "bytes": 12470,
+      "sha256": "da39bafea30811ab394ec98e334933993f5f49158d5b0754361ed7e71659c20e"
+    },
+    {
+      "path": "cli/README.md",
+      "bytes": 24761,
+      "sha256": "250a84b5515d7cf8e04985f81b9e8604c473189b49e09b6e3c39aee5efc250b9"
+    },
+    {
+      "path": "cli/SPEC.md",
+      "bytes": 77834,
+      "sha256": "eac4966e686896a429a9b31e0dadc75f5dbc9f8afdfaeb9747f155b45cf54866"
+    },
+    {
+      "path": "cli/SUPPORT.md",
+      "bytes": 9073,
+      "sha256": "2ac123afae0484a3dd6fbeaf13ef3b6bcb8804bdfa022aa2c7522c2ea66a6567"
+    },
+    {
+      "path": "cli/benchmarks/README.md",
+      "bytes": 11081,
+      "sha256": "35d773b2ee6332ac0cbafaa9af9fc656bcf4d2b889f0054cbcb70de436e90e15"
+    },
+    {
+      "path": "cli/benchmarks/installed/README.md",
+      "bytes": 5092,
+      "sha256": "98aed69263d711b8966a140b1d3a34c34f9c661a3f8647fb7457a1cf6a26501e"
+    },
+    {
+      "path": "cli/benchmarks/installed/benchmark.py",
+      "bytes": 168737,
+      "sha256": "4a82e1990fef66ee2b485374353b3cb98c36056fe1f6de2b1e658400e7a740bb"
+    },
+    {
+      "path": "cli/benchmarks/installed/fixtures/README.md",
+      "bytes": 765,
+      "sha256": "da6df2984d6e466dcb9e2aea53d84f7e848e668897c783abd3397588c8709992"
+    },
+    {
+      "path": "cli/benchmarks/installed/test_benchmark.py",
+      "bytes": 79813,
+      "sha256": "107c1a76999953a7bbf344aec8f97d6f34171d37583239232f86d2c7761e5b38"
+    },
+    {
+      "path": "cli/benchmarks/policy/local-smoke.policy.json",
+      "bytes": 1495,
+      "sha256": "d49db82238eec8075fb0fe0d0ac192a7a6e8bddec4e8de85aad838c5184d2ff6"
+    },
+    {
+      "path": "cli/benchmarks/policy/local-smoke.profile.json",
+      "bytes": 4862,
+      "sha256": "d62b37de16d25999f55468e00309eb446a9b4f96b14c7ec8c160abd245f4a2b4"
+    },
+    {
+      "path": "cli/benchmarks/policy/schema-delta.md",
+      "bytes": 1516,
+      "sha256": "de938b6acd4650273723a5b00bada45591f86f228bdb3fc6c5b738f859c5b848"
+    },
+    {
+      "path": "cli/benchmarks/programs/sentinel-transport.v1.json",
+      "bytes": 268,
+      "sha256": "08cbd5c40b82930ec1a19d305567b9603128f3976f5ad5ce7b5ea9373242d78f"
+    },
+    {
+      "path": "cli/benchmarks/runner/__init__.py",
+      "bytes": 60,
+      "sha256": "162207efecfab27c7a1e215997db5fd389ea68f939d4ec349ac372b746db6086"
+    },
+    {
+      "path": "cli/benchmarks/runner/cli.py",
+      "bytes": 31748,
+      "sha256": "9538082098550eeeeaf2498e61bbc6a66184f8df141c39fb2218995357669f01"
+    },
+    {
+      "path": "cli/benchmarks/runner/rig.py",
+      "bytes": 62923,
+      "sha256": "4d1ff5e7bffe8105c48a3643474da862b85b5395bb4d1abb9afb8298231ffb6a"
+    },
+    {
+      "path": "cli/benchmarks/schemas/benchmark-profile.schema.json",
+      "bytes": 7341,
+      "sha256": "50b561ca0213271f96f568087e3a31a514346a09dc84115ab68a73a5ad787423"
+    },
+    {
+      "path": "cli/benchmarks/tests/test_rig.py",
+      "bytes": 29573,
+      "sha256": "2519f488cf0233800d41a4de375c2eef0cc81ecef9f1535276f818d26478059e"
+    },
+    {
+      "path": "cli/benchmarks/tests/test_smoke_contract.py",
+      "bytes": 31276,
+      "sha256": "b8fb93073b0f28584697563f8789991ff1ef2975e12dd8f2d8814a0c3469aa14"
+    },
+    {
+      "path": "cli/benchmarks/validators/runner-result-shape.v1.json",
+      "bytes": 320,
+      "sha256": "33c22bbbd4fb530a4da9cd975aaba8803fd89e5bf52badb2686e6f7779f62f9c"
+    },
+    {
+      "path": "cli/bun/.gitignore",
+      "bytes": 26,
+      "sha256": "88e6ec8976a799b7cc4fff5050fc7e9081b7e082c199e907b268262a6568be59"
+    },
+    {
+      "path": "cli/bun/.ruff_cache/.gitignore",
+      "bytes": 1,
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+    },
+    {
+      "path": "cli/bun/.ruff_cache/CACHEDIR.TAG",
+      "bytes": 43,
+      "sha256": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+    },
+    {
+      "path": "cli/bun/README.md",
+      "bytes": 8806,
+      "sha256": "7334ee7b7db43a4d76148d1c40b077a241af213ef76cd7a3915c859858ae9db2"
+    },
+    {
+      "path": "cli/bun/bun.lock",
+      "bytes": 2365,
+      "sha256": "ec96c707da9b892544cd8ba27969f47603e88672e5e3df0c744cd202df801f8d"
+    },
+    {
+      "path": "cli/bun/config/empty-bunfig.toml",
+      "bytes": 139,
+      "sha256": "7651a3b12c20c06ef536d65d87b9edab5afc3279f881c5d849156cf3898c0b14"
+    },
+    {
+      "path": "cli/bun/npm/README.md",
+      "bytes": 5449,
+      "sha256": "4bff03ebcfa8266084553e5cb4294ede5e8515cd317ecf7bed071919465a0dc8"
+    },
+    {
+      "path": "cli/bun/npm/bin/prose.js",
+      "bytes": 21913,
+      "sha256": "071437a887aa6318a76110cc20a63dc911c05e6172a605c53cdb0915540b4fcc"
+    },
+    {
+      "path": "cli/bun/package.json",
+      "bytes": 1089,
+      "sha256": "d7e05c63aeb239656311716cb9d7edf96a1931b3c694edf257b538c868e67b64"
+    },
+    {
+      "path": "cli/bun/scripts/compile-target.ts",
+      "bytes": 1111,
+      "sha256": "2a40448f5dbf3f663a7ee3e30a78993237799330fd0b65e61651936b32fc878c"
+    },
+    {
+      "path": "cli/bun/scripts/image-bundle.ts",
+      "bytes": 9773,
+      "sha256": "713fed5bb7c7a76f1a433b3e720ba9d16c48c40892ac5e54355f016ff912f4fe"
+    },
+    {
+      "path": "cli/bun/src/adapters/admission.ts",
+      "bytes": 3604,
+      "sha256": "98a938a8293c59f52ba53d347c94bc5ef88705a636186c7438f04d796df8700e"
+    },
+    {
+      "path": "cli/bun/src/adapters/environment.ts",
+      "bytes": 4321,
+      "sha256": "dda3ac1246027bf457ca9279667c77f734615e620dd62d84c60f98c114467515"
+    },
+    {
+      "path": "cli/bun/src/adapters/executable.ts",
+      "bytes": 12551,
+      "sha256": "42e846476a13cd23c1d92e29026e5f35291f225dd412be0ddcd0086e75b49754"
+    },
+    {
+      "path": "cli/bun/src/adapters/plan.ts",
+      "bytes": 7165,
+      "sha256": "d3bb09d5d2209276ee03b4020fb9b32ace7d53093eb116b218ac2a2c6f93943a"
+    },
+    {
+      "path": "cli/bun/src/adapters/prime-owned-service.ts",
+      "bytes": 25174,
+      "sha256": "fa80eb26dee913fce3b897a05c55384daedc06d3fbdf2338ab182d01d7b867bb"
+    },
+    {
+      "path": "cli/bun/src/adapters/protocols.ts",
+      "bytes": 41710,
+      "sha256": "0f8a6ca1c0897c6994af9ca513a802242d3d2dcaa2a8037fb360b7c7b08bad66"
+    },
+    {
+      "path": "cli/bun/src/adapters/recipes.ts",
+      "bytes": 4285,
+      "sha256": "4875436a5f868f5e0004b8ad97f6a69d550f9d15ed057177b366a5e36417f17d"
+    },
+    {
+      "path": "cli/bun/src/adapters/runner.ts",
+      "bytes": 13421,
+      "sha256": "d9e6fd61181deff33855cd683b466802176deb066f1dd5e1784d2f6c1d7219d4"
+    },
+    {
+      "path": "cli/bun/src/adapters/terminal.ts",
+      "bytes": 4352,
+      "sha256": "8a6472c797ac71bb26bfd0660b66eb0fe23b540835b32e53fc58d4bc0124dbde"
+    },
+    {
+      "path": "cli/bun/src/adapters/types.ts",
+      "bytes": 6229,
+      "sha256": "99584995fefd3c8cdc36c7a378203427c9f4f965d27baa90a32469f2ca88a38e"
+    },
+    {
+      "path": "cli/bun/src/assets/binary.d.ts",
+      "bytes": 88,
+      "sha256": "57880707119b315a7f35965e7be0c1ee88e05d3fffc127660c136fc96b509f76"
+    },
+    {
+      "path": "cli/bun/src/assets/sentinel.ts",
+      "bytes": 5868,
+      "sha256": "88693476fff6292f033c420f8aa1449b9c9a9a1365e4e547714b0e7d010ce786"
+    },
+    {
+      "path": "cli/bun/src/assets.d.ts",
+      "bytes": 143,
+      "sha256": "ce5f27fb9802f76ddcfd9d28ce9f7357c2f855fb1e3b24acbe5455e3fe154464"
+    },
+    {
+      "path": "cli/bun/src/cli.ts",
+      "bytes": 77319,
+      "sha256": "46c029c6c3c63cfd11e46fde27fce3955ad9ffa1011d0d62b2e7da447cb00b43"
+    },
+    {
+      "path": "cli/bun/src/core/args.ts",
+      "bytes": 8077,
+      "sha256": "d62b5be55f5d8bc659f64e693373be5dedc01e33543e736062d1a81cd345b805"
+    },
+    {
+      "path": "cli/bun/src/core/build.ts",
+      "bytes": 2096,
+      "sha256": "42faa2c832805ece1b7a53eabb73f98129e062c7069724b9d08b383e800522e2"
+    },
+    {
+      "path": "cli/bun/src/core/config.ts",
+      "bytes": 21502,
+      "sha256": "b0e7029f170b01d232eefd2516b1a546dcc02972b9283b8b384893f45f44bb48"
+    },
+    {
+      "path": "cli/bun/src/core/errors.ts",
+      "bytes": 868,
+      "sha256": "1409f51167dc7f0c21971518872833ede0540cee0f77ad59f85ec4987edd12d9"
+    },
+    {
+      "path": "cli/bun/src/core/harnesses.ts",
+      "bytes": 3092,
+      "sha256": "b599c7f068833752c77b9000372811d05badf837a8a03fa1de23aa76157f794c"
+    },
+    {
+      "path": "cli/bun/src/core/human-stream.ts",
+      "bytes": 5228,
+      "sha256": "0391df197d9e72acb335337b2c1bb37a116bedf33aa15749d406adc349105cef"
+    },
+    {
+      "path": "cli/bun/src/core/ids.ts",
+      "bytes": 729,
+      "sha256": "c35cac74dbc60c45fb64174994ca0b43945337c22f4caa79eed41dd6b374dbf8"
+    },
+    {
+      "path": "cli/bun/src/core/image.ts",
+      "bytes": 7081,
+      "sha256": "8fe6b81ad6a600262188ad4fb24dc3361b2e3c4b1296d4e089185acc98da0708"
+    },
+    {
+      "path": "cli/bun/src/core/output.ts",
+      "bytes": 16163,
+      "sha256": "b1b0b823f4ad70f5452f0ce51d121a19613d79f8d462a7b68758712e53427c12"
+    },
+    {
+      "path": "cli/bun/src/core/types.ts",
+      "bytes": 6029,
+      "sha256": "a2723ba7704017f1aa7396a800bbe762c07f793862309b043fefbf5e4f0ffb4a"
+    },
+    {
+      "path": "cli/bun/src/main.ts",
+      "bytes": 153,
+      "sha256": "a9555bcd19eb8983996194b07e9d9281761f609650636811fb96352a60b54687"
+    },
+    {
+      "path": "cli/bun/src/supervision/environment.ts",
+      "bytes": 3128,
+      "sha256": "f8f35af3475e41edbf82167bc63fcbab7de0a153756c97c91ea0e394cdc8436b"
+    },
+    {
+      "path": "cli/bun/src/supervision/fake-transport.ts",
+      "bytes": 3167,
+      "sha256": "354e7560feb71cdca6bdae61d23886279972d466fcb436b73767779b6d371a90"
+    },
+    {
+      "path": "cli/bun/src/supervision/files.ts",
+      "bytes": 4534,
+      "sha256": "b7c1e2649e3803cba3669432b0aa6ed97aa64e2ab4a5c9aae97551d501ec5f6a"
+    },
+    {
+      "path": "cli/bun/src/supervision/jsonl.ts",
+      "bytes": 4524,
+      "sha256": "8a1c57e9abac3dd197748ddd93a8eb4ec069fa8e428b6a8fc3203c8a6f902ab8"
+    },
+    {
+      "path": "cli/bun/src/supervision/process.ts",
+      "bytes": 36372,
+      "sha256": "dbbc70a6207036bb603dfdc873bc79c346e23c600ee4c8eca4f78308983a6f33"
+    },
+    {
+      "path": "cli/bun/src/supervision/types.ts",
+      "bytes": 4191,
+      "sha256": "e2520df28c55fc777586f579238da3f5b17fbe731947d0539accc533b4799c24"
+    },
+    {
+      "path": "cli/bun/src/supervision/windows-host.ts",
+      "bytes": 41236,
+      "sha256": "52c9e730f63ec8f583fd7d0e04597e3261b618a9c7a9674fdfe4ee50b6909feb"
+    },
+    {
+      "path": "cli/bun/src/supervision/windows-process.ts",
+      "bytes": 25741,
+      "sha256": "533e526f9c04151a1e9614f318690aa22c3763549e4daa00406962f898e03544"
+    },
+    {
+      "path": "cli/bun/test/adapters-installed.test.ts",
+      "bytes": 147882,
+      "sha256": "34be0364315f527a7e3db86f98c3f000d63f1d99e7e3d06746171e5e64ee1287"
+    },
+    {
+      "path": "cli/bun/test/args.test.ts",
+      "bytes": 9122,
+      "sha256": "f019bfdf11eff84b4aadbe2fcf32ede9ce607012cb5e5915233aa3578e8f71ec"
+    },
+    {
+      "path": "cli/bun/test/build-identity.test.ts",
+      "bytes": 16608,
+      "sha256": "67f94cac47555e33add41ea5cae9ed507f25faea103bcc79ab4b99c0b7642af8"
+    },
+    {
+      "path": "cli/bun/test/cli-process.test.ts",
+      "bytes": 7971,
+      "sha256": "5362adc84242bfe4a1e2dce0b87ba063a490aca7d6e9886faea13d2f0b04994a"
+    },
+    {
+      "path": "cli/bun/test/cli.test.ts",
+      "bytes": 56360,
+      "sha256": "ff7eec3e1f6c2df5f590578b6960b4c66a69d4a75ac91a67f00501de5194f1bc"
+    },
+    {
+      "path": "cli/bun/test/compile-target.test.ts",
+      "bytes": 1104,
+      "sha256": "d9f9e34fee80ed38b9a7cfda55f7c62c323d20eb0abde0d3969d5dd61b53ad53"
+    },
+    {
+      "path": "cli/bun/test/config.test.ts",
+      "bytes": 12764,
+      "sha256": "26f1705fe7c1d8622b987f89dc71d6a911b5b80330a844c443c4831100079cf0"
+    },
+    {
+      "path": "cli/bun/test/dx-parity.test.ts",
+      "bytes": 4212,
+      "sha256": "b59f7420c7df37e1d313588b605d29a3e199cbd05b1e860f38e702f30e81a091"
+    },
+    {
+      "path": "cli/bun/test/human-stream.test.ts",
+      "bytes": 5907,
+      "sha256": "3e6982ef9bc90bf0caa7617c660399f77d9f8cdf38ac80e489b7c571f4c0fb5f"
+    },
+    {
+      "path": "cli/bun/test/image-bundle.test.ts",
+      "bytes": 10512,
+      "sha256": "1cdf3da714ca3a2436d09a7d9c97f72fb2ad3f349dca3b2d88939ba988029e44"
+    },
+    {
+      "path": "cli/bun/test/image.test.ts",
+      "bytes": 2340,
+      "sha256": "c3b85970fd567af943850e51c22cb730c68075038feddf225d0c47cbed54a324"
+    },
+    {
+      "path": "cli/bun/test/omp-protocol.test.ts",
+      "bytes": 14701,
+      "sha256": "67372efab35601e0c9b5012f188aa7841be77706b2bad3064bd9211e542f56b5"
+    },
+    {
+      "path": "cli/bun/test/output.test.ts",
+      "bytes": 6922,
+      "sha256": "798d6dcf70d09aec36a75f510a1351d42008197a54ab976e80d93a7e6887c915"
+    },
+    {
+      "path": "cli/bun/test/prime-owned-service.test.ts",
+      "bytes": 25981,
+      "sha256": "acfc3ce88fce3568325c430c7f73f1fc41a93fceadefbe10d56562b6797e22fb"
+    },
+    {
+      "path": "cli/bun/test/prime-protocol.test.ts",
+      "bytes": 17665,
+      "sha256": "9448562c5a066acb61af4e25d615519ee41ae95c8bc6bb449dfea852d9463f2c"
+    },
+    {
+      "path": "cli/bun/test/sentinel-fixture.ts",
+      "bytes": 1022,
+      "sha256": "9a28120d79edacd6523d7abf39e952fad2cd3b1844ce7ed8908e1aaf96a56ee7"
+    },
+    {
+      "path": "cli/bun/test/shared-contract.test.ts",
+      "bytes": 8322,
+      "sha256": "e9e92cf52864caa4b6c2b8e5c54f6f4ba5651a82d5e6efd17c4166d327329bf1"
+    },
+    {
+      "path": "cli/bun/test/standalone-signal.test.ts",
+      "bytes": 9510,
+      "sha256": "58d18599c9ea02fd297bc5287c5f0bf9ed51a1c61ddd3696604310c9452eeb0d"
+    },
+    {
+      "path": "cli/bun/test/standalone.test.ts",
+      "bytes": 18673,
+      "sha256": "e1ce281610a28ce9e17a0971d0c02e93f111189c0eb932e02a346b12af4c558f"
+    },
+    {
+      "path": "cli/bun/test/supervision-jsonl.test.ts",
+      "bytes": 2315,
+      "sha256": "c93660a2c6d53398125a4d1a2c2f93881cb735731cfd466c9e7225b63bc342c1"
+    },
+    {
+      "path": "cli/bun/test/supervision-policy.test.ts",
+      "bytes": 5468,
+      "sha256": "5b1ea5233e4764300cbaabe3308797e25d0087c190d5628f78a5d280777f8a70"
+    },
+    {
+      "path": "cli/bun/test/supervision-process.test.ts",
+      "bytes": 25374,
+      "sha256": "711235cb6eda917085c77a6528e3e53d8257fa5b57e5266dc2c6739617523b01"
+    },
+    {
+      "path": "cli/bun/test/windows-host-build.test.ts",
+      "bytes": 2958,
+      "sha256": "4b24057312cf0b0f9539e0e618f5ba55ecdbb87a0e5817a79da50f058fb58acd"
+    },
+    {
+      "path": "cli/bun/test/windows-host-integration.test.ts",
+      "bytes": 13256,
+      "sha256": "96e711e55ba490fa4918e0a0b3988655bf59dcef6d9938bba5607db078220619"
+    },
+    {
+      "path": "cli/bun/test/windows-host-protocol.test.ts",
+      "bytes": 17574,
+      "sha256": "f1369b12db6771afa68e420411c1da3a0545a3e843c9c85b010fb8be1263ca84"
+    },
+    {
+      "path": "cli/bun/tsconfig.json",
+      "bytes": 301,
+      "sha256": "943b109df1d5dd1ef42b0a7cbef7bc8c7eef8b8ef9011f85f46b466c3cfef88e"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/.gitignore",
+      "bytes": 1,
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/CACHEDIR.TAG",
+      "bytes": 43,
+      "sha256": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/7766c82c47c03d6c",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/7a58d4e2ae599d38",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/7aa782e2d784d60",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/9715784e74bac005",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/b29977b2c8b3dea2",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/b4fef2db602c8e31",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/bdcafce8ceb7be4a",
+      "bytes": 52002,
+      "sha256": "fb590098947d67a65826346a03edcb74b780fb6568dcb010f5018a9c158ca6e5"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/c5e10c934f5a87ae",
+      "bytes": 18050,
+      "sha256": "76e182f8e12328ef18532b521dbf6869f9d671e0e6e260d1ae005c8d5bbb60e1"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/cfe9e117805efd77",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/e40ee845efe6fdc4",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/f1511d153727513d",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/.ruff_cache/content/f61ae85559068849",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/ci/README.md",
+      "bytes": 13762,
+      "sha256": "e47ccb4f3d317254aa22fbd0a93f84a12aaf6cd86152e0dad2d9eca7ef119842"
+    },
+    {
+      "path": "cli/ci/alpha_package_admission.py",
+      "bytes": 138203,
+      "sha256": "3d1ba3b02ca88c312b10633f4deed7eaf41c36b818f615362553165a070e011f"
+    },
+    {
+      "path": "cli/ci/build_local.py",
+      "bytes": 40928,
+      "sha256": "90bd6ab22976c880f512e30a7dd85fd7cdb7d82678b2f82265a541c74be1b959"
+    },
+    {
+      "path": "cli/ci/check_alpha_public_docs.py",
+      "bytes": 33282,
+      "sha256": "4c8c04fb39dc9a44a794c63717c6dfb67d12a2b1c25f615fe0837d59cc0ef91f"
+    },
+    {
+      "path": "cli/ci/check_architecture.py",
+      "bytes": 51674,
+      "sha256": "e2c4e09dd1292722a7e549b23f49e726b1c7282d6ed84ec491506275bfc73ea7"
+    },
+    {
+      "path": "cli/ci/check_dependencies.py",
+      "bytes": 9005,
+      "sha256": "781cc35ad4a016ec27158af78d51b99cc8af23f3f505ac90c2aff30dec320eb5"
+    },
+    {
+      "path": "cli/ci/check_linux_glibc.py",
+      "bytes": 1482,
+      "sha256": "d0e0e9f50b2a11ed59ca6ed2d92202e3084b2bcaaf98a8de40076ed7f9b83bea"
+    },
+    {
+      "path": "cli/ci/check_registry_lineage.py",
+      "bytes": 13958,
+      "sha256": "6fe4eedf3a513f24a9bb3566ab7cc52d8283f734d38fd1dd7861c0881a695695"
+    },
+    {
+      "path": "cli/ci/check_workflows.py",
+      "bytes": 174307,
+      "sha256": "4ebcbe7e25941d0db800e27721a84cec8c433cea51c10217f3e0bb9574b8812d"
+    },
+    {
+      "path": "cli/ci/create_draft_release.py",
+      "bytes": 153373,
+      "sha256": "c4c8165ca2307656c40b3c84afdcd61b6612fd34ed86ff737de3bb8fd5e61a87"
+    },
+    {
+      "path": "cli/ci/dependency_evidence.py",
+      "bytes": 38039,
+      "sha256": "70cfa84298bc9a5a9e48a559735921f24944b7c91070805b9462018958c0f240"
+    },
+    {
+      "path": "cli/ci/package_lifecycle.py",
+      "bytes": 28647,
+      "sha256": "5531797b28cd5cc70433b870df93b066cd1e720e2505e763332921e55e644cfc"
+    },
+    {
+      "path": "cli/ci/package_local.py",
+      "bytes": 114671,
+      "sha256": "83076f1b67616a252cb1394a32d0214739832a045ccca8a5c87cf31334b1970c"
+    },
+    {
+      "path": "cli/ci/promote_alpha_release.py",
+      "bytes": 148831,
+      "sha256": "f305906e8006f7e054544cc7f88d4047e978260d2b8f98a9df45e11946c2b67c"
+    },
+    {
+      "path": "cli/ci/rehearse_release.py",
+      "bytes": 68045,
+      "sha256": "91c2a2218b7e484d7b6ca98b4ecb15c16fdec7c7a0c5b2f29c2dbba09511f63a"
+    },
+    {
+      "path": "cli/ci/release_package_admission.py",
+      "bytes": 43891,
+      "sha256": "735450515323ac4fd257b8dec4f549e61f6dc25c15e3ec5863a971b61bcc54a6"
+    },
+    {
+      "path": "cli/ci/release_preflight.py",
+      "bytes": 23801,
+      "sha256": "f7682e5ee28588dddbb8099ee2f724dbb25668791cdf5119dabdae72290df8bd"
+    },
+    {
+      "path": "cli/ci/render_release_notes.py",
+      "bytes": 55125,
+      "sha256": "03040ee2ca10f21869d0d89d0af608cac3198ae60d83989f3b0b90f85f32bb03"
+    },
+    {
+      "path": "cli/ci/reproducible_release.py",
+      "bytes": 81431,
+      "sha256": "2653310cf9c05540320e31f70fef76c433600a37c4a0fff2e2633ee848802230"
+    },
+    {
+      "path": "cli/ci/requirements-test.txt",
+      "bytes": 1366,
+      "sha256": "79fa065d6e684e83dae3a9b5de6cc40b29a7eb088c3bfb6db273c3c3a696af08"
+    },
+    {
+      "path": "cli/ci/run_local.py",
+      "bytes": 30156,
+      "sha256": "1b4e91bb1fb180176037d19435ae08eb6ecb7713bbe83c518bbf12c979fee38e"
+    },
+    {
+      "path": "cli/ci/run_public_alpha_verification.py",
+      "bytes": 16833,
+      "sha256": "adc8837ef6923b05ec7668a81e161fede25e11598ec2a0defa440f6de4dd607a"
+    },
+    {
+      "path": "cli/ci/test_alpha_package_admission.py",
+      "bytes": 75397,
+      "sha256": "c48b6c608ce1f69dde60f93b2411ef0c6fb6ddf6da69993bcf381ea74e7db2c1"
+    },
+    {
+      "path": "cli/ci/test_check_alpha_public_docs.py",
+      "bytes": 34681,
+      "sha256": "263c4554c286fb9ef338800754301bd5a4cc864143b5ad70cf0de5ea2a51fdcf"
+    },
+    {
+      "path": "cli/ci/test_check_architecture.py",
+      "bytes": 23191,
+      "sha256": "ab18792e1dfd47836c8675aed503c1e1cbe51bfd0498cce30479fdf8461248c1"
+    },
+    {
+      "path": "cli/ci/test_check_build_local.py",
+      "bytes": 35377,
+      "sha256": "42bfb6616f8a226c9ef2b289edbbeeb5cdb99ce020e949ffe13c05ae379f9f90"
+    },
+    {
+      "path": "cli/ci/test_check_contributor_docs.py",
+      "bytes": 32808,
+      "sha256": "8a6e5615d346fc5195cde14443c24e024a2c3242a42b88a9e109bf10058b2230"
+    },
+    {
+      "path": "cli/ci/test_check_dependencies.py",
+      "bytes": 9920,
+      "sha256": "b5bd383dadd28fc586b175d97281c0995914be0e5e68ac146ab2966e67af5217"
+    },
+    {
+      "path": "cli/ci/test_check_draft_release.py",
+      "bytes": 82505,
+      "sha256": "bba3ccc0d0f4e2e654bf18938df5203c014de99b087f56c3629d6da25275aebf"
+    },
+    {
+      "path": "cli/ci/test_check_linux_glibc.py",
+      "bytes": 3458,
+      "sha256": "a7e0f4523947943ece29b4fe28e56f3e1d532f040c435966aa2730074d071578"
+    },
+    {
+      "path": "cli/ci/test_check_registry_lineage.py",
+      "bytes": 12287,
+      "sha256": "a135aff8855e53ccf2a0839e63108d47283458bc0696df2079f0891a08648ece"
+    },
+    {
+      "path": "cli/ci/test_check_workflows.py",
+      "bytes": 122357,
+      "sha256": "5d08c9528b24d0fc8152cbe6cf01433a17f218bf9e10bcd835579813c65a589e"
+    },
+    {
+      "path": "cli/ci/test_create_draft_release.py",
+      "bytes": 76571,
+      "sha256": "2ed0f16dfb6a8055f9c4990bf741a2d2d708d87788f2126b83bb18cc9b80e23e"
+    },
+    {
+      "path": "cli/ci/test_dependency_evidence.py",
+      "bytes": 17893,
+      "sha256": "b1a5ad462202953d2672e4bed2532496ccfda75f9dcff881b9aceacee5cabfa0"
+    },
+    {
+      "path": "cli/ci/test_package_lifecycle.py",
+      "bytes": 9773,
+      "sha256": "6808f36b984826adf261db1d60ce88858095fd29e46264fceb9dd7bb01544bde"
+    },
+    {
+      "path": "cli/ci/test_package_local.py",
+      "bytes": 210550,
+      "sha256": "ba0a46f680f21843690307f62099eb8c99a79e780681805197c7d07c53f3ab8b"
+    },
+    {
+      "path": "cli/ci/test_promote_alpha_release.py",
+      "bytes": 99970,
+      "sha256": "3eec580aaa5064d0029bfc5ff7d971fd2c54af6bdba6c2cd1522da2da33253e4"
+    },
+    {
+      "path": "cli/ci/test_rehearse_release.py",
+      "bytes": 45323,
+      "sha256": "dca4b4d50ba54fc2e7bddec831c541ff35c5f17187cbf28f5a78f1611256edb3"
+    },
+    {
+      "path": "cli/ci/test_rehearse_release_real.py",
+      "bytes": 1694,
+      "sha256": "3f9e730f8552a03ea8d2baeae0dcf84c9cd108dbb6a77900f7ff6554e953352e"
+    },
+    {
+      "path": "cli/ci/test_release_package_admission.py",
+      "bytes": 33238,
+      "sha256": "6ffa55d41372f9dd0aa4b9b0301d951437c39856cf96795ad03292ce5e145642"
+    },
+    {
+      "path": "cli/ci/test_release_preflight.py",
+      "bytes": 20113,
+      "sha256": "e34e453821158f29ddb273354ab914bddd79f6a87429afd18d204a0c2e92c57a"
+    },
+    {
+      "path": "cli/ci/test_render_release_notes.py",
+      "bytes": 32452,
+      "sha256": "b1bfb26d33ebb1e091c05172df4e9dfad238d4de4ec65d02657b328d4eb580ea"
+    },
+    {
+      "path": "cli/ci/test_reproducible_release.py",
+      "bytes": 46123,
+      "sha256": "7f55552a1dfb4fac0358da5b52fa5c5664db0c169bb404c30d2e5fee4c8e2f20"
+    },
+    {
+      "path": "cli/ci/test_run_local.py",
+      "bytes": 19962,
+      "sha256": "944b3fc60a49732ea89d527d90047c109d62dee4ace90f6e70272f1a9b92f478"
+    },
+    {
+      "path": "cli/ci/test_run_public_alpha_verification.py",
+      "bytes": 27629,
+      "sha256": "96f0500959e349c45daca11818e324ec1a4851a7f56f90e599d577295a6825b3"
+    },
+    {
+      "path": "cli/ci/test_verify_public_alpha.py",
+      "bytes": 45179,
+      "sha256": "29acd68f19071eda22cac59d0c8f87d26ce09f5c4a8165f6aeb8d8b91433d932"
+    },
+    {
+      "path": "cli/ci/verify_public_alpha.py",
+      "bytes": 61507,
+      "sha256": "ae2cd72e4212362d44e71b8ec5b9a153d27508979d115d28ed771e27f3c05f49"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapter-products/README.md",
+      "bytes": 3060,
+      "sha256": "369197b28e31ca09c0bba63498cad16166086eda6ec9c3c1eedd3dd4c2aa57b6"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapter-products/REPORT.md",
+      "bytes": 1809,
+      "sha256": "93db7919b3def2009d2148c4dd369589e212e6d12ca71b33eb4210211e745887"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapter-products/fake_live_harness.py",
+      "bytes": 27918,
+      "sha256": "5d1e8042742dc5dcd9e809907cfd730d6e91e7d7819bb85ef7c34a4aef80d3c5"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapter-products/invariants.v1.json",
+      "bytes": 3540,
+      "sha256": "f64ad80c8a33e5e5b76e03168d4e270b99dee1bd926f85b173cf3e840fd5a9a6"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapter-products/test_adapter_products.py",
+      "bytes": 88061,
+      "sha256": "8b121481ef75415a94473d135661e6cb5e88c9258ed1c6684ee20940e8f2e82e"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapters/invariants.v1.json",
+      "bytes": 1543,
+      "sha256": "7970a452522c7fc320ea6da8c54a32e0b3644f135f27712099c14e8662095c38"
+    },
+    {
+      "path": "cli/conformance/adversarial/adapters/test_adapter_oracle.py",
+      "bytes": 40774,
+      "sha256": "b736001ef7d21e344b94f820dc1f8165952addfb9cc2f7fb225d2a93a20b4fed"
+    },
+    {
+      "path": "cli/conformance/adversarial/transport/fake-scenario-expectations.json",
+      "bytes": 1457,
+      "sha256": "6badf2bd525e5c086ae264861a0b624a6de049a175c785869c004cd1cae8ff79"
+    },
+    {
+      "path": "cli/conformance/cases/README.md",
+      "bytes": 670,
+      "sha256": "4daf3da09d418863550d5359c03824cf9b02176035757df196bde977d9a70d67"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/claude-functional-alpha.json",
+      "bytes": 1578,
+      "sha256": "435fdb8d8702781f762d762b8bef66ba559fea00e3cee40b0fa3319f94240a9f"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/claude-version-probe-wrong-stream.json",
+      "bytes": 1893,
+      "sha256": "cbc57008af4d3f27f92d6799ecc4e7fff65597ff781d97e8641075eab9b7d582"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/codex-functional-alpha.json",
+      "bytes": 1541,
+      "sha256": "81bf5852e799e98130ee5c54be41fda820c4cf7cdeb22b9b520ede6e47597f3d"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/codex-version-probe-wrong-stream.json",
+      "bytes": 1861,
+      "sha256": "46929b00d3055255d72f1732a380914e586da27b123bfd887b5acfe77dd1debb"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/omp-functional-alpha.json",
+      "bytes": 1499,
+      "sha256": "08e813b6b57c5825d20b304010a84ede6bdc5b650401278d3ed0e974472b1235"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/omp-version-probe-wrong-stream.json",
+      "bytes": 1889,
+      "sha256": "da1bd96d0f2184033bc187dedfe455fe7d0538eb62866ee2273c901355058745"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/prime-functional-alpha.json",
+      "bytes": 1511,
+      "sha256": "702b44344fb6326d1e846d799918405136f4f9910beccdb22e1238da75728a12"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/prime-version-probe-wrong-stream.json",
+      "bytes": 1931,
+      "sha256": "3854ac50adcbe01699ed122d7ffd420c00bc7f07d962edf1819a5887d0c0ffd4"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/README.md",
+      "bytes": 3622,
+      "sha256": "72995aca929d2dcf89114f49a7384ebbaffc493ab5df7dc68443f0ad101e66f0"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/fixtures/hostile-bin/agent.bat",
+      "bytes": 66,
+      "sha256": "edd4a25fa56406aff9be27a10eb133b61e52a3fa0d689f8587561897dccb201a"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/fixtures/hostile-bin/agent.cmd",
+      "bytes": 66,
+      "sha256": "262dda074765469ddce211f5efb450656a188f04474eca69bbb9da78983f073f"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/fixtures/hostile-bin/agent.ps1",
+      "bytes": 88,
+      "sha256": "9e86f412d8620be223d2d11f581d371de61f1ef0b5720e8499120b5f14aeb194"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/launch-profile.schema.json",
+      "bytes": 6375,
+      "sha256": "92cb31599fd2a41919064c6dc66575db16988496797c1520d0d42b81c3816572"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/oracle.schema.json",
+      "bytes": 3415,
+      "sha256": "9db204cf97f1ec3a4133e071a17df488dd7deb5a7e890b904635bdf9b2b25822"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/oracle.v1.json",
+      "bytes": 13457,
+      "sha256": "24da8910a5980d69b175e7f28e83289dd0bceb870edf206a4ad6373897d95d63"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/resolver_model.py",
+      "bytes": 25169,
+      "sha256": "0a579da12b2b7cb8d43bde840f3da234959e595c363d3ac98b6575026d2f55a8"
+    },
+    {
+      "path": "cli/conformance/cases/adapters/windows-resolution/test_windows_resolution.py",
+      "bytes": 22314,
+      "sha256": "58955dae9b20d33b9c76b4b44ff50590b393837e183d36777a1ee4400a2a4e53"
+    },
+    {
+      "path": "cli/conformance/cases/case-manifest.schema.json",
+      "bytes": 5856,
+      "sha256": "1384a7a99b94bcc4f3554dd0c7a5bc870b6cc5f846441a71c224bc0ede1df527"
+    },
+    {
+      "path": "cli/conformance/cases/core/bare-delimiter-rejected.json",
+      "bytes": 1094,
+      "sha256": "62fafb4d852557d8cccede32f8bfa58db60e5c03e8019042374c12ad37211968"
+    },
+    {
+      "path": "cli/conformance/cases/core/codex-invalid-transport-run.json",
+      "bytes": 1312,
+      "sha256": "976dee85dbc8de4992f60ad67f2a02b99f35b8748309504d9fc40df6225276a8"
+    },
+    {
+      "path": "cli/conformance/cases/core/config-roots-absent.json",
+      "bytes": 836,
+      "sha256": "aebb6645612a07bf92ae9cf7df8fc0655ed30fc12525bf89e91582570e5e9e16"
+    },
+    {
+      "path": "cli/conformance/cases/core/config-roots-empty.json",
+      "bytes": 821,
+      "sha256": "bb497d0e394d7ac1f2ec330cfe533e49349a7cdee858728e4e36dd7ec561e28a"
+    },
+    {
+      "path": "cli/conformance/cases/core/config-roots-relative.json",
+      "bytes": 917,
+      "sha256": "ea76f2eea73fbfef6d3b9926b1021d7cf677513df648b37c971e2a4836d05896"
+    },
+    {
+      "path": "cli/conformance/cases/core/duplicate-output-json-invalid.json",
+      "bytes": 1224,
+      "sha256": "e2ab1b907ef69716ff213600876491f611bc1cebce486a40b02b1e3c8ab1a5a1"
+    },
+    {
+      "path": "cli/conformance/cases/core/duplicate-output-jsonl-invalid.json",
+      "bytes": 1017,
+      "sha256": "89160fc16fd185b530caae7e965ba0f4b8cde1672488f6a923b865667a7225d9"
+    },
+    {
+      "path": "cli/conformance/cases/core/forced-cli-forwarding.json",
+      "bytes": 851,
+      "sha256": "078f1e03df1f8e1720cd3ba2a0d732dc4933ea52cc2a1dfc7598bc63d49455c3"
+    },
+    {
+      "path": "cli/conformance/cases/core/initial-help.json",
+      "bytes": 665,
+      "sha256": "790b26ee89d558147027de04942c5f9de790829f5636120fd75eb999563eae67"
+    },
+    {
+      "path": "cli/conformance/cases/core/mock-success.json",
+      "bytes": 1219,
+      "sha256": "8382846659d714a1ac286a909e5a165c6c7434e8131a0625d27ba0e7461e84ab"
+    },
+    {
+      "path": "cli/conformance/cases/core/opaque-argv.json",
+      "bytes": 1126,
+      "sha256": "9c3f1c8f8bb87e32a75af3624bfa9183049edf263f27883ab311fc44cf560e7d"
+    },
+    {
+      "path": "cli/conformance/cases/core/openprose-hosted-unavailable.json",
+      "bytes": 914,
+      "sha256": "3e594c262567a6d8f8319c957cffdf3442aeaa51b0aa8ed7136f1a03181c6228"
+    },
+    {
+      "path": "cli/conformance/cases/core/openprose-invalid-transport-run.json",
+      "bytes": 1299,
+      "sha256": "a3dcf0c6e9e306dffa3a7d68aa978460f394eb90fdac11d5c3b69bd19660b9b9"
+    },
+    {
+      "path": "cli/conformance/cases/dx/dry-run-default-hosted.json",
+      "bytes": 1074,
+      "sha256": "d8f502a47030276a5985d6901096debad4333ac398d2159e3c38554e218bf879"
+    },
+    {
+      "path": "cli/conformance/cases/dx/dry-run-mock.json",
+      "bytes": 880,
+      "sha256": "35d64d8ea3069b11142995240b8fbfb27d12d6ecabff354deb5cd6df40cc1f60"
+    },
+    {
+      "path": "cli/conformance/cases/dx/dry-run-prime.json",
+      "bytes": 1016,
+      "sha256": "018fa48a0bd6606a4885442e2da610c21029e44c681b92774bd342673abda275"
+    },
+    {
+      "path": "cli/conformance/cases/dx/jsonl-hosted-failure.json",
+      "bytes": 1007,
+      "sha256": "4224ae26dad4d16cc3d3f269906ac962c3084ecd0de0065846a41f4c56940455"
+    },
+    {
+      "path": "cli/conformance/cases/dx/jsonl-mock-success.json",
+      "bytes": 1244,
+      "sha256": "64e9bde2e2617200c4b35039f4aced726c36fa4c8eb4e2eb482e974ee5597873"
+    },
+    {
+      "path": "cli/conformance/cases/fixtures/runner-help.txt",
+      "bytes": 1798,
+      "sha256": "efbd54b3b188286a523d4ef4ee731754ac27e277258b0af1eae6cd5ef0aebe85"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/auth-required.json",
+      "bytes": 810,
+      "sha256": "4a928da06bb67c433dcdb5649e8370cb2ee1506aeff095810c73714c40bc866d"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/backpressure.json",
+      "bytes": 965,
+      "sha256": "99be1634f1e8a86057f4ae8461dc3a6bf2a9471579fb6062ccda036d8ba3a9c4"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/capability-nul.json",
+      "bytes": 962,
+      "sha256": "4dfccb09cae2dca8b758fd387634b53ad5b272c5d9c63e7d2802f5cc08beb9a6"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/capability-shell.json",
+      "bytes": 1012,
+      "sha256": "6a1d8fd32abc213af81dfecdfd754df71091ca88b5bddd7b12c11a220051e03d"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/capability-symlink.json",
+      "bytes": 992,
+      "sha256": "de74a4c2cf37a1e5feb5779aa8ceb1a3b94dd186184be0630275f1e48ff7fa17"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/capability-traversal.json",
+      "bytes": 987,
+      "sha256": "c84c098e4e6465403b1980bba6e818e30897d13c8302f928c34084e4350980e9"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/case-index.v1.json",
+      "bytes": 1467,
+      "sha256": "be43a30b8ee103e3d7737c2e22dbfcedf65b81c61748feaa666f0def67d7d705"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/hosted-agent-bridge.json",
+      "bytes": 1113,
+      "sha256": "858862162edc0cd91f3f1540a04e6a079f9f430c644c67618b3a1bb8073055dc"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/hosted-case-manifest.schema.json",
+      "bytes": 4734,
+      "sha256": "867af0d69d8ceb89465eff55545bd1d3289d0f963cbdb8a249b4c596d2c72196"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/lifecycle-race.json",
+      "bytes": 1059,
+      "sha256": "aeacddc58bf08d460e8380ccfaef2bb34ced07970dc47349b15d1501202d19d3"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/local-loop-gateway.json",
+      "bytes": 1022,
+      "sha256": "e6484c48d5ad256cd766e4174af22996a65861f6d2a1aec1410a6941596d1886"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/quota-exceeded.json",
+      "bytes": 788,
+      "sha256": "a0b0be6575f658ebe0ffe9e573a2813fbffde3bf331d4b7feaac4a3632d22229"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/replay-idempotency.json",
+      "bytes": 954,
+      "sha256": "25230382f4ed7b7c628fa62cab78fc9632cef633c84048945e6612e8b8f14485"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/terminal-required.json",
+      "bytes": 890,
+      "sha256": "a47c0803c04ecfdcb21b44d06b38ef95e5e32058bd326de7c0711e02a926d31e"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/unavailable.json",
+      "bytes": 782,
+      "sha256": "e46a95847f857b57b2fefca5babea85d06ffaf576857a22b897e4240d5b27a6d"
+    },
+    {
+      "path": "cli/conformance/cases/hosted/usage-unavailable.json",
+      "bytes": 875,
+      "sha256": "d374130f5384aeff9852f3ff5e5673974100507b571513a47c605d5db99d1270"
+    },
+    {
+      "path": "cli/conformance/cases/operations/auth-status-unavailable.json",
+      "bytes": 1122,
+      "sha256": "d1d19002ef04849fddcd6f3e664df35fe5902f0f0aa7bd76b0fccd8c9bdc0b76"
+    },
+    {
+      "path": "cli/conformance/cases/operations/config-explain-default.json",
+      "bytes": 1298,
+      "sha256": "d56990b392ae5da05337561789764a7fd1572ca94afac7b77a93fb1acbddbbe8"
+    },
+    {
+      "path": "cli/conformance/cases/operations/config-invalid-harness-environment.json",
+      "bytes": 1169,
+      "sha256": "238577a79def6a498b3956f428405bfae16e3f77dce30284aa2fb761df72fb8f"
+    },
+    {
+      "path": "cli/conformance/cases/operations/doctor-default-unavailable.json",
+      "bytes": 1430,
+      "sha256": "3a8fe8f230cdfa7c3a81dec137bf7c5ce8330fb2f54dcbb6945c15cd3dad1d64"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-list-default.json",
+      "bytes": 921,
+      "sha256": "7ec14aa5b280e7eadcb7d91226d6e4ba4fa074af52c0b339f3b4acb6b4e80a0e"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-duplicate-model-suffix-json.json",
+      "bytes": 1518,
+      "sha256": "480834cf3f42a722b0f4337a366b81e1a8ec9f0f54f410b1d3cd8a01e4af220e"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-omp-bundle.json",
+      "bytes": 1432,
+      "sha256": "e7245b713862e7d46f72c1caae151ec47ffb859dd93c2a003f865094e1d990fa"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-prime-bundle.json",
+      "bytes": 1446,
+      "sha256": "9d94ffac85393da24db864a8aa71735234e4b40cba5e3a28cff13c8bdf5cbdc3"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-prime-missing-bundle.json",
+      "bytes": 1774,
+      "sha256": "0be6e810b83d2672c90236b66042f13c3feeef79239596b972fa00ca20b34be7"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-shadowed-environment.json",
+      "bytes": 1362,
+      "sha256": "5d10a7031d66a1193d4c1f6177e7de6cc764f63b55dd8016e0286d891423558a"
+    },
+    {
+      "path": "cli/conformance/cases/operations/harness-use-user.json",
+      "bytes": 1195,
+      "sha256": "ca196276f11bcdc9ce1094e4a07f25340bad1bd28ea74ccb844e829dcf5c64a6"
+    },
+    {
+      "path": "cli/conformance/cases/operations/invocation-invalid-runner-command.json",
+      "bytes": 1422,
+      "sha256": "678aaf0f8747ce425b1780fdbcffb4b288a2970cc133f9a1284a277a9a20f2c7"
+    },
+    {
+      "path": "cli/conformance/cases/operations/openprose-invalid-transport-doctor.json",
+      "bytes": 1286,
+      "sha256": "874d41e57c4e91da80b89d999e651efb18979b5b22f00408665daf3f482cf09d"
+    },
+    {
+      "path": "cli/conformance/cases/operations/prime-invalid-transport-doctor.json",
+      "bytes": 1401,
+      "sha256": "eccdabce2206f360a915bac1cf7c26bb99d991c1476c5672d407c893939708bf"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-delay.json",
+      "bytes": 993,
+      "sha256": "8063d08fcbaaecd663e0a1dd86e1d74af39c29a0740155d154e5f63aa773e6aa"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-descendant-cancel.json",
+      "bytes": 1074,
+      "sha256": "b95e2bac169a39e050e694e5473ae3581e9ff8ac790b03109ef9b586fc880c7c"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-malformed.json",
+      "bytes": 1044,
+      "sha256": "cc792a6875b304effacd6bcb2a9d1293a280be298c5330e8ae48e386719f49f9"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-nonzero.json",
+      "bytes": 1082,
+      "sha256": "997833703ea92f5d78ce29211b8a05b165f58da44ffc03d3b0be5b889516ae11"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-stderr.json",
+      "bytes": 1053,
+      "sha256": "cbe5b355cf780d230ad7944e8d62773b4400acc14b2ff4cb9c22365a2348140b"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-success.json",
+      "bytes": 1234,
+      "sha256": "e14f73fa52d697e0aaa1f11eff0cb19f90d13c5a7d4c27ff51d53bac26b4d49b"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-terminal-nonzero.json",
+      "bytes": 1065,
+      "sha256": "068e0c31ce14bcbe9cbdf9885b8463c94b9ca7502401c8cc62623642f8510792"
+    },
+    {
+      "path": "cli/conformance/cases/transport/fake-truncated.json",
+      "bytes": 1061,
+      "sha256": "b4424a2d9b7cf8e841f57eded603954b5a91a32e7a55b35208b1ba1e87960e3a"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/README.md",
+      "bytes": 8741,
+      "sha256": "e2638a36d9116f612060b515e4c13bc0044aabe4706c0c0f4e463b10948a0419"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/RED_ORACLE.md",
+      "bytes": 1007,
+      "sha256": "d9e457f74ae6ca159ad881b50d75536805433cf6f21dc7fafa6ef5eb0984e5f9"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/evidence.schema.json",
+      "bytes": 15363,
+      "sha256": "4cac95761106ac9f3ededf86721fc5ba8753e49f4cdc0bc3f84eeac1af62465e"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/fake_prime_agent.py",
+      "bytes": 4268,
+      "sha256": "69a6cdda6776d7c7805732e2bee9cc910119c7e373c257ac9d15d80bce8c9c65"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/matrix.v1.json",
+      "bytes": 3473,
+      "sha256": "e31fc5aac118346322e1f022e0f2f4a96b98848c318228ae9e4a8cf279cc4943"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/policy.v1.json",
+      "bytes": 1972,
+      "sha256": "8dd4e0a4aa2596bdf618217d9b53075b30c44c66a342b3773e33d497023b8d87"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/programs/fanout-effect.prose",
+      "bytes": 423,
+      "sha256": "8b606ce7373ae93a604be2b4a10e862c26e87c27644b0c7487a47ef879d606d4"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/programs/simple-effect.prose",
+      "bytes": 163,
+      "sha256": "b3e90dcf4b27673804c5ff6d682c5474fea1b9b0dbf8d4074e3c85d6da4a86d8"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/run.py",
+      "bytes": 98290,
+      "sha256": "16bbfb7dad84c6ec4ff724aebf2f60a1cfce318f7b163cf881f8efcdbe9cf094"
+    },
+    {
+      "path": "cli/conformance/direct-skill-real/test_run.py",
+      "bytes": 39798,
+      "sha256": "b15b25bcd173b5cf208d41f2e7c8cc7cd3abdbae9859ff6dc450309598286606"
+    },
+    {
+      "path": "cli/conformance/fake-harness/README.md",
+      "bytes": 1707,
+      "sha256": "6e8dca3bd5352de911a162d75ed3aa1e9f7476726a231c8e5cb67cee0903a670"
+    },
+    {
+      "path": "cli/conformance/fake-harness/fake-harness-event.schema.json",
+      "bytes": 2587,
+      "sha256": "3049e2fb8fba3599e832992d48cf09d4e38b9b286574c85e896c73adb68f655c"
+    },
+    {
+      "path": "cli/conformance/fake-harness/fake-harness-observation.schema.json",
+      "bytes": 1517,
+      "sha256": "e92ffa5d22ae63e3a8e1936580f63d81ebabfa7d86f9572413be8f4e3c2abaed"
+    },
+    {
+      "path": "cli/conformance/fake-harness/fake_harness.py",
+      "bytes": 8955,
+      "sha256": "b5aedc3ac9b805ec3670fd950c2cd5c7342ad9d3cb17b5ddcc25c215276638f9"
+    },
+    {
+      "path": "cli/conformance/fake-harness/requirements-test.txt",
+      "bytes": 19,
+      "sha256": "cb9e5058abe248be8579db704a1c9e30e655b30cb7d5dd093bebf97f44766591"
+    },
+    {
+      "path": "cli/conformance/fake-harness/test_fake_harness.py",
+      "bytes": 7178,
+      "sha256": "016321a490f3bbb521b56c744d9f2eb983ff81431e5c7eaf40c77fc4beb7c383"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/PROPOSED-SHARED-SCHEMA-DELTA.md",
+      "bytes": 3521,
+      "sha256": "9fcf90a8530907de9fdc2eb2086777199bf870a75339e6f9d3df4cee2430ee61"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/README.md",
+      "bytes": 4249,
+      "sha256": "115cdeb442089d7a4de5ad611bc5259547c77c920ba5bfc468d4f23b37e9790f"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/capability-bridge-evidence.v1.schema.json",
+      "bytes": 1743,
+      "sha256": "3e4fada9287d26c018695ece14c9e66fc781fbf2d956067b1dbce588f5740ee4"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/capability_bridge.py",
+      "bytes": 19333,
+      "sha256": "2069edc038da18e0cdae50b583cea018f611f446c8c6b07f4af9dfdeb2dac949"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/case_oracle.py",
+      "bytes": 6830,
+      "sha256": "521ad55df96dcd2a2f88c6d7ddcb56df445ce5703c3aac6a0b5f0c2152c6024e"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/fake_hosted_service.py",
+      "bytes": 22530,
+      "sha256": "bfd48329a22263e7162db2d5dcc66c009e1d29f237eb043c6e8f19b1eddedaf0"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/hosted-evidence.v1.schema.json",
+      "bytes": 4840,
+      "sha256": "483919349ee2bebb5cd2d84b99cb9628a86f693cc9718c6e929062d7f872c87a"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/hosted-protocol.v1.schema.json",
+      "bytes": 18276,
+      "sha256": "8beb488d93ba2f0d2ec2e192c496d070e27fd73777265b192af0e825f1cfc974"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/protocol.py",
+      "bytes": 10377,
+      "sha256": "688d3f57363c52f746c891f68ed49777638fd0f4c5cc3d9e84fce41f6ab3cc74"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/requirements-test.txt",
+      "bytes": 19,
+      "sha256": "cb9e5058abe248be8579db704a1c9e30e655b30cb7d5dd093bebf97f44766591"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/run_cases.py",
+      "bytes": 1512,
+      "sha256": "d0adc05eb78dd95678c3c4a023bba512eea55e8f98b2a98a4f3073ea0be88dfa"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/test_capability_bridge.py",
+      "bytes": 9523,
+      "sha256": "5c3ff816ef543cba4f8deb2dcf3f30cebfb19f6017a0091c79372772461629cb"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/test_cases.py",
+      "bytes": 3933,
+      "sha256": "52d364ffaac41a9cc16be37e7a8b119d58099832a8ee8213da3052d44d87657e"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/test_fake_hosted_service.py",
+      "bytes": 12371,
+      "sha256": "c397f68268291bda5c59bca96fd58de0f5b9ff955331daa8b5ccb3746776a56d"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/test_protocol.py",
+      "bytes": 3772,
+      "sha256": "7832552e03d8cc751d6e854a8435b918fd7ba88c88ccf55a11a56a1d025577df"
+    },
+    {
+      "path": "cli/conformance/fake-hosted-service/test_support.py",
+      "bytes": 1986,
+      "sha256": "6b2a5a9080b4a69e2328c27d56da2c6c783b3662ec88c223ab09ae07aaba1084"
+    },
+    {
+      "path": "cli/conformance/live-alpha/README.md",
+      "bytes": 16111,
+      "sha256": "fdca748425673807abe07e7aef36f3b7a773c5f3a3d34d35aa25c35ecc4b34fa"
+    },
+    {
+      "path": "cli/conformance/live-alpha/evidence.schema.json",
+      "bytes": 18578,
+      "sha256": "f27b18d6bd02493100d82bceace8132936707055cd1a18d53e927acfbfa90c35"
+    },
+    {
+      "path": "cli/conformance/live-alpha/hello.prose.md",
+      "bytes": 217,
+      "sha256": "e9d5fa070a37e14db2c8a078a3e04ab1ff7e6ef9266af7d26bd889199de9949d"
+    },
+    {
+      "path": "cli/conformance/live-alpha/matrix.py",
+      "bytes": 45176,
+      "sha256": "a9bbec575d4d9defe20ec3f6a1cd45c8468122d63655d8cad3412ae7966e0a3e"
+    },
+    {
+      "path": "cli/conformance/live-alpha/matrix.schema.json",
+      "bytes": 18121,
+      "sha256": "f4034264494186ca69a74c9d4a036f2329baf465bbd4f589df314756d1ce3048"
+    },
+    {
+      "path": "cli/conformance/live-alpha/run.py",
+      "bytes": 82383,
+      "sha256": "ae06ccaff35e278d15d13066447eea189234cf178f373abd2c561c1ebab64ff0"
+    },
+    {
+      "path": "cli/conformance/live-alpha/test_matrix.py",
+      "bytes": 22938,
+      "sha256": "c831ce11af552895497de39e944135ac50117c44abf0230402c109cb80a0b9b5"
+    },
+    {
+      "path": "cli/conformance/live-alpha/test_public_evidence.py",
+      "bytes": 6468,
+      "sha256": "2d2daf199d453cfe3aaa5623ecffa4eedc03c07b090610cecfe53a8e5a43b07e"
+    },
+    {
+      "path": "cli/conformance/live-alpha/test_run.py",
+      "bytes": 68826,
+      "sha256": "b8f8f9ad1d10ce19e1271c71082dc26f9ce4de94070b5df5957c44cae06254c0"
+    },
+    {
+      "path": "cli/conformance/real-harness/.gitignore",
+      "bytes": 19,
+      "sha256": "862263fa1f46c20f0d1e4dac5ffcc75abd55c08211b2c3864c5f8764b9d87793"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/.gitignore",
+      "bytes": 1,
+      "sha256": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/CACHEDIR.TAG",
+      "bytes": 43,
+      "sha256": "5953156d7e0c564a427251316eaf26f8870e6483ae2197f916b630e4f93e31ae"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/content/5eb4d7c57e815a36",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/content/a367db5e9fb1292a",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/content/a3c48328e0bd5e16",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/content/ab26c157b86d642a",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/conformance/real-harness/.ruff_cache/content/bbe75a3dde0a7a5e",
+      "bytes": 24,
+      "sha256": "9d908ecfb6b256def8b49a7c504e6c889c4b0e41fe6ce3e01863dd7b61a20aa0"
+    },
+    {
+      "path": "cli/conformance/real-harness/README.md",
+      "bytes": 5818,
+      "sha256": "459a95669b49eb17abeeb5dbcb7ebcfa4f97f5402f029baf2b20dd4cc4b9b46e"
+    },
+    {
+      "path": "cli/conformance/real-harness/evidence.schema.json",
+      "bytes": 5151,
+      "sha256": "4fc0cf7652ae087ccfa7655ab4052cb62f4a83e2db12f55d60cfb7bc3480a9e8"
+    },
+    {
+      "path": "cli/conformance/real-harness/fake_prime_agent.py",
+      "bytes": 2945,
+      "sha256": "7768ee8c5bc8427e45a8a83395e583ef421824d0f002bc67611b6ba49ba00a45"
+    },
+    {
+      "path": "cli/conformance/real-harness/matrix.v1.json",
+      "bytes": 2013,
+      "sha256": "b32886b28274d68f2e36aae07e95495aa9296a3071bc1369d1d3bb191aa5b9cd"
+    },
+    {
+      "path": "cli/conformance/real-harness/policy.v1.json",
+      "bytes": 1613,
+      "sha256": "8772a6f5182c19fdbc6941c42bcba5c269f425da61782b4b5fbb5f4229a34e6d"
+    },
+    {
+      "path": "cli/conformance/real-harness/prior_metadata.py",
+      "bytes": 2148,
+      "sha256": "89a25eacd681ef309e08ce3b2179d635a3ef061c62791458c21baf8779f7949d"
+    },
+    {
+      "path": "cli/conformance/real-harness/run.py",
+      "bytes": 51374,
+      "sha256": "6a392483965bb917be1b70bb3afa1b2bb33031c618b8d9260b99ee2722c944ad"
+    },
+    {
+      "path": "cli/conformance/real-harness/test_prior_metadata.py",
+      "bytes": 1522,
+      "sha256": "2ecb0d3816cf0617292c54eb1d6adea444810d3a18122af1196f0c7ee4c34527"
+    },
+    {
+      "path": "cli/conformance/real-harness/test_run.py",
+      "bytes": 25216,
+      "sha256": "225a4f2df20bcd5a39589bf6dc25610e29edfdd0709edef16d6adf3b4f45362b"
+    },
+    {
+      "path": "cli/conformance/release-package/README.md",
+      "bytes": 1429,
+      "sha256": "4630ad572d628f95560315085f10b185cfdc1b97dea9516127778318af8463bf"
+    },
+    {
+      "path": "cli/conformance/release-package/invariants.v1.json",
+      "bytes": 1790,
+      "sha256": "2fcff0fa6034104a15ed7d5a5db31cc03971fbf7a5fb42440f3f5d88a29079a0"
+    },
+    {
+      "path": "cli/conformance/runner/README.md",
+      "bytes": 9539,
+      "sha256": "3cdb57262f7561690a52d1946accc992afa54a3975b00fe968be10546cf06597"
+    },
+    {
+      "path": "cli/conformance/runner/run.py",
+      "bytes": 81483,
+      "sha256": "a5e87d440735346b7995978f53a4136debdc45262729ae9fe13979aee165be55"
+    },
+    {
+      "path": "cli/conformance/runner/signal_oracle.py",
+      "bytes": 11423,
+      "sha256": "f5af7463aac85704661888d68a301cd123ad41a267c3d97716556d1356ac2f44"
+    },
+    {
+      "path": "cli/conformance/runner/test_runner.py",
+      "bytes": 56710,
+      "sha256": "95a73c68ced78bd70663639320cd8dc993d41ee4b5f1a28ccfbdaa8cca3c1c98"
+    },
+    {
+      "path": "cli/conformance/runner/test_signal_oracle.py",
+      "bytes": 2922,
+      "sha256": "4004aa59cd037fc1571104603cb0f0bcabd38e4cb59c814d16904e394dda77bc"
+    },
+    {
+      "path": "cli/labs/bun/.gitignore",
+      "bytes": 26,
+      "sha256": "36d1c57a55ba4344c991647372c679f419e90f0f2dccaac8ba5da459a306adae"
+    },
+    {
+      "path": "cli/labs/bun/HISTORICAL.md",
+      "bytes": 2094,
+      "sha256": "ed41512a8ba386266547fbb12fc960ea1917572ee5292cc8323da15b2a22c87f"
+    },
+    {
+      "path": "cli/labs/bun/README.md",
+      "bytes": 4174,
+      "sha256": "835ffac1774d4006e76276948364ddd03fccdcefa580da2e2c9f39299ad0b62a"
+    },
+    {
+      "path": "cli/labs/bun/bun.lock",
+      "bytes": 112608,
+      "sha256": "7dd47fdfea62e2e3386b2a0182c0e47ab8254d6666a34f4d7894cf3c615d6898"
+    },
+    {
+      "path": "cli/labs/bun/package.json",
+      "bytes": 1247,
+      "sha256": "ed4636036cd41dc07f81337478a92d99862ac5939eeae37c06fc732ce5c07056"
+    },
+    {
+      "path": "cli/labs/bun/scorecard.json",
+      "bytes": 18286,
+      "sha256": "30f1335cf765f9863f977787b8fa6c47a9743c80fbcddd5e04920e2f0872210a"
+    },
+    {
+      "path": "cli/labs/bun/scripts/compile-all.ts",
+      "bytes": 463,
+      "sha256": "ca79b6bd2d1f5be0e91526c900325e724969b2363e6c65d1dfa254f1516effd6"
+    },
+    {
+      "path": "cli/labs/bun/scripts/compile-omp.ts",
+      "bytes": 938,
+      "sha256": "f266e675c2771ec2d847a4fa305589eed9a38424a828bcc658b429953612dab2"
+    },
+    {
+      "path": "cli/labs/bun/scripts/compile-pi.ts",
+      "bytes": 831,
+      "sha256": "e060a6e70f95a4a8f6cd733d76e3b4c5f07af180ac3dcc8a59df5328624341b3"
+    },
+    {
+      "path": "cli/labs/bun/scripts/package-smoke.ts",
+      "bytes": 2275,
+      "sha256": "04c48f98831898061f9dfa912b09852f87fdd83034eed8d668c356c9c0f38d62"
+    },
+    {
+      "path": "cli/labs/bun/scripts/research.ts",
+      "bytes": 351,
+      "sha256": "98c271498bcc32759d6008a8375efcfd7433c6ab3259364cd9cf91608ae4c271"
+    },
+    {
+      "path": "cli/labs/bun/src/claude-agent-sdk.ts",
+      "bytes": 3469,
+      "sha256": "35a7a9f89fcfac22c95dcbf98542f0de9d970f53eebc6dd92a6c5560f199e234"
+    },
+    {
+      "path": "cli/labs/bun/src/codex-sdk.ts",
+      "bytes": 3246,
+      "sha256": "7b8bb81307f80cb3ebae2d1256a0916e1f6a0c70a9a8c8d0b9363dfe8188545e"
+    },
+    {
+      "path": "cli/labs/bun/src/compile/claude.ts",
+      "bytes": 713,
+      "sha256": "a75ff7443018f4a17342ea9d1c0b326244d5a5cb7029d8fe650874157f3b5a2e"
+    },
+    {
+      "path": "cli/labs/bun/src/compile/codex.ts",
+      "bytes": 270,
+      "sha256": "e36afb646450af2df0ac266f2135acde3c4b23c0b6b012c5aaf135e662b72f6c"
+    },
+    {
+      "path": "cli/labs/bun/src/compile/omp.ts",
+      "bytes": 298,
+      "sha256": "c448375c4bdd487e14233051fd5687b9188885b500fd2aad32112c69bdb2db52"
+    },
+    {
+      "path": "cli/labs/bun/src/compile/pi.ts",
+      "bytes": 370,
+      "sha256": "4e84545290c57618b30dc4464ff9c4bfc99e9f8f5d17c924c1a9b10038043e0a"
+    },
+    {
+      "path": "cli/labs/bun/src/contract.ts",
+      "bytes": 1105,
+      "sha256": "ef8fef1da4ba9744ca096cfcc7db439658136e33ebaccfaf6489615115bb2b2f"
+    },
+    {
+      "path": "cli/labs/bun/src/omp-embedded.ts",
+      "bytes": 3623,
+      "sha256": "5dcb6a0f354a4dedb06f1f7729fb3e1cae355b002718d133989ba0c9ab231314"
+    },
+    {
+      "path": "cli/labs/bun/src/pi-openrouter.ts",
+      "bytes": 4587,
+      "sha256": "b720e1ff821905600029a0e6e255bd5c4dcb750a512252fe7ff002d0631570a5"
+    },
+    {
+      "path": "cli/labs/bun/test/claude-agent-sdk.test.ts",
+      "bytes": 3481,
+      "sha256": "9b0679e767bc4a11bb0330e39de3058618084931a8ae4aec7fab08daf0ac11f0"
+    },
+    {
+      "path": "cli/labs/bun/test/codex-sdk.test.ts",
+      "bytes": 4338,
+      "sha256": "e5d9f0aeed229737637d059765c5715a248851931d3909cc2d8010ad735b1fa5"
+    },
+    {
+      "path": "cli/labs/bun/test/contract.test.ts",
+      "bytes": 701,
+      "sha256": "ed4f067621789387d3d80878310b8cb466e68fa1e11eecc15951853226545be1"
+    },
+    {
+      "path": "cli/labs/bun/test/fixtures/fake-codex.ts",
+      "bytes": 1254,
+      "sha256": "e9ff6d080bfd9b7b5a3939a52ef888a7fa9989cfe35748e84344c7984a41b9f1"
+    },
+    {
+      "path": "cli/labs/bun/test/omp-embedded.test.ts",
+      "bytes": 3181,
+      "sha256": "44c6697099aea3dd59c0fa629ba72d7b0f47865e7bb4c65cdf9e5093ca3d37b4"
+    },
+    {
+      "path": "cli/labs/bun/test/pi-openrouter.test.ts",
+      "bytes": 3186,
+      "sha256": "ed9219d9692fb0e1f4d2fa1944de5c73644901861109462f30d7ad96d85e000a"
+    },
+    {
+      "path": "cli/labs/bun/tsconfig.json",
+      "bytes": 463,
+      "sha256": "570cceec8d8db4c14f3f03ba5640d9303a1ff83e54cbdf52b25399df6cc3497e"
+    },
+    {
+      "path": "cli/labs/rust/.gitignore",
+      "bytes": 9,
+      "sha256": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368"
+    },
+    {
+      "path": "cli/labs/rust/Cargo.lock",
+      "bytes": 59253,
+      "sha256": "8070ae3c4cdfbc2666fd51b5e37f025dccdd862284f08e3682ea2dc017c7f97c"
+    },
+    {
+      "path": "cli/labs/rust/Cargo.toml",
+      "bytes": 602,
+      "sha256": "1df0ad8cdc7911dce92c9f031f9ca2a41975480b006ca375372220c767450cb7"
+    },
+    {
+      "path": "cli/labs/rust/README.md",
+      "bytes": 2084,
+      "sha256": "0d84a378f04068968b8875ca0197d6e7e304e957f22236f03c2f24c0bf6b1853"
+    },
+    {
+      "path": "cli/labs/rust/acp-transport-lab/Cargo.toml",
+      "bytes": 350,
+      "sha256": "184438abf509fd390d3b3125975999f0f9c4da7e9228fcf2bdcdd95583dea84a"
+    },
+    {
+      "path": "cli/labs/rust/acp-transport-lab/src/lib.rs",
+      "bytes": 12625,
+      "sha256": "d2b46bd30a49765627dded300cc201deea18976bd90bec06b15ba966366ce499"
+    },
+    {
+      "path": "cli/labs/rust/acp-transport-lab/src/main.rs",
+      "bytes": 260,
+      "sha256": "9a2408d90be31b40c7bf6f6a5fbf85259f78d076d000842b535988caf3f2f547"
+    },
+    {
+      "path": "cli/labs/rust/rig-embedded-lab/Cargo.toml",
+      "bytes": 331,
+      "sha256": "5edbd9bc1adbe7ad70c07700d3f12ddc1cda7db5ffb94525746e0d4b2f1d5bc8"
+    },
+    {
+      "path": "cli/labs/rust/rig-embedded-lab/src/lib.rs",
+      "bytes": 11836,
+      "sha256": "8a2e792654b5500455ca3d88bcefdfadddd7ce8c47b4765406a04b180d0364e8"
+    },
+    {
+      "path": "cli/labs/rust/rig-embedded-lab/src/main.rs",
+      "bytes": 389,
+      "sha256": "d684e32947fdd9c4475540805e1790cbdd7f9e85adfcef103418d47f5812cc22"
+    },
+    {
+      "path": "cli/labs/rust/rust-toolchain.toml",
+      "bytes": 51,
+      "sha256": "9cbde07377abdce69bc9580adb0315d52e2a09d6494a2005550a7e6733d9688b"
+    },
+    {
+      "path": "cli/labs/rust/scorecard.json",
+      "bytes": 6996,
+      "sha256": "465977fa06c17ed41727e76eb9e9e06c85c429ede67435ff16573c8bc0473d21"
+    },
+    {
+      "path": "cli/labs/rust/verify.sh",
+      "bytes": 867,
+      "sha256": "c639bb9faad32f8614244149c78ccb6e594bd505aa05b88f0beec977111868a8"
+    },
+    {
+      "path": "cli/platform/windows-process-host/.gitignore",
+      "bytes": 9,
+      "sha256": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368"
+    },
+    {
+      "path": "cli/platform/windows-process-host/Cargo.lock",
+      "bytes": 3131,
+      "sha256": "bce7ac5bb9b1ea353481d14a95304d48aa4ccb995d541afa03a4d8d8bcc674f3"
+    },
+    {
+      "path": "cli/platform/windows-process-host/Cargo.toml",
+      "bytes": 930,
+      "sha256": "19ab34e5618ed5af55ffca4004ac0e7e2781693ac9a40255ecf1ec244b130a52"
+    },
+    {
+      "path": "cli/platform/windows-process-host/README.md",
+      "bytes": 6332,
+      "sha256": "d62f36becde53ef147cb1eb656fb65602a877cca57476776f352bc6a8fea1c2e"
+    },
+    {
+      "path": "cli/platform/windows-process-host/capabilities/windows-x64.v1.json",
+      "bytes": 3502,
+      "sha256": "c05d87b8ce2da192b2fb8f1b446bcfac767040aefec44855a7e551540b1901af"
+    },
+    {
+      "path": "cli/platform/windows-process-host/protocol/control.schema.json",
+      "bytes": 555,
+      "sha256": "fbf7dc7cd2e972fbd9aaf3082155753fd5c981e24e44f4bede76c2f0eb35adf0"
+    },
+    {
+      "path": "cli/platform/windows-process-host/protocol/error.schema.json",
+      "bytes": 678,
+      "sha256": "d0f9fb95871a992fef38a2b2f0541258e7c317aafc80be55138596b5c14f7b21"
+    },
+    {
+      "path": "cli/platform/windows-process-host/protocol/event.schema.json",
+      "bytes": 5179,
+      "sha256": "72536e7cce5c4c0f9a421a5534fa58593f957d92ed997fb49629bf43a0d47cc9"
+    },
+    {
+      "path": "cli/platform/windows-process-host/protocol/identity.schema.json",
+      "bytes": 3184,
+      "sha256": "b25e08edc6332c1419e067ac443d6527d69124a8af1aee0c82514da6e96de68c"
+    },
+    {
+      "path": "cli/platform/windows-process-host/protocol/request.schema.json",
+      "bytes": 2821,
+      "sha256": "99b57107c64caa0215c77ec0a7bfcf2f8d0be1906afbcf3b8d301be669f1461b"
+    },
+    {
+      "path": "cli/platform/windows-process-host/rust-toolchain.toml",
+      "bytes": 123,
+      "sha256": "46f07893436fd9d8ae35fc9789fc68de516b9f1d5adc0addd2b36a52c7f5f322"
+    },
+    {
+      "path": "cli/platform/windows-process-host/scripts/verify_static.py",
+      "bytes": 9170,
+      "sha256": "4ae30fd1b42e99b551aca26bf7bc7b7c522f5d69f7944b92126656556a8f8de5"
+    },
+    {
+      "path": "cli/platform/windows-process-host/src/bin/openprose_windows_process_fixture.rs",
+      "bytes": 4231,
+      "sha256": "b79efb16ce11bb1ae7df87c1198a8cdbc2eb04f8c96bbf21350d8c976b5aee12"
+    },
+    {
+      "path": "cli/platform/windows-process-host/src/lib.rs",
+      "bytes": 38418,
+      "sha256": "4b9dfc18b9c269a5f99a59d9d418e105761eea2fe6b5923ead0bf64ea30dd245"
+    },
+    {
+      "path": "cli/platform/windows-process-host/src/main.rs",
+      "bytes": 1561,
+      "sha256": "5d556e3386b9ee46fb5f7b48f6faadc189516ffea57d448000afb4c3d971e668"
+    },
+    {
+      "path": "cli/platform/windows-process-host/src/windows.rs",
+      "bytes": 35396,
+      "sha256": "d13ae7759e9625f4860d12c1d7023bc7efb456524bd742dee6b3ffc83ec6118d"
+    },
+    {
+      "path": "cli/platform/windows-process-host/tests/identity.rs",
+      "bytes": 2844,
+      "sha256": "5f4cf84f1d5c3031bcd6b9aa5db72c3d10a604fb5dc8abb586261789769834e5"
+    },
+    {
+      "path": "cli/platform/windows-process-host/tests/windows_runtime.rs",
+      "bytes": 14864,
+      "sha256": "65e286c8ba9035c1d6e60c7860f564a9f376f27401b48e472635f1d8b5cb02e7"
+    },
+    {
+      "path": "cli/protocol/OWNERSHIP.md",
+      "bytes": 154383,
+      "sha256": "f102f015f3a7c519a421507fd65239f4d12689e0a7c8fdb0369d954793ec1961"
+    },
+    {
+      "path": "cli/protocol/STATUS.md",
+      "bytes": 24832,
+      "sha256": "c4602721c71b50147f63573a41d6af6f02f8b1c498f62875ce41651c3cb4aa7b"
+    },
+    {
+      "path": "cli/protocol/decisions/0001-toolchains-and-tier1.md",
+      "bytes": 576,
+      "sha256": "d44ae7d2d36f79e3f140d862a8674331cede55b119615269097ae4219977266b"
+    },
+    {
+      "path": "cli/protocol/decisions/0002-sentinel-image.md",
+      "bytes": 606,
+      "sha256": "2475a121b80288ac1396080e2dde8a37f0ac83adc6ddd249d798d6b5764ea10f"
+    },
+    {
+      "path": "cli/protocol/decisions/0003-attempted-process-failure-evidence.md",
+      "bytes": 1358,
+      "sha256": "c42913742b3279c99b6a79e838eacc6f996d535d04901f50d3b83da8a07b4785"
+    },
+    {
+      "path": "cli/protocol/decisions/0004-closed-adapter-delivery-values.md",
+      "bytes": 1454,
+      "sha256": "ba3db194ba642d91e63b2edd0000ce75caa86474e712ecbf851beba14801b116"
+    },
+    {
+      "path": "cli/protocol/decisions/0005-machine-operations.md",
+      "bytes": 2866,
+      "sha256": "cc193afddac0180a61dcdd813a522126595315a85dd407d1160702242887249e"
+    },
+    {
+      "path": "cli/protocol/decisions/0005-model-visible-image-bytes.md",
+      "bytes": 1013,
+      "sha256": "73c97d16625a09656bd8c081c8a2ce83e2b063b6ccac8b7d85c14be52895dba5"
+    },
+    {
+      "path": "cli/protocol/decisions/0006-sentinel-semantics-and-signals.md",
+      "bytes": 2839,
+      "sha256": "ed7253692bb5aff837ac50967567befe1ad8bf84162c34aa89527a4bf2248477"
+    },
+    {
+      "path": "cli/protocol/decisions/0007-harness-credential-routing.md",
+      "bytes": 2946,
+      "sha256": "b1816f003f91c6c07bb00fcf154d17cfeb5c515ab83de341e784addb0716a76c"
+    },
+    {
+      "path": "cli/protocol/tasks/W1-differential-red.md",
+      "bytes": 1009,
+      "sha256": "3391a4dc101f4fc442bde211fb125b6913f2c3615e211e55bced9c7a44f0fb25"
+    },
+    {
+      "path": "cli/protocol/tasks/W1-green.md",
+      "bytes": 1187,
+      "sha256": "0b717e69e5697b18c06973a2b372760aaa2e63f172026902f03d49fb73ab5dd0"
+    },
+    {
+      "path": "cli/protocol/tasks/W1-red.md",
+      "bytes": 1362,
+      "sha256": "1309d2285471e8568775d80543435f333a4927e26f446a4f24f266325014bc45"
+    },
+    {
+      "path": "cli/protocol/tasks/W2-supervision-green.md",
+      "bytes": 1368,
+      "sha256": "12953510d16ee7035932e5c998b9fbb4881ab8c06585c4fdd9438efcce2d462f"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-adapter-schema-red.md",
+      "bytes": 1014,
+      "sha256": "74b93fd2f233b4418b1dd01a152e32088863d6908e9d8ff6027c7b622847e44d"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-adapters-red.md",
+      "bytes": 1043,
+      "sha256": "0fccfba40db441aef1160136d6fa5344cc3657194cd68690687adea681812d0a"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-full-image-red.md",
+      "bytes": 1125,
+      "sha256": "aa76b7530ff90d6d1c3a3b4f0aafd8f6d0dfa720d47c1f72648841c9d7c55f65"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-installed-adapters-green.md",
+      "bytes": 1267,
+      "sha256": "86fbbc430d4191cae0ab86f71ccca047972804881d4ccc09aa5855d45172a920"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-prompt-mode-red.md",
+      "bytes": 788,
+      "sha256": "33c5e8d8e94207d8a7d51c592823371391753ae16bb57da2cd63eb1217f3571e"
+    },
+    {
+      "path": "cli/protocol/tasks/W3-rpc-correlation-red.md",
+      "bytes": 766,
+      "sha256": "0d85914724866a04b737e0bb025103cd31ff9142942959e2cefa43da493751de"
+    },
+    {
+      "path": "cli/release/ALPHA_READINESS.md",
+      "bytes": 9749,
+      "sha256": "71245d64aafd06c219e1872de27b7f26632d573e0a5ac6e77f1c43bb6801e7fd"
+    },
+    {
+      "path": "cli/release/MIGRATION_AND_ROLLBACK.md",
+      "bytes": 21239,
+      "sha256": "931a237e79aa6c5adcb2c74e23cc309c18f19558aa8957dbff0d80ec5be73386"
+    },
+    {
+      "path": "cli/release/README.md",
+      "bytes": 40579,
+      "sha256": "189ff48387bcf4953d6a6b51f31206b23db92c231264f70995e650132eff08e8"
+    },
+    {
+      "path": "cli/release/alpha-draft-authority.schema.json",
+      "bytes": 2814,
+      "sha256": "2fbe4bbb0c245d1e5d313230ea6539f0ef1dfbde4aa6680faa40f0a316681327"
+    },
+    {
+      "path": "cli/release/alpha-promotion-attestation-evidence.schema.json",
+      "bytes": 4737,
+      "sha256": "77006be59460a4adafc40cec4cdb5a2c8c208f7c2eb4a5b4cc0e8cf74ae341ac"
+    },
+    {
+      "path": "cli/release/alpha-promotion-settlement.schema.json",
+      "bytes": 23175,
+      "sha256": "bdd36233a1b203a97857b9e8c259b1b41a3d9ae9aa0b1886e6ea74839dcf2a6b"
+    },
+    {
+      "path": "cli/release/alpha-public-verification.schema.json",
+      "bytes": 10129,
+      "sha256": "111be509410d72584b8701bb5226c02ce7603c95d22065f4c965bf9cf5279bac"
+    },
+    {
+      "path": "cli/release/npm-registry-lineage.v1.json",
+      "bytes": 2056,
+      "sha256": "0bd9f52ca9c65d9d848746b0d1a7c355a6715e928220c7649a3a56da0032645d"
+    },
+    {
+      "path": "cli/rust/.cargo/config.toml",
+      "bytes": 299,
+      "sha256": "f3c22aa8bf1aa1d6b411dddf2fdaecffbf78283f8cf39735050ef50807fc56f6"
+    },
+    {
+      "path": "cli/rust/.gitignore",
+      "bytes": 9,
+      "sha256": "306fd52e74fca6746e12acc750f232de15e71da917756a1270d74c91f5eb7368"
+    },
+    {
+      "path": "cli/rust/Cargo.lock",
+      "bytes": 17420,
+      "sha256": "65b8b630406124030ca0cc9489bc4d99bb9503dbc738bd0722d06c9657059324"
+    },
+    {
+      "path": "cli/rust/Cargo.toml",
+      "bytes": 889,
+      "sha256": "5479b3f4bd51231eb2c063f07b8978ee812d6b48811145752e948584cfeb3efe"
+    },
+    {
+      "path": "cli/rust/README.md",
+      "bytes": 5249,
+      "sha256": "10eba38299d92c9f26f40fffca5c2c9f0edd150d083bbf7e478db7fdf1f3729b"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/Cargo.toml",
+      "bytes": 495,
+      "sha256": "21d7b7eb6a397fb333bce720ec00ffc3f05f3198deeccf4b787c983a9c1a0023"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/build.rs",
+      "bytes": 5642,
+      "sha256": "f920ff33a54de24294c31e1056088b5715c5603bce0fa50d459ff626d9ee1c3b"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/src/main.rs",
+      "bytes": 13468,
+      "sha256": "0b56f9a79f6d0668fd2208abbcaf216380ef3c40d6ec246e0199295a420acfc5"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/tests/build_version.rs",
+      "bytes": 2782,
+      "sha256": "0a6a66b03db1d4133c048b6b4723e0ab13562cc21841ec816c6a05455dc12687"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/tests/cli.rs",
+      "bytes": 180695,
+      "sha256": "f42662a6d8771c6bda8647e8dcef4b514e145b85b5ef5974df450eed9bef5157"
+    },
+    {
+      "path": "cli/rust/crates/prose-cli/tests/image_bundle.rs",
+      "bytes": 13610,
+      "sha256": "68a37412640cba0bcf87a7c92211a4f18a12e8621520b8eabef27d140abe64cf"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/Cargo.toml",
+      "bytes": 426,
+      "sha256": "1e56d2f372ff1512bcd8725bf11a0c4ad9560971c614a61b31aa129088a5bb38"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/build.rs",
+      "bytes": 837,
+      "sha256": "39b20bd8eddebd1bd3bfec3acc0b0eab8f23c023c56a6d2075072fa7db349f81"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/build_support.rs",
+      "bytes": 1458,
+      "sha256": "9709fbcb553f8c0ed67a238122fee49ce23d7e67def6e5520501153dc718e522"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/environment.rs",
+      "bytes": 6855,
+      "sha256": "47ef783d406f02daab75f73194fd263cc6f78c2cbc2502f5eab4629748832782"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/framing.rs",
+      "bytes": 4569,
+      "sha256": "022761e3300f2fc4b8725c5042da7fcd15f418b39497ce8d560976cbac5eccb4"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/lib.rs",
+      "bytes": 2858,
+      "sha256": "d1b93f021516bac3a0f3a0367f9e19749b3bc49aadaf79dc2d16b153b879976b"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/platform.rs",
+      "bytes": 3538,
+      "sha256": "be477ee12f323647d8620396fbb5789dec722e511e3c843242be3408fcc3e62b"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/prompt_files.rs",
+      "bytes": 12034,
+      "sha256": "09cb08e031fd34af935b472784d1b4d6a03c1f06d10dd42b3300e0f09c0403b1"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/supervisor.rs",
+      "bytes": 83384,
+      "sha256": "0cd2051b32e5fca6e3ac607b4e58ea89e1e28ebbf5aae469a842fe802a03c8bd"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/windows_host.rs",
+      "bytes": 45911,
+      "sha256": "0e8a6917571acf9cb29e1f7cd577141c5fe70dd49645c43a437da7306496b914"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/src/windows_supervision.rs",
+      "bytes": 32004,
+      "sha256": "319660ad173de2332b84378683f4481ad19330ef8637ddb57bbafe32ba026b63"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/tests/fake_harness.rs",
+      "bytes": 35986,
+      "sha256": "8ac5f4b0d0a391415f3a70920178b08af57a102a76563ec21236896354f930bc"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/tests/windows_host_client.rs",
+      "bytes": 22721,
+      "sha256": "a36a39e445725b5c76392d15d81830cc0bb4064947e1db3db8d384bf2cf5f373"
+    },
+    {
+      "path": "cli/rust/crates/prose-process-supervisor/tests/windows_host_integration.rs",
+      "bytes": 6890,
+      "sha256": "ceda7136f1a9990930cd55a7b638f0f43165c8770bdd31323339243143cf1ccc"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/Cargo.toml",
+      "bytes": 602,
+      "sha256": "2efe22ce94a31670e89888990365ff423ce90da4803a18b10cbb325b52a5d5f0"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/build.rs",
+      "bytes": 825,
+      "sha256": "a0bec7b5fa06797004d9213b43653687d940705b4a3d3df813705b4e16c042e9"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/build_support.rs",
+      "bytes": 3410,
+      "sha256": "6b0c31954a4d3bf8711792e7f028d3e4b0248c8b3b51dea9023e2322a3deac92"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/config.rs",
+      "bytes": 59063,
+      "sha256": "639ea971a681dfbd519ea1bef59bc0eec1a7abdfa874e31e2138168993c89bd4"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/error.rs",
+      "bytes": 30575,
+      "sha256": "28af9665c2472ef3e2239cdb7916ae8cf8b02c27c26aa0b6727d0e8e716561a9"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/image.rs",
+      "bytes": 21776,
+      "sha256": "1f3849e30ae8f856843208e7d59fb5da2fb1dcf474a9f7d3a57da01bde8cf76f"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/installed_adapters.rs",
+      "bytes": 236568,
+      "sha256": "951d0f0c4d38387a6e4a699736bcdc77639bca576d128a9d24b7cfd11955bbf7"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/invocation.rs",
+      "bytes": 21083,
+      "sha256": "d8623ee9a74f8fc622ba6301c1efc960583feac8a948c5ef95a2e9c9f502afc8"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/lib.rs",
+      "bytes": 893,
+      "sha256": "207f84661af76d1fd5c140c44926f3fa5cad498c87fb45c7b9a7cefc19bfe9b8"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/output.rs",
+      "bytes": 6487,
+      "sha256": "5f15024490391330cb78c79fe9ceb73c326ddf9dc4687f6e7b74a43e7058e696"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/prime_owned_service.rs",
+      "bytes": 50829,
+      "sha256": "8909e684b757a228fef019e8d7cd20ca158adf19a9d5e0b67ae57a841cca7e44"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/runner.rs",
+      "bytes": 173933,
+      "sha256": "8da887a1bc57812d52025162c98b093dd149032227b2c0306c856b35ce2626de"
+    },
+    {
+      "path": "cli/rust/crates/prose-runner-core/src/runtime.rs",
+      "bytes": 1219,
+      "sha256": "b9170dd3bf273e68ac4a3599f9ef708b5b4b321a27f8a8b20f8d705b01efa115"
+    },
+    {
+      "path": "cli/rust/rust-toolchain.toml",
+      "bytes": 86,
+      "sha256": "5886a3ac5cb96ab82047a3e5b88d070e51e3f04ea0d2fe669f2b5341d43f0925"
+    },
+    {
+      "path": "cli/shared/README.md",
+      "bytes": 895,
+      "sha256": "314c8605546f95537b23244d19b57d44f0934a25c71f8331d7d0c99b423ea63d"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/README.md",
+      "bytes": 3077,
+      "sha256": "41ea080db471a3b5a738740f578e860681d5d5e7db5fb0ea671c56dfbee7b93d"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/functional-alpha.v1.json",
+      "bytes": 5283,
+      "sha256": "6e5b682b3cf89852088632f1a9aa4c393de87f8dbca7bdd93e84f0054b85d39e"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/oracle.v1.json",
+      "bytes": 37489,
+      "sha256": "2ab2516a543d9424d647ea9809398ab1ad8d5437863a78f95b87331ecaa49420"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json",
+      "bytes": 2811,
+      "sha256": "491790b0857f9db771c4cb72ad3f852586d41bb3b8362d2467b0272c212e4afd"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/recipes/codex-exec-json.v1.json",
+      "bytes": 2688,
+      "sha256": "41c1fd72796defe256a338f92f5ebf850e6522d2eb265c8746512a40a2a03f82"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/recipes/omp-rpc.v1.json",
+      "bytes": 4064,
+      "sha256": "716ac64704d38a2df4fcd16d50be2e04419930a566780109ae6eacfc607c58b5"
+    },
+    {
+      "path": "cli/shared/capabilities/adapters/recipes/prime-rpc.v1.json",
+      "bytes": 3198,
+      "sha256": "d961da049ec9ea1b2d3d1c40fd4569cb41713850130841d88fd566d1e970f9b9"
+    },
+    {
+      "path": "cli/shared/capabilities/transport-limits.v1.json",
+      "bytes": 804,
+      "sha256": "e13fee9c610f98172175fa27ea6aad138830b0fc8aed0dfdd8d7d64969bfc709"
+    },
+    {
+      "path": "cli/shared/errors/README.md",
+      "bytes": 557,
+      "sha256": "812ecf4fff51959cf191983799e8f41910a901f824c8618d79523abc15e96d86"
+    },
+    {
+      "path": "cli/shared/errors/taxonomy.v1.json",
+      "bytes": 6955,
+      "sha256": "c49546444675d28922390069a3a2bb7dbe21b8924e33af13be360f02c8cbaedc"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/README.md",
+      "bytes": 876,
+      "sha256": "f112d982fe4f66944b6e18e73fe0162f89325b712d5bf72366551ade4373c940"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/bin/adapter_probe.py",
+      "bytes": 20289,
+      "sha256": "3dc67c7b9950404e34d39fad2400fef695a5ef72a884bc515ace79d02efdd67f"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/functional-alpha/terminal-carriage.v1.json",
+      "bytes": 4097,
+      "sha256": "71c0889d4b8d6aa5b8c21487d6b411446df4fec3393ff60c23fed2ab19eedb39"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/generate.py",
+      "bytes": 18699,
+      "sha256": "f4705dfc1fc4ce649999a1f565179b6b3328b9e24c112611bb6e52cf396c479c"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/product/runner-metadata-env.v1.json",
+      "bytes": 440,
+      "sha256": "980fdb2e3572cf2c52a923eaaa2685880497a8ae771979a11104ec1e3d5936e0"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/scenarios/claude-print-stream-json.v1.json",
+      "bytes": 3958,
+      "sha256": "17c756d34d1825a780d03756e5146b5861089e768f5e711281e76ef50ce245a3"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/scenarios/codex-exec-json.v1.json",
+      "bytes": 3078,
+      "sha256": "e22193864fdb6ab9959abf29efd3b30e98b0f75909c95b230f39eb17a657dd3b"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/scenarios/omp-rpc.v1.json",
+      "bytes": 10325,
+      "sha256": "9850a5f0a72316e2e1077ad74bf9abb0743af65cf8c4f79f78a39d959594a372"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/scenarios/prime-rpc.v1.json",
+      "bytes": 21421,
+      "sha256": "07d5b4e90ac42ee0d1784edeb0a37bc4fc7d2b4b4b2fa75ea452b44f759a43ea"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/wire/codex-stdin.txt",
+      "bytes": 1703,
+      "sha256": "388879d8d1a1802896256fe2b803bf0e5a53103ea3e5e65faa88f1466e846396"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/wire/omp-stdin.jsonl",
+      "bytes": 349,
+      "sha256": "0ab32b036ae2b264344e8eb5de2afb564fb75b2e0270539205767008d45b92c9"
+    },
+    {
+      "path": "cli/shared/fixtures/adapters/wire/prime-stdin.jsonl",
+      "bytes": 272,
+      "sha256": "c1b91c6f0d2a42108c24dd971cf3bd262655ccc88eeeeea015842b950e98fe55"
+    },
+    {
+      "path": "cli/shared/fixtures/config/flat-toml-v1.json",
+      "bytes": 7658,
+      "sha256": "64b68bd6b09c4f8c636fad2363cbcad5f68f744d1a062ca53fa770dfc57044f9"
+    },
+    {
+      "path": "cli/shared/fixtures/dx/README.md",
+      "bytes": 850,
+      "sha256": "ebe8b13856e640b071087c0c3f95ad37d2deff5fd1a43ade70fadd84789034b4"
+    },
+    {
+      "path": "cli/shared/fixtures/dx/dry-run-default-hosted.json",
+      "bytes": 2019,
+      "sha256": "f7878f4c5a9ef60eba02da047f97ac589fe986f7f84d4893865223d69b918c08"
+    },
+    {
+      "path": "cli/shared/fixtures/dx/dry-run-mock.json",
+      "bytes": 1576,
+      "sha256": "5f82713ab0168a99e5e82a51ffafd32cbdbc92b20510a567f470a9e5fce616b5"
+    },
+    {
+      "path": "cli/shared/fixtures/dx/dry-run-prime.json",
+      "bytes": 1584,
+      "sha256": "211b3bfd33ecc09c7330e363f8bafd2de6a4e727ca35baaa936d0eaf663eea19"
+    },
+    {
+      "path": "cli/shared/fixtures/hosted/README.md",
+      "bytes": 535,
+      "sha256": "0538fa8a83ed518fdcc5b6eb036bb6bf8b95a1603575216b17d5b3e9363602e0"
+    },
+    {
+      "path": "cli/shared/fixtures/hosted/requests/hosted-agent-local-capability-bridge.json",
+      "bytes": 1122,
+      "sha256": "da28bad912d3bd1615c38d9ed6da0aa59cd96868cd52b04d1714209d217e6050"
+    },
+    {
+      "path": "cli/shared/fixtures/hosted/requests/local-loop-gateway.json",
+      "bytes": 1102,
+      "sha256": "15f2e01955024e062042ce3d806dfa8a5b3f60ec181264bacc5265f045e8089e"
+    },
+    {
+      "path": "cli/shared/fixtures/human/human-safe-scalars.json",
+      "bytes": 1648,
+      "sha256": "93ad33f3b6fb8714de0d5fd17bd56bfe6f5fed20e3405e8690128f5e5ae7dadb"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/account-status-unavailable.json",
+      "bytes": 682,
+      "sha256": "5fa5e79f75c1d1f3fec7c185aa496b851bc9ecd4f8f09e8f060d3ebda88de16e"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/configuration-explanation.json",
+      "bytes": 1009,
+      "sha256": "bacbeeb880a7e97b111b26745a54cef493176b86612b1f1951e6f25f4813a030"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/doctor-report.json",
+      "bytes": 4765,
+      "sha256": "10aad4c0d18db5a8b372bc1064eed8bb22e3da690b40cb56218c0ee7f9acb339"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/harness-list.json",
+      "bytes": 2498,
+      "sha256": "cbd94bedc85cf53680324c6127235273df1d10f65d685d04e3f3cfb68f9bc845"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/harness-selection.json",
+      "bytes": 159,
+      "sha256": "0ccde12e02d470507f5816103592dcba68082ced91f7f11235da1a4def8f7359"
+    },
+    {
+      "path": "cli/shared/fixtures/operations/prime-cleanup.json",
+      "bytes": 282,
+      "sha256": "18dbffb3d847528d49e36cc602835ea00472c4c3b281c5452c7b6008663333f5"
+    },
+    {
+      "path": "cli/shared/fixtures/schema-examples/README.md",
+      "bytes": 303,
+      "sha256": "50e4be96d4b57bd5ca9e6deef03b9918191657291de4fd13710c14fed767610f"
+    },
+    {
+      "path": "cli/shared/fixtures/schema-examples/adapter-admission-recipe.json",
+      "bytes": 2396,
+      "sha256": "906c7094e4bcc45b68b6b28d3da2704cd79483c06de503d9f2f583d3bddd0ac9"
+    },
+    {
+      "path": "cli/shared/fixtures/schema-examples/benchmark-policy.json",
+      "bytes": 1210,
+      "sha256": "1124ea6171a687fdbc2cfdfb8e89dbfbb7fc6dbe56e423fe0de17a7f4fd2fccb"
+    },
+    {
+      "path": "cli/shared/fixtures/schema-examples/dry-run-report.json",
+      "bytes": 939,
+      "sha256": "ecb3cbef2a0652fa8ed0303efbac8fe2a46c0a8e2e0ca8136c94e71d3b37af06"
+    },
+    {
+      "path": "cli/shared/fixtures/schema-examples/release-profile.json",
+      "bytes": 1282,
+      "sha256": "6c8e908529d7d3ef3d22c9e181249c33c7c51fe22fd5bc4bea333a51351dc1a5"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/deterministic-mock-adapter.json",
+      "bytes": 838,
+      "sha256": "76538bd1fbb9f82bec772b1f16bfb3e99b14635bf0b99eb81f7c039dccf74d3e"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/mock-adapter.json",
+      "bytes": 883,
+      "sha256": "c309569b0a7e8477b0766d2d4476e61827b33c74b3b9d9d4acf14a38b6805b1b"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/normalized-events-preterminal.jsonl",
+      "bytes": 987,
+      "sha256": "d1f3e86a667ca1109f56355fb3b223cd5d76a1ec3cba1a697d541720795fce0c"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/runner-completed-event.json",
+      "bytes": 2277,
+      "sha256": "906c4d2b770736b71c3c47d04fe1c7d7cdf214513847a6579d057f1326f591ac"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/runner-invocation.json",
+      "bytes": 877,
+      "sha256": "5ccaedbddde00f152e4ab36fb420d714ba7627345dea71123bd9b938b1421071"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/runner-result-hosted-unavailable.json",
+      "bytes": 2376,
+      "sha256": "8e02446e59a7986b8a28e3535c57fd88f103173d7b2e082458ba6681a41c8df6"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/runner-result-success.json",
+      "bytes": 2129,
+      "sha256": "3505daa426fa7d5ced73c6100449890e42c57e17cbd5267c4832325282bda945"
+    },
+    {
+      "path": "cli/shared/fixtures/transport/sentinel-task.json",
+      "bytes": 240,
+      "sha256": "c2f0f7b702ef0c21e34e19cf0dc6d0bb3582f365f5d2727d9dcae871a2b45e38"
+    },
+    {
+      "path": "cli/shared/image/README.md",
+      "bytes": 1279,
+      "sha256": "28c91eb2a0a4638b3f80a90f35408568578ad1190a5a7bd75fc8cc8fa40ef5a0"
+    },
+    {
+      "path": "cli/shared/image/bundle/FORMAT.md",
+      "bytes": 1426,
+      "sha256": "734810fced336790b95719249e0de9c0fbe91c206d21b0e3f488b6c37fd09918"
+    },
+    {
+      "path": "cli/shared/image/bundle/README.md",
+      "bytes": 2280,
+      "sha256": "4a79ea6d997937591296ff7f8585c3d290abae010fc8da424a027423f6d10bec"
+    },
+    {
+      "path": "cli/shared/image/bundle/RED_ORACLE.md",
+      "bytes": 810,
+      "sha256": "d2e6d04d72bbc0c4a4b9787f4cd6470d10a37c5a093e87b7b0416edf4fa32415"
+    },
+    {
+      "path": "cli/shared/image/bundle/image_bundle.py",
+      "bytes": 26854,
+      "sha256": "71ba9011f9b1d0f5dd4a0aacd0d7c7e1cf4c4db3a88acabc06d9c05d542edb34"
+    },
+    {
+      "path": "cli/shared/image/bundle/test_echo_image.py",
+      "bytes": 9069,
+      "sha256": "40580c629df89926b5ce3ea712278076e873915b9c138d1034c52aba62b54e7d"
+    },
+    {
+      "path": "cli/shared/image/bundle/test_image_bundle.py",
+      "bytes": 12522,
+      "sha256": "8e80aa52e0da2504c7dbdd864ebe4e80957cc0d8da83e00f801a10e3193db576"
+    },
+    {
+      "path": "cli/shared/image/echo-v0/contracts/one-field-framing.txt",
+      "bytes": 141,
+      "sha256": "b6fbc605f057783ffed34fe85536c39cf7853278fb04432855620207f3c97dc7"
+    },
+    {
+      "path": "cli/shared/image/echo-v0/contracts/task-envelope.schema.json",
+      "bytes": 641,
+      "sha256": "8e3ddfe3dff60ef7ba9df67133214ed7cd265839d363c5d4c76589eebf7b9de4"
+    },
+    {
+      "path": "cli/shared/image/echo-v0/contracts/terminal-envelope.schema.json",
+      "bytes": 937,
+      "sha256": "5025ee67db55d02d178fb46e1967962ba6a8b57e5c4bd534f50e8f623bd8ce6e"
+    },
+    {
+      "path": "cli/shared/image/echo-v0/manifest.json",
+      "bytes": 2386,
+      "sha256": "378a90238b3290e8dc238bb611ca81d145a52422c5af894a0f80a7f603523e4d"
+    },
+    {
+      "path": "cli/shared/image/echo-v0/payload/00-echo-placeholder.md",
+      "bytes": 1310,
+      "sha256": "5b10702a77d29104cc0f145b8971001e0f0d07e30de07debd09b3cba2ffb68ae"
+    },
+    {
+      "path": "cli/shared/image/embedded/README.md",
+      "bytes": 749,
+      "sha256": "e72b75c7cfa1da798beb8c971f5915f5e5c355c7dd154ec25b1233bbd55bdf80"
+    },
+    {
+      "path": "cli/shared/image/embedded/current.bundle.bin",
+      "bytes": 5630,
+      "sha256": "23309b7ce026097ec173fdc7d7b739c19a032e1bd8f28aa7047794e808e0331c"
+    },
+    {
+      "path": "cli/shared/image/embedded/current.bundle.sha256",
+      "bytes": 65,
+      "sha256": "eaf0a9985b0f5fa89edbcdddb8ac14b5fea150418ec7fe01da4a3da1e6d4cb88"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/contracts/one-field-framing.txt",
+      "bytes": 145,
+      "sha256": "bfe0e63487574edccd6e1f168d89aea6324bf15a4554976784d636f7b7c7610e"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/contracts/task-envelope.schema.json",
+      "bytes": 540,
+      "sha256": "aa19360b38fc3f93ada8b783df4422c9443de437307a73fecbc5e7f5af898261"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/contracts/terminal-envelope.schema.json",
+      "bytes": 520,
+      "sha256": "4927ef7ffd5c3d22286590a00f33b7fe9ddcaa109ac90e3358e1be79aba06477"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/manifest.json",
+      "bytes": 2581,
+      "sha256": "a73f723b6b7bf4ab7d98e30b3ce32c242c61554465cc4b28669cd02e1672d1d3"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/payload/00-sentinel.md",
+      "bytes": 186,
+      "sha256": "7e8489fe9478d445733c54d04d69bedd2edb57d474358130217007d924b0d69f"
+    },
+    {
+      "path": "cli/shared/image/sentinel-v1/payload/10-byte-canary.md",
+      "bytes": 160,
+      "sha256": "1c40e3cecc0ec97c999a658b5748de3c62e4079b9c8819a17ee60e04633a07a2"
+    },
+    {
+      "path": "cli/shared/requirements-test.txt",
+      "bytes": 39,
+      "sha256": "7b45edca08cf4be82673b2b4e18e899b15d457fb445f1a6ff9363ab5402f8aa7"
+    },
+    {
+      "path": "cli/shared/schemas/README.md",
+      "bytes": 665,
+      "sha256": "cfb2ae6ee786dc815162e4a4e88897f456cdb51661dc682f47367beac1093915"
+    },
+    {
+      "path": "cli/shared/schemas/account-status.schema.json",
+      "bytes": 854,
+      "sha256": "1bc92ba59574a61aeb68f2f1a17c64fb06d8e1467d479c9c33e37326b10bdb89"
+    },
+    {
+      "path": "cli/shared/schemas/adapter-admission-recipe.schema.json",
+      "bytes": 11170,
+      "sha256": "6d114e1615ea185bccc6a698a849979765e64b0cccca4dd5993c18c4cac1361f"
+    },
+    {
+      "path": "cli/shared/schemas/adapter-diagnostic.schema.json",
+      "bytes": 2360,
+      "sha256": "f84b986ba96086fa30efca69fa0f8744845ee6296bfe99c66e80c12d9c384f2d"
+    },
+    {
+      "path": "cli/shared/schemas/benchmark-policy.schema.json",
+      "bytes": 3609,
+      "sha256": "a800f83f9c48be43aad2afa30d6b5d71f9ae9840df8f1639542c41957cfb032e"
+    },
+    {
+      "path": "cli/shared/schemas/common.schema.json",
+      "bytes": 2754,
+      "sha256": "f8efcbfed2f9e672450743fe843b111d884c2801fc3772271fa7b70a5f77aae9"
+    },
+    {
+      "path": "cli/shared/schemas/configuration-explanation.schema.json",
+      "bytes": 2680,
+      "sha256": "28420da7a1933bdbec66b4e12b1f1277c7285d473cd28788b867e500f25cc9f9"
+    },
+    {
+      "path": "cli/shared/schemas/doctor-report.schema.json",
+      "bytes": 3029,
+      "sha256": "02063d9a039b30f6a07a55946103287110014a812f2d2053dcf985f59a4a2c2c"
+    },
+    {
+      "path": "cli/shared/schemas/harness-list.schema.json",
+      "bytes": 2409,
+      "sha256": "8bd24d4e91be5135d5cd74b1b294139ff93ac0e8439b0b0efef10abb5cc3d68b"
+    },
+    {
+      "path": "cli/shared/schemas/harness-selection.schema.json",
+      "bytes": 597,
+      "sha256": "30f84f0b40b94acaf22721f12f538481b698c7cc6c495db68566be27739ceb84"
+    },
+    {
+      "path": "cli/shared/schemas/launch-adapter.schema.json",
+      "bytes": 2699,
+      "sha256": "e5d22a9191abe284e718a0a3d2ac09a1a0e77ab9aa98f5ef4a184c5c037a018b"
+    },
+    {
+      "path": "cli/shared/schemas/normalized-event.schema.json",
+      "bytes": 8369,
+      "sha256": "a8e709c87b7bbabd3c07e2093d247728f1e1e09ff2c79a012a51e9b5f43bad4f"
+    },
+    {
+      "path": "cli/shared/schemas/prime-cleanup.schema.json",
+      "bytes": 976,
+      "sha256": "7db873dcef2abaf6986c2818ee9470c5c7489682865a41958adade18be7dbdec"
+    },
+    {
+      "path": "cli/shared/schemas/release-profile.schema.json",
+      "bytes": 3295,
+      "sha256": "829f38ac5a3a0b52b22001b61c6e163b01aff690ab8fbc201d5ca637f8ce0c10"
+    },
+    {
+      "path": "cli/shared/schemas/runner-dry-run-report.schema.json",
+      "bytes": 2840,
+      "sha256": "3abd17c9900138ad63839053511be9b34ba8eaa53aaecf9aa59fd37dc392079f"
+    },
+    {
+      "path": "cli/shared/schemas/runner-error.schema.json",
+      "bytes": 3697,
+      "sha256": "f85bb863da8e95ab46caec012749289d6884aacd14314c81a7da7ea355074432"
+    },
+    {
+      "path": "cli/shared/schemas/runner-invocation.schema.json",
+      "bytes": 1955,
+      "sha256": "6bf333380c2ee6198cf598489a8e6716fe3f1dfa5d9c0e73b76ecbebba10ddf3"
+    },
+    {
+      "path": "cli/shared/schemas/runner-result.schema.json",
+      "bytes": 7251,
+      "sha256": "fa3d91ec14b7aeabc438c58318027088576f43fc600b58cd8d6fe6e292eaffdb"
+    },
+    {
+      "path": "cli/shared/schemas/skill-runtime-image-manifest.schema.json",
+      "bytes": 5797,
+      "sha256": "2f626e82a9722ed4b4f2438b7b902b1728c0cec212cefee628f5ca756e01f8e0"
+    },
+    {
+      "path": "cli/shared/tests/test_contracts.py",
+      "bytes": 41305,
+      "sha256": "7473a54fe10099b91ebf33a9664c2f5d5af22f48d3e951f70d8347b594aa0705"
+    }
+  ]
+}

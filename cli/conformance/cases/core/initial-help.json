@@ -1,0 +1,24 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "core.initial-help",
+  "summary": "Runner help is local, exact, and starts no harness.",
+  "phase": 1,
+  "tags": ["cli", "help", "offline"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": ["--help"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 0,
+    "stdout": { "kind": "exact-fixture", "fixture": "cli/conformance/cases/fixtures/runner-help.txt" },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false
+  }
+}

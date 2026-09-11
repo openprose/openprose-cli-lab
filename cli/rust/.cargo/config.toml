@@ -1,0 +1,8 @@
+[build]
+rustflags = ["-Dunsafe-code"]
+
+[env]
+# Keep local development bytes independent of whether the caller happened to
+# export the build-identity variable. Release/package builds override this with
+# their exact source revision.
+OPENPROSE_BUILD_COMMIT = { value = "development", force = false }

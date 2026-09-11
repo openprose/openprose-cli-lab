@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli-conformance/research/local-capability-evidence.v1.schema.json",
+  "title": "OpenProse scripted local capability bridge evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "requested", "completed", "rejected", "rejectionCodes", "filesystemPathsConfined", "processWorkingDirectoryConfined", "processFilesystemSandbox", "defaultDeny", "shellEnabled", "networkEnabled", "outputCapture", "maxRetainedOutputBytesObserved", "directChildReaped", "processContainment", "descendantContainment"],
+  "properties": {
+    "schema": { "const": "openprose.local-capability-evidence/1" },
+    "requested": { "type": "integer", "minimum": 0 },
+    "completed": { "type": "integer", "minimum": 0 },
+    "rejected": { "type": "integer", "minimum": 0 },
+    "rejectionCodes": {
+      "type": "object",
+      "propertyNames": { "pattern": "^CAPABILITY_[A-Z_]+$" },
+      "additionalProperties": { "type": "integer", "minimum": 1 }
+    },
+    "filesystemPathsConfined": { "const": true },
+    "processWorkingDirectoryConfined": { "const": true },
+    "processFilesystemSandbox": { "const": "unsupported" },
+    "defaultDeny": { "const": true },
+    "shellEnabled": { "const": false },
+    "networkEnabled": { "const": false },
+    "outputCapture": { "enum": ["bounded-default-executor", "external-executor-unverified"] },
+    "maxRetainedOutputBytesObserved": { "type": "integer", "minimum": 0, "maximum": 1048576 },
+    "directChildReaped": { "type": ["boolean", "null"] },
+    "processContainment": { "enum": ["direct-child-only", "external-executor"] },
+    "descendantContainment": { "const": "unsupported" }
+  }
+}

@@ -1,0 +1,341 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "schemaName": "openprose-bun-agent-research-scorecard",
+  "schemaVersion": 1,
+  "observedAt": "2026-08-27",
+  "scope": "provider-free Bun embedded-agent research; not a stable adapter registry",
+  "overall": {
+    "mandatoryAttemptsComplete": true,
+    "stableAdmission": "blocked",
+    "benchmarkEligibleCandidates": [],
+    "reason": "Transport and packaging probes exist, but no candidate has passed the language-owned semantic conformance corpus, real auth/billing evidence, process-containment requirements, and all candidate-specific portability gates."
+  },
+  "environment": {
+    "os": "darwin",
+    "arch": "arm64",
+    "bunObserved": "1.3.5",
+    "bunRequiredByWorkspace": ">=1.3.14",
+    "lockfile": {
+      "path": "bun.lock",
+      "bytes": 112608
+    },
+    "combinedInstall": {
+      "command": "bun install --frozen-lockfile",
+      "nodeModulesKiB": 1542720,
+      "note": "This deliberately broad research workspace contains all four candidates and is not a proposed production dependency set."
+    },
+    "typecheck": {
+      "command": "bunx tsc --noEmit",
+      "skipLibCheck": true,
+      "reason": "Without skipLibCheck, the pinned third-party declaration graph failed on undici-types/MCP globals and OMP declarations (models.json, fastembed, DOM and internal interface conflicts). Lab source itself is still checked strictly."
+    }
+  },
+  "commonContract": {
+    "runtimeImageAndTaskSeparated": true,
+    "runtimeImageTreatedAsOpaqueUtf8": true,
+    "explicitCwd": true,
+    "explicitEnvironmentInput": true,
+    "environmentFullyEnforcedByAllCandidates": false,
+    "cancellationSurface": true,
+    "terminalEventRequired": true,
+    "providerOrModelCallsMade": false,
+    "credentialsRead": false,
+    "languageSemanticsOwnedHere": false,
+    "publicRegistryModified": false
+  },
+  "verification": {
+    "aggregateCommand": "bun run research",
+    "steps": [
+      "bunx tsc --noEmit",
+      "bun test",
+      "bun run compile",
+      "bun run package:smoke"
+    ],
+    "unitTests": {
+      "tests": 20,
+      "expectations": 48,
+      "failures": 0
+    },
+    "packageSmokeIsolation": "Each compiled artifact is copied to a new temporary directory and started with only HOME and PATH; candidate-declared sidecars are copied explicitly."
+  },
+  "candidates": [
+    {
+      "id": "research/codex-sdk@0.150.1",
+      "attempt": "OpenAI Codex SDK",
+      "adapterStatus": "green-provider-free",
+      "stableAdmission": "blocked",
+      "package": {
+        "name": "@openai/codex-sdk",
+        "version": "0.150.1",
+        "license": "Apache-2.0",
+        "declaredEngine": "node >=18",
+        "unpackedBytes": 79397,
+        "integrity": "sha512-/Xp8CM2POoXcZd7MZ+07oXstAgNvflr0Mj7IUPKhyv1HAzaqoedv6PAcgJPUyiNU0vi1lfbkgcJU5QC+lxspSw==",
+        "shasum": "92ff7f358cbc2db779e68047fd79f5238430d824",
+        "repository": "https://github.com/openai/codex",
+        "repositoryDirectory": "sdk/typescript",
+        "sourceTag": "rust-v0.150.1",
+        "sourceCommit": "90854393966b21e9ebfd21b122334eb09a20c93d"
+      },
+      "authAndBilling": {
+        "claim": "SDK delegates authentication and billing to its spawned Codex CLI; this lab supplied neither credentials nor a login.",
+        "stableEvidence": false
+      },
+      "transport": {
+        "implementation": "The SDK manages a Codex CLI JSONL subprocess. runtimeImageUtf8 is config.developer_instructions and taskEnvelope is the runStreamed input.",
+        "ambientIsolation": "partial",
+        "cancellation": "AbortSignal is forwarded through TurnOptions; provider-free cancellation settles as cancelled.",
+        "terminal": "turn.completed or turn.failed is mandatory; EOF otherwise throws.",
+        "providerFreeEvidence": "The actual SDK was run against test/fixtures/fake-codex.ts, an executable JSONL fixture; no model or credential path was touched."
+      },
+      "cleanInstall": {
+        "command": "bun init -y; bun add --exact --ignore-scripts @openai/codex-sdk@0.150.1",
+        "nodeModulesKiB": 314316,
+        "packageManifestCount": 8,
+        "lockfileBytes": 3391
+      },
+      "packaging": {
+        "compileCommand": "bun build --compile --minify --target=bun-darwin-arm64 ./src/compile/codex.ts --outfile ./dist/codex-lab",
+        "artifactBytes": 59885424,
+        "status": "blocked-clean-standalone",
+        "reproduction": "Copy dist/codex-lab to an empty directory and run it with HOME set there and PATH=/usr/bin:/bin.",
+        "observedError": "Unable to locate Codex CLI binaries. Ensure @openai/codex is installed with optional dependencies.",
+        "reason": "The compiled Bun file does not carry or extract the optional platform Codex binary."
+      },
+      "blockers": [
+        "The public SDK surface does not expose strict equivalents for --ephemeral, --ignore-user-config, or --ignore-rules; a private CODEX_HOME can isolate home config but not repository rules.",
+        "Descendant process containment and kill/settlement behavior are not proven.",
+        "The platform binary must be embedded/extracted or shipped as an explicit verified sidecar.",
+        "Language-owned semantic conformance and real auth/billing probes remain unrun."
+      ],
+      "primarySources": [
+        "https://developers.openai.com/codex/sdk/",
+        "https://github.com/openai/codex/tree/rust-v0.150.1/sdk/typescript"
+      ]
+    },
+    {
+      "id": "research/claude-agent-sdk@0.3.250",
+      "attempt": "Claude Agent SDK",
+      "adapterStatus": "green-provider-free",
+      "stableAdmission": "blocked",
+      "package": {
+        "name": "@anthropic-ai/claude-agent-sdk",
+        "version": "0.3.250",
+        "license": "SEE LICENSE IN README.md",
+        "licenseFileSha256": "8ce94b9478bb9868f9641f818e06cd722fbe55d4c22e2d2ed11971b20146173a",
+        "licenseSummary": "Anthropic copyright; use subject to linked Legal Agreements; requires legal review rather than treating it as an SPDX grant.",
+        "declaredEngine": "node >=18.0.0",
+        "unpackedBytes": 4830737,
+        "integrity": "sha512-qT/1cBZs0+xPsQfqVOnwIk6pNW8XBkTpQS5RAXKHYb2XYCKqYc0UmOaeiYU2WeI6HEZKORa5iCaAZyKWGluShw==",
+        "shasum": "71b307e08a577035d6cb1ad4906ec60f3771b466",
+        "repository": "https://github.com/anthropics/claude-agent-sdk-typescript",
+        "sourceTag": "v0.3.250",
+        "sourceCommit": "0ec415863a773e477c9d11b0affd8a2d21c87ae2",
+        "platformPackage": {
+          "name": "@anthropic-ai/claude-agent-sdk-darwin-arm64",
+          "version": "0.3.250",
+          "unpackedBytes": 206480136,
+          "integrity": "sha512-tcekW4gR2UH0Q3COBaNPQIdud2lKEbs0HfG2yNKC18hXFPpgbuLCdjq0ndS1lcvC1q8ncPW3oQPUutQt3StICQ==",
+          "shasum": "5e6b42aa3f20d22a7ccd5a3276081638ed18db42",
+          "embeddedExecutableSha256": "506d7362a9c625306044879a9d91d8f33bd2eef963681b56be3295db5fe3e34b"
+        }
+      },
+      "authAndBilling": {
+        "claim": "Current SDK documentation supports Anthropic API/cloud-provider credential paths; this lab found no evidence that an ordinary Claude subscription is a portable SDK billing path.",
+        "stableEvidence": false
+      },
+      "transport": {
+        "implementation": "runtimeImageUtf8 appends to the claude_code preset while taskEnvelope remains the query prompt. settingSources, skills and plugins are empty; strict MCP is enabled; sessions are not persisted.",
+        "ambientIsolation": "strong-plan-only",
+        "cancellation": "An invocation AbortSignal drives the SDK AbortController and Query.close() always runs.",
+        "terminal": "A result:* SDK message is mandatory; EOF otherwise throws.",
+        "providerFreeEvidence": "A fake Query async stream exercised event collection, cancellation, closure and terminal validation without invoking Claude."
+      },
+      "cleanInstall": {
+        "command": "bun init -y; bun add --exact --ignore-scripts @anthropic-ai/claude-agent-sdk@0.3.250 @anthropic-ai/claude-agent-sdk-darwin-arm64@0.3.250",
+        "nodeModulesKiB": 277040,
+        "packageManifestCount": 125,
+        "lockfileBytes": 24399
+      },
+      "packaging": {
+        "compileCommand": "bun build --compile --minify --target=bun-darwin-arm64 ./src/compile/claude.ts --outfile ./dist/claude-lab",
+        "artifactBytes": 269241072,
+        "status": "green-single-file-darwin-arm64",
+        "evidence": "The copied artifact started in an empty directory and reported extracted=true; the SDK's documented BunFS extraction path found the bundled executable."
+      },
+      "blockers": [
+        "No subscription-auth path was demonstrated; API/cloud auth and billing must be recorded explicitly.",
+        "Descendant process containment and kill/settlement behavior are not proven.",
+        "Only darwin-arm64 packaging was tested; release matrix and license review remain.",
+        "Language-owned semantic conformance remains unrun."
+      ],
+      "primarySources": [
+        "https://github.com/anthropics/claude-agent-sdk-typescript/tree/v0.3.250",
+        "https://platform.claude.com/docs/en/agent-sdk/overview"
+      ]
+    },
+    {
+      "id": "research/pi-openrouter@pi-coding-agent-0.73.1",
+      "attempt": "Pi coding-agent with OpenRouter",
+      "adapterStatus": "green-provider-free",
+      "stableAdmission": "blocked",
+      "package": {
+        "name": "@mariozechner/pi-coding-agent",
+        "version": "0.73.1",
+        "license": "MIT",
+        "declaredEngine": "node >=20.6.0",
+        "unpackedBytes": 11231768,
+        "integrity": "sha512-gXQh3SaZmWTfVMc4Ao5+LGbVeKvzyO7tolok0nLsZgq9nGjZx/EEU3NM8C+qUnB4Nvs2rswG5qOVgLzQkq0fHQ==",
+        "shasum": "a14f26f45d3553556149432d743242675771862a",
+        "repository": "https://github.com/badlogic/pi-mono",
+        "repositoryDirectory": "packages/coding-agent",
+        "sourceTag": "v0.73.1",
+        "sourceCommit": "781152fc24841dc54b22284514604048ebe5e2c9",
+        "aiPackage": {
+          "name": "@mariozechner/pi-ai",
+          "version": "0.73.1",
+          "unpackedBytes": 4256391,
+          "integrity": "sha512-Jh4lXawZYuC83HzSIYuVum9NBqJD49i4JOt3H96cGW/924cwJMOyUs1Mv/e4QPzTXnzrqMoGviNQnvGgSu1LSg==",
+          "shasum": "79d6e3b1431845ca4c0b469963c3b9d4f2aabdc3"
+        }
+      },
+      "authAndBilling": {
+        "claim": "The plan selects OpenRouter and declares openrouter-api-key-or-oauth auth with OpenRouter as billing owner. No credential was read and no model call was made.",
+        "stableEvidence": false
+      },
+      "transport": {
+        "implementation": "In-memory auth, model, settings and session stores are combined with a ResourceLoader whose exact system prompt is runtimeImageUtf8 and whose ambient agents/extensions/prompts/skills/themes are empty. taskEnvelope is the session prompt.",
+        "ambientIsolation": "resource-discovery isolated; process environment not isolated",
+        "cancellation": "AbortSignal invokes AgentSession.abort(); unsubscribe and dispose always run.",
+        "terminal": "agent_end is mandatory; settlement without it throws.",
+        "providerFreeEvidence": "The real model registry/resource loader is built and a fake session boundary exercises prompt, events, cancellation and disposal."
+      },
+      "cleanInstall": {
+        "command": "bun init -y; bun add --exact --ignore-scripts @mariozechner/pi-agent-core@0.73.1 @mariozechner/pi-ai@0.73.1 @mariozechner/pi-coding-agent@0.73.1",
+        "nodeModulesKiB": 230052,
+        "packageManifestCount": 237,
+        "lockfileBytes": 46088
+      },
+      "packaging": {
+        "compileCommand": "bun run ./scripts/compile-pi.ts",
+        "artifactBytes": 66754416,
+        "sidecars": [
+          {
+            "path": "package.json",
+            "bytes": 3482,
+            "reason": "The package resolves metadata at runtime; a pure copied executable failed with ENOENT for dist/package.json."
+          }
+        ],
+        "status": "green-two-file-darwin-arm64"
+      },
+      "blockers": [
+        "The isolated default coding-agent SDK does not itself supply a complete generic subagent substrate; an explicit extension/profile and semantic corpus are required.",
+        "The in-process session surface has no per-session environment boundary; the SDK and spawned tools can observe the host process environment unless the adapter owns an isolated worker/process.",
+        "additionalDirectories has no equivalent in the tested session options and needs a declared compatibility policy.",
+        "Real OpenRouter auth, billing, cancellation, rate-limit and provider failure behavior remain unproven.",
+        "Packaging currently needs a metadata sidecar and only darwin-arm64 was tested."
+      ],
+      "primarySources": [
+        "https://github.com/badlogic/pi-mono/tree/v0.73.1/packages/coding-agent",
+        "https://github.com/badlogic/pi-mono/tree/v0.73.1/packages/ai"
+      ]
+    },
+    {
+      "id": "research/omp-embedded@pi-coding-agent-18.0.8",
+      "attempt": "OMP embedded SDK/package",
+      "adapterStatus": "green-provider-free-on-unsupported-local-bun",
+      "stableAdmission": "blocked",
+      "package": {
+        "name": "@oh-my-pi/pi-coding-agent",
+        "version": "18.0.8",
+        "license": "MIT",
+        "declaredEngine": "bun >=1.3.14",
+        "unpackedBytes": 45996922,
+        "integrity": "sha512-ZdSj93aSrxbjP3PWqm1Q/jbX9hr3LtFNCpmpTb4EwlYwBClroAJChmuPmC0+gDqECf276Xo/m/QoezlrPg9zsA==",
+        "shasum": "ebdf4c37d7768c867a436bdeb3164483f75c87fb",
+        "repository": "https://github.com/can1357/oh-my-pi",
+        "repositoryDirectory": "packages/coding-agent",
+        "sourceTag": "v18.0.8",
+        "sourceCommit": "caefa610239e9611e7a8920e91b38b30a58efa73",
+        "aiPackage": {
+          "name": "@oh-my-pi/pi-ai",
+          "version": "18.0.8",
+          "unpackedBytes": 7097057,
+          "integrity": "sha512-PRqG3mMeMUzdo+OJs1Mb7K4I2rOYmpE2OxPL9FOdoHkyfXbGLemOPW1sYiUF5qZvbKy3b5Nr9cfRXyIhtOPSRw==",
+          "shasum": "a13c45cf242e943a87e951c9230c21163b863816"
+        }
+      },
+      "authAndBilling": {
+        "claim": "The lab marks both as harness-managed because no primary-source, provider-free proof of the intended account/subscription route was completed.",
+        "stableEvidence": false
+      },
+      "transport": {
+        "implementation": "createAgentSession receives runtimeImageUtf8 as its only system prompt, taskEnvelope separately, isolated Settings, empty contexts/rules/skills/templates/slash commands, no UI/MCP/LSP/IRC, extension discovery disabled, and a restricted tool list including task.",
+        "ambientIsolation": "resource-discovery isolated; process environment not isolated",
+        "cancellation": "AbortSignal invokes AgentSession.abort(reason); unsubscribe and async dispose always run.",
+        "terminal": "agent_end is mandatory; settlement without it throws.",
+        "providerFreeEvidence": "Real OMP settings/session options are built and a fake session boundary exercises prompt, events, cancellation and disposal."
+      },
+      "cleanInstall": {
+        "command": "bun init -y; bun add --exact --ignore-scripts @oh-my-pi/pi-ai@18.0.8 @oh-my-pi/pi-coding-agent@18.0.8",
+        "nodeModulesKiB": 850592,
+        "packageManifestCount": 160,
+        "lockfileBytes": 49714,
+        "blockedLifecycleScripts": [
+          "onnxruntime-node postinstall",
+          "protobufjs postinstall"
+        ]
+      },
+      "packaging": {
+        "compileCommand": "bun run ./scripts/compile-omp.ts",
+        "artifactBytes": 81284976,
+        "sidecars": [
+          {
+            "path": "pi_natives.darwin-arm64.node",
+            "bytes": 150666976,
+            "sha256": "d99c805bfdd54cae06a49df2e5f567b8c6ec9e0de8a582648a67064a17f686c5",
+            "reason": "The pure compiled artifact failed to load the platform N-API addon."
+          }
+        ],
+        "externalized": [
+          {
+            "specifier": "omp-legacy-pi-modules",
+            "reason": "Bun compilation otherwise fails to resolve this optional legacy compatibility import; extension discovery is disabled in the tested profile."
+          }
+        ],
+        "status": "green-two-file-darwin-arm64"
+      },
+      "blockers": [
+        "The observed Bun 1.3.5 is below the package's declared >=1.3.14 support floor; import/tests/compile succeeding is not a supported-runtime qualification.",
+        "The in-process session surface has no per-session environment boundary; the SDK and spawned tools can observe the host process environment unless the adapter owns an isolated worker/process.",
+        "additionalDirectories has no equivalent in the tested session options and needs a declared compatibility policy.",
+        "Authentication, billing and real cancellation/failure behavior are not proven.",
+        "The large platform native sidecar and optional legacy import need a release policy and cross-platform matrix.",
+        "Language-owned subagent semantic conformance remains unrun."
+      ],
+      "primarySources": [
+        "https://github.com/can1357/oh-my-pi/tree/v18.0.8/packages/coding-agent",
+        "https://github.com/can1357/oh-my-pi/tree/v18.0.8/packages/ai"
+      ]
+    }
+  ],
+  "historicalRecovery": {
+    "commit": "5e1d5b49e22379765c2c053c8d94b4f1c6c946af",
+    "path": "tools/cli",
+    "recover": [
+      "Injected SDK factory/query seams and dynamic imports",
+      "Typed event streams with separate stdout/stderr evidence",
+      "Explicit cwd/additional-directory and cancellation forwarding",
+      "Hostile installer tests for shell syntax, dry run, unsafe labels, runtime absence, checksums, archive roots, escaping symlinks and hardlinks",
+      "Package bin/main/exports checks and an explicit opt-in smoke harness"
+    ],
+    "reject": [
+      "Automatic skill installation/loading and language-specific canonicalPrompt/command semantics",
+      "Ambient process.env, user/project configuration, or credential fallback as benchmark inputs",
+      "SDK selection implicitly changing billing policy",
+      "Single-child cancellation and flattening to exit 143 without normalized settlement evidence",
+      "Success without a provider-declared terminal event",
+      "Unbounded stream forwarding without backpressure/lifecycle ownership"
+    ]
+  }
+}

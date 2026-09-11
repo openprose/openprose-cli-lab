@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openprose.dev/schemas/windows-launch-profile-v1.json",
+  "title": "OpenProse non-admitting Windows launch profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "profileId", "adapterId", "status", "platform", "harnessVersion",
+    "versionPattern", "resolution", "artifacts", "manifest", "argvPrefix",
+    "fixedEnvironment", "inheritedEnvironmentNames", "strippedEnvironmentNames", "claims"
+  ],
+  "properties": {
+    "schema": {"const": "openprose.windows-launch-profile/1"},
+    "profileId": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/@-]*$"},
+    "adapterId": {"type": "string", "pattern": "^[A-Za-z0-9._-]+/[A-Za-z0-9._-]+$"},
+    "status": {"enum": ["provider-free-fixture", "research-feasible-non-admitted"]},
+    "platform": {"enum": ["win32-x64", "win32-arm64"]},
+    "harnessVersion": {"type": "string", "minLength": 1, "maxLength": 128},
+    "versionPattern": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "resolution": {
+      "oneOf": [
+        {"$ref": "#/$defs/directNativeResolution"},
+        {"$ref": "#/$defs/packageNativeResolution"},
+        {"$ref": "#/$defs/runtimeEntrypointResolution"}
+      ]
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "manifest": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/manifest"}
+      ]
+    },
+    "argvPrefix": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifactRole"],
+        "properties": {"artifactRole": {"const": "entrypoint"}}
+      }
+    },
+    "fixedEnvironment": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "value"],
+        "properties": {
+          "name": {"$ref": "#/$defs/environmentName"},
+          "value": {"type": "string", "maxLength": 32766}
+        }
+      }
+    },
+    "inheritedEnvironmentNames": {"$ref": "#/$defs/environmentNames"},
+    "strippedEnvironmentNames": {"$ref": "#/$defs/environmentNames"},
+    "claims": {"$ref": "#/$defs/claims"}
+  },
+  "$defs": {
+    "safeRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32766,
+      "pattern": "^(?![/\\\\])(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))(?!.*[\\u0000-\\u001f<>:\"|?*]).+$"
+    },
+    "commandNames": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"}
+    },
+    "directNativeResolution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "commandNames", "application"],
+      "properties": {
+        "kind": {"const": "native-executable"},
+        "commandNames": {"$ref": "#/$defs/commandNames"},
+        "application": {"type": "string", "pattern": "^(?![/\\\\])(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))(?!.*[\\u0000-\\u001f<>:\"|?*]).+\\.[Ee][Xx][Ee]$", "maxLength": 32766}
+      }
+    },
+    "packageNativeResolution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "commandNames", "application", "packageName", "packageRootLayouts", "manifestPath"],
+      "properties": {
+        "kind": {"const": "native-executable"},
+        "commandNames": {"$ref": "#/$defs/commandNames"},
+        "application": {"type": "string", "pattern": "^(?![/\\\\])(?!.*(?:^|[/\\\\])\\.\\.(?:[/\\\\]|$))(?!.*[\\u0000-\\u001f<>:\"|?*]).+\\.[Ee][Xx][Ee]$", "maxLength": 32766},
+        "packageName": {"type": "string", "pattern": "^(?:@[A-Za-z0-9._-]+/)?[A-Za-z0-9._-]+$"},
+        "packageRootLayouts": {
+          "type": "array", "minItems": 1, "maxItems": 8, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 14, "maxLength": 32766}
+        },
+        "manifestPath": {"$ref": "#/$defs/safeRelativePath"}
+      }
+    },
+    "runtimeEntrypointResolution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["kind", "commandNames", "runtimeApplication", "packageName", "packageRootLayouts", "entrypoint", "manifestPath"],
+      "properties": {
+        "kind": {"const": "runtime-entrypoint"},
+        "commandNames": {"$ref": "#/$defs/commandNames"},
+        "runtimeApplication": {"type": "string", "pattern": "^[A-Za-z0-9._-]+\\.[Ee][Xx][Ee]$"},
+        "packageName": {"type": "string", "pattern": "^(?:@[A-Za-z0-9._-]+/)?[A-Za-z0-9._-]+$"},
+        "packageRootLayouts": {
+          "type": "array", "minItems": 1, "maxItems": 8, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 14, "maxLength": 32766}
+        },
+        "entrypoint": {"$ref": "#/$defs/safeRelativePath"},
+        "manifestPath": {"$ref": "#/$defs/safeRelativePath"}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["role", "path", "size", "sha256", "format"],
+      "properties": {
+        "role": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._/@-]*$"},
+        "path": {"$ref": "#/$defs/safeRelativePath"},
+        "size": {"type": "integer", "minimum": 1, "maximum": 1073741824},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "format": {"enum": ["pe-x64", "pe-arm64", "utf8-lf", "json-utf8", "canonical-json-lf"]}
+      }
+    },
+    "manifest": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifactRole", "match", "expected"],
+      "properties": {
+        "artifactRole": {"const": "package-manifest"},
+        "match": {"const": "exact-object"},
+        "expected": {"type": "object"}
+      }
+    },
+    "environmentName": {"type": "string", "pattern": "^[A-Z_][A-Z0-9_]*$"},
+    "environmentNames": {
+      "type": "array", "maxItems": 128, "uniqueItems": true,
+      "items": {"$ref": "#/$defs/environmentName"}
+    },
+    "claims": {
+      "type": "object", "additionalProperties": false,
+      "required": ["productAdmission", "semanticConformance", "releaseEligibility"],
+      "properties": {
+        "productAdmission": {"const": false},
+        "semanticConformance": {"const": false},
+        "releaseEligibility": {"const": false}
+      }
+    }
+  }
+}

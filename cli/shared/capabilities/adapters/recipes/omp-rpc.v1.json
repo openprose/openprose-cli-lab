@@ -1,0 +1,127 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "omp-rpc-v1",
+  "adapterId": "omp/rpc",
+  "state": "frozen",
+  "runtime": "installed-process",
+  "identity": {
+    "kind": "executable",
+    "executableNames": ["omp"],
+    "packageIdentity": "@oh-my-pi/pi-coding-agent@18.0.9"
+  },
+  "support": {
+    "versionRange": "=18.0.9",
+    "admittedVersions": ["18.0.9"],
+    "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9",
+    "runtimePrerequisites": [
+      {
+        "runtime": "bun",
+        "versionRange": ">=1.3.14",
+        "repairCommand": "npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9"
+      }
+    ],
+    "platforms": ["darwin-arm64", "linux-x64"]
+  },
+  "probe": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--version" }
+    ],
+    "timeoutMs": 5000,
+    "versionPattern": "^omp/[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$",
+    "versionStream": "stdout"
+  },
+  "launch": {
+    "argv": [
+      { "value": "executable" },
+      { "literal": "--mode" },
+      { "literal": "rpc" },
+      { "literal": "--no-session" },
+      { "literal": "--no-extensions" },
+      { "literal": "--no-skills" },
+      { "literal": "--no-rules" },
+      { "literal": "--no-lsp" },
+      { "literal": "--no-title" },
+      { "literal": "--no-tools" },
+      { "literal": "--append-system-prompt" },
+      { "value": "image-path" },
+      { "literal": "--config" },
+      { "value": "rendered-config-path" }
+    ],
+    "optionalArgv": [
+      {
+        "when": "model-present",
+        "placement": "before-final-pair",
+        "argv": [
+          { "literal": "--model" },
+          { "value": "model" }
+        ]
+      }
+    ],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "protocol",
+    "stdinLifecycle": "close-after-terminal-event",
+    "stdoutProtocol": "json-rpc",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "system-append",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": true
+    },
+    "imageDelivery": {
+      "mechanism": "file",
+      "field": "--append-system-prompt",
+      "encoding": "raw-bytes"
+    },
+    "taskDelivery": {
+      "mechanism": "rpc-field",
+      "field": "prompt.message",
+      "encoding": "json-utf8"
+    },
+    "controls": {
+      "ownedConfigOverlay": {
+        "argvFlag": "--config",
+        "value": "rendered-config-path",
+        "encoding": "utf8",
+        "mode": "0600",
+        "bytes": "retry:\n  enabled: false\ndisabledProviders:\n  - native\n  - omp-plugins\n  - claude\n  - agent-plugins\n  - claude-plugins\n  - codex\n  - gemini\n  - opencode\n  - cursor\n  - windsurf\n  - vscode\n  - mcp-json\n",
+        "byteLength": 200,
+        "sha256": "47b1a27639ab8d5ecd52abbb5326354419583b7b781ceb66935c822f789d2779",
+        "precedence": "final-cli-overlay"
+      },
+      "protocolPrelude": {
+        "barrierEvent": "available_commands_update",
+        "stateRequestType": "get_state",
+        "stateRequestIdSuffix": "omp.state.1",
+        "promptRequestIdSuffix": "omp.prompt.1",
+        "requiredStateDataArrayField": "dumpTools",
+        "requiredStateDataArrayLength": 0
+      }
+    }
+  },
+  "isolation": {
+    "guarantee": "unsupported",
+    "ambientDisabled": ["user-skills", "project-skills", "mcp", "auto-discovered-openprose"],
+    "preserved": ["native-safety-prompt", "managed-policy", "selected-permissions", "harness-auth"]
+  },
+  "cancellation": {
+    "protocol": "documented-protocol",
+    "containment": "unsupported",
+    "graceMs": 2000,
+    "hardKillAfterMs": 5000
+  },
+  "auth": {
+    "category": "harness-managed",
+    "readinessProbe": "none; actual run is the first authentication authority",
+    "secretsInArgv": false
+  },
+  "billingOwner": "user-provider",
+  "requiredTerminal": {
+    "event": "agent_end with isTerminal true followed by process exit 0 after stdin close",
+    "acceptableExitCodes": [0],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": []
+}

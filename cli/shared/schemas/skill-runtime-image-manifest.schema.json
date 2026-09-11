@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/skill-runtime-image-manifest.schema.json",
+  "title": "OpenProse Skill Runtime Image manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "imageFormatVersion", "imageVersion", "languageVersion",
+    "skillVersion", "runtimeContractVersion", "semanticSourceRevision",
+    "purpose", "releaseEligible", "normalization", "payload", "modelVisibleBytes",
+    "aggregateSha256", "instructionPlacements", "taskEnvelope",
+    "oneFieldFraming", "terminalEnvelope", "minimumTransportRequirements"
+  ],
+  "properties": {
+    "schema": { "const": "openprose.skill-runtime-image-manifest/1" },
+    "imageFormatVersion": { "const": "openprose.skill-runtime-image/1" },
+    "imageVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "languageVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "skillVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "runtimeContractVersion": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "semanticSourceRevision": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+    "purpose": { "enum": ["canonical-language-runtime", "functional-alpha-placeholder", "sentinel-transport-test"] },
+    "releaseEligible": { "type": "boolean" },
+    "normalization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["encoding", "newlines", "byteOrderMark", "pathSeparator"],
+      "properties": {
+        "encoding": { "const": "utf-8" },
+        "newlines": { "const": "lf" },
+        "byteOrderMark": { "const": "forbidden" },
+        "pathSeparator": { "const": "/" }
+      }
+    },
+    "payload": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["path", "mediaType", "byteLength", "sha256"],
+        "properties": {
+          "path": {
+            "type": "string",
+            "pattern": "^payload/[A-Za-z0-9._/-]+$",
+            "not": { "pattern": "(^|/)\\.\\.?(/|$)" }
+          },
+          "mediaType": { "const": "text/markdown; charset=utf-8" },
+          "byteLength": { "type": "integer", "minimum": 1 },
+          "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+        }
+      }
+    },
+    "modelVisibleBytes": {
+      "description": "Exact byte serialization delivered through a single model-visible instruction channel.",
+      "type": "object", "additionalProperties": false,
+      "required": ["serialization", "byteLength", "sha256"],
+      "properties": {
+        "serialization": { "const": "ordered-raw-concatenation-v1" },
+        "byteLength": { "type": "integer", "minimum": 1 },
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "aggregateSha256": {
+      "type": "object", "additionalProperties": false,
+      "required": ["algorithm", "sha256"],
+      "properties": {
+        "algorithm": { "const": "sha256-path-length-nul-v1" },
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "instructionPlacements": {
+      "description": "Ordered preference list. Adapters select the first supported entry without ranking it themselves.",
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["id", "strictness", "preservesHarnessBasePrompt"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z][a-z0-9._-]*$" },
+          "strictness": { "enum": ["strict", "degraded"] },
+          "preservesHarnessBasePrompt": { "type": "boolean" }
+        }
+      }
+    },
+    "taskEnvelope": { "$ref": "#/$defs/externalSchemaArtifact" },
+    "oneFieldFraming": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "path", "sha256"],
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "path": {
+          "type": "string",
+          "pattern": "^contracts/[A-Za-z0-9._/-]+$",
+          "not": { "pattern": "(^|/)\\.\\.?(/|$)" }
+        },
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    },
+    "terminalEnvelope": { "$ref": "#/$defs/externalSchemaArtifact" },
+    "minimumTransportRequirements": {
+      "type": "object", "additionalProperties": false,
+      "required": ["nonInteractive", "structuredOutput", "ambientIsolation", "terminalEnvelope", "boundedStreaming"],
+      "properties": {
+        "nonInteractive": { "const": "required" },
+        "structuredOutput": { "const": "required" },
+        "ambientIsolation": { "const": "required" },
+        "terminalEnvelope": { "const": "required" },
+        "boundedStreaming": { "const": "required" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "purpose": { "const": "sentinel-transport-test" } }, "required": ["purpose"] },
+      "then": { "properties": { "releaseEligible": { "const": false } } }
+    },
+    {
+      "if": { "properties": { "releaseEligible": { "const": true } }, "required": ["releaseEligible"] },
+      "then": {
+        "properties": {
+          "purpose": { "enum": ["canonical-language-runtime", "functional-alpha-placeholder"] }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "externalSchemaArtifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schemaId", "path", "sha256"],
+      "properties": {
+        "schemaId": { "$ref": "common.schema.json#/$defs/nonEmptyString" },
+        "path": {
+          "type": "string",
+          "pattern": "^contracts/[A-Za-z0-9._/-]+$",
+          "not": { "pattern": "(^|/)\\.\\.?(/|$)" }
+        },
+        "sha256": { "$ref": "common.schema.json#/$defs/sha256" }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "openprose.account-status/1",
+  "availability": "unavailable",
+  "authenticated": null,
+  "authCategory": "openprose-account",
+  "billingOwner": "openprose",
+  "credentialStorage": "unavailable",
+  "problem": {
+    "schema": "openprose.runner-error/1",
+    "code": "HOSTED_UNAVAILABLE",
+    "boundary": "hosted-service",
+    "message": "OpenProse-billed execution is not available in this build.",
+    "action": "Select an available BYO harness with the `cli harness use <id>` runner operation, then invoke the `cli doctor` runner operation.",
+    "exitCode": 10,
+    "retryable": false,
+    "details": { "billingOwner": "openprose", "fallbackSelected": false }
+  }
+}

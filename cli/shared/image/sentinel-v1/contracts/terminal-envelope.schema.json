@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/sentinel/v1/terminal-envelope.schema.json",
+  "title": "Release-ineligible sentinel terminal envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "semanticStatus", "marker"],
+  "properties": {
+    "schema": { "const": "openprose.sentinel-terminal-envelope/1" },
+    "semanticStatus": { "const": "not-applicable" },
+    "marker": { "const": "OPENPROSE_SENTINEL_TERMINAL_V1" }
+  }
+}

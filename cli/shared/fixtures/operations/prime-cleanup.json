@@ -1,0 +1,9 @@
+{
+  "schema": "openprose.prime-cleanup/1",
+  "adapterId": "prime/rpc",
+  "cleanupHandle": "prime-v1.openprose-prime-Ab12-x.018f47a6-7d2c-7b10-8a2e-1a2b3c4d5e6f",
+  "status": "cleaned",
+  "serviceSettlement": "verified",
+  "sensitiveFilesRemoved": true,
+  "directoryRemoved": true
+}

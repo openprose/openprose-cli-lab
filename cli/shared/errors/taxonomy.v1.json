@@ -1,0 +1,173 @@
+{
+  "schema": "openprose.runner-error-taxonomy/1",
+  "errors": [
+    {
+      "code": "CONFIG_INVALID",
+      "boundary": "configuration",
+      "exitCode": 2,
+      "retryable": false,
+      "message": "Runner configuration is invalid.",
+      "action": "Correct or remove the reported configuration source or setting, then invoke the `cli config explain` runner operation to verify the repair."
+    },
+    {
+      "code": "INVOCATION_INVALID",
+      "boundary": "invocation",
+      "exitCode": 2,
+      "retryable": false,
+      "message": "Runner invocation is invalid.",
+      "action": "Review the runner syntax with the --help option, place global options before cli, and retry the command."
+    },
+    {
+      "code": "HARNESS_UNAVAILABLE",
+      "boundary": "adapter",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "The selected harness executable is unavailable.",
+      "action": "Install the selected harness and ensure its executable is on PATH, then invoke the `cli doctor` runner operation."
+    },
+    {
+      "code": "HARNESS_INCOMPATIBLE",
+      "boundary": "adapter",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "The selected harness version is incompatible with this adapter.",
+      "action": "Run the exact Repair command reported with this error, then retry."
+    },
+    {
+      "code": "HARNESS_NEEDS_AUTH",
+      "boundary": "authentication",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "The selected harness is not authenticated.",
+      "action": "Sign in with the selected harness. For Codex, run `codex login`; for Claude, run `claude auth login`; for Prime or OMP cached login, select its explicit harness-login `--auth-profile`; for API-key routes, configure the selected profile. Then retry."
+    },
+    {
+      "code": "TRANSPORT_UNSUPPORTED",
+      "boundary": "adapter",
+      "exitCode": 20,
+      "retryable": false,
+      "message": "The selected harness does not support the requested transport.",
+      "action": "Choose a transport listed for this harness by the `cli harness list` runner operation."
+    },
+    {
+      "code": "PROMPT_CHANNEL_UNSUPPORTED",
+      "boundary": "adapter",
+      "exitCode": 20,
+      "retryable": false,
+      "message": "The selected adapter cannot use a manifest-permitted instruction placement.",
+      "action": "Choose a strict adapter reported by the `cli harness list` runner operation."
+    },
+    {
+      "code": "IMAGE_INVALID",
+      "boundary": "image",
+      "exitCode": 20,
+      "retryable": false,
+      "message": "The Skill Runtime Image failed structural or digest verification.",
+      "action": "Reinstall this OpenProse CLI artifact from a verified release."
+    },
+    {
+      "code": "IMAGE_TOO_LARGE",
+      "boundary": "image",
+      "exitCode": 20,
+      "retryable": false,
+      "message": "The Skill Runtime Image exceeds the selected transport limit.",
+      "action": "Choose an adapter whose reported image limit accepts this image version."
+    },
+    {
+      "code": "RECURSIVE_INVOCATION",
+      "boundary": "invocation",
+      "exitCode": 20,
+      "retryable": false,
+      "message": "A prose wrapper invocation attempted to enter itself recursively.",
+      "action": "Run the harness directly for the interactive skill path, or select a harness executable that is not this wrapper."
+    },
+    {
+      "code": "STARTUP_TIMEOUT",
+      "boundary": "process",
+      "exitCode": 21,
+      "retryable": true,
+      "message": "The selected harness did not start before the startup deadline.",
+      "action": "Check the harness with the `cli doctor` runner operation and retry with an appropriate `--timeout`."
+    },
+    {
+      "code": "PROTOCOL_MALFORMED",
+      "boundary": "protocol",
+      "exitCode": 22,
+      "retryable": false,
+      "message": "The harness emitted a malformed or out-of-order structured record.",
+      "action": "Invoke the `cli doctor` runner operation and install a harness version supported by the selected adapter."
+    },
+    {
+      "code": "PROTOCOL_TRUNCATED",
+      "boundary": "protocol",
+      "exitCode": 22,
+      "retryable": true,
+      "message": "The harness stream ended before its required terminal record.",
+      "action": "Retry once; if the problem persists, invoke the `cli doctor` runner operation and inspect sanitized diagnostics."
+    },
+    {
+      "code": "HARNESS_FAILED",
+      "boundary": "process",
+      "exitCode": 22,
+      "retryable": false,
+      "message": "The harness failed before a valid semantic terminal result was accepted.",
+      "action": "Inspect the harness diagnostic on stderr and invoke the `cli doctor` runner operation."
+    },
+    {
+      "code": "SEMANTIC_STATUS_UNKNOWN",
+      "boundary": "semantic-terminal",
+      "exitCode": 23,
+      "retryable": false,
+      "message": "Transport completed without a trustworthy OpenProse semantic status.",
+      "action": "Choose a strict adapter that carries the image's terminal envelope."
+    },
+    {
+      "code": "CANCELLED",
+      "boundary": "process",
+      "exitCode": 24,
+      "retryable": true,
+      "message": "The runner was cancelled before semantic completion.",
+      "action": "Retry the command when you are ready to let it complete."
+    },
+    {
+      "code": "PROCESS_CLEANUP_FAILED",
+      "boundary": "cleanup",
+      "exitCode": 25,
+      "retryable": false,
+      "message": "The runner could not verify cleanup of its direct child, original process group, or owned harness service.",
+      "action": "Inspect only the reported child, process group, or owned harness service; do not stop unrelated services. Then invoke the `cli doctor` runner operation before retrying."
+    },
+    {
+      "code": "HOSTED_UNAVAILABLE",
+      "boundary": "hosted-service",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "OpenProse-billed execution is not available in this build.",
+      "action": "Select an available BYO harness with the `cli harness use <id>` runner operation, then invoke the `cli doctor` runner operation."
+    },
+    {
+      "code": "HOSTED_AUTH_REQUIRED",
+      "boundary": "authentication",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "An OpenProse account is required for OpenProse-billed execution.",
+      "action": "Invoke the `cli auth login` runner operation, then retry."
+    },
+    {
+      "code": "HOSTED_QUOTA_EXCEEDED",
+      "boundary": "hosted-service",
+      "exitCode": 10,
+      "retryable": false,
+      "message": "The OpenProse account has no available execution quota.",
+      "action": "Review OpenProse billing or quota status with the `cli auth status` runner operation."
+    },
+    {
+      "code": "INTERNAL_ERROR",
+      "boundary": "runner",
+      "exitCode": 70,
+      "retryable": false,
+      "message": "The runner encountered an internal fault.",
+      "action": "Retry with `--verbose` and report the sanitized diagnostic identifier."
+    }
+  ]
+}

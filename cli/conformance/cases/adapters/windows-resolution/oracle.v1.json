@@ -1,0 +1,337 @@
+{
+  "schema": "openprose.windows-resolution-oracle/1",
+  "oracleVersion": "1.0.0",
+  "frozenAt": "2026-08-28",
+  "scope": "Provider-free Windows installed-process discovery and launch identity only; no harness, wrapper, language, semantic, or release admission.",
+  "invariants": {
+    "shell": false,
+    "outerPty": false,
+    "shimPolicy": "cmd-bat-ps1-never-read-never-executed",
+    "application": "absolute-authenticated-exe-only",
+    "probeAuthority": "artifact-profile-before-version-probe",
+    "ambiguity": "fail-closed",
+    "packageMetadata": "evidence-matching-frozen-profile-not-self-admission",
+    "runtimeEntrypoint": "application-entrypoint-manifest-and-complete-load-bearing-closure-required",
+    "credentials": "names-only-closed-environment-never-argv-or-evidence",
+    "languageOpacity": true
+  },
+  "claims": {
+    "productAdmission": false,
+    "strictWrapperAdmission": false,
+    "semanticConformance": false,
+    "releaseEligibility": false
+  },
+  "researchProfiles": [
+    {
+      "schema": "openprose.windows-launch-profile/1",
+      "profileId": "research/codex-npm-win32-x64-0.149.0-alpha.4",
+      "adapterId": "codex/exec-json",
+      "status": "research-feasible-non-admitted",
+      "platform": "win32-x64",
+      "harnessVersion": "0.149.0-alpha.4",
+      "versionPattern": "^codex-cli 0\\.149\\.0-alpha\\.4$",
+      "resolution": {
+        "kind": "native-executable",
+        "commandNames": ["codex"],
+        "application": "vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+        "packageName": "@openai/codex-win32-x64",
+        "packageRootLayouts": ["node_modules/{packageName}"],
+        "manifestPath": "package.json"
+      },
+      "artifacts": [
+        {
+          "role": "application",
+          "path": "vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+          "size": 297316144,
+          "sha256": "51adce0b4b8f7f43629dc8a78dccc8c95ac6dad30848bf449faed05665cf97c9",
+          "format": "pe-x64"
+        },
+        {
+          "role": "code-mode-host",
+          "path": "vendor/x86_64-pc-windows-msvc/bin/codex-code-mode-host.exe",
+          "size": 65882416,
+          "sha256": "e6545811b85a226a8602b4a3c0c8b3203e688fd084372b41962497409275de26",
+          "format": "pe-x64"
+        },
+        {
+          "role": "command-runner",
+          "path": "vendor/x86_64-pc-windows-msvc/codex-resources/codex-command-runner.exe",
+          "size": 8160048,
+          "sha256": "9d83ce0790c63e22c9c466d9258f12f6414545f0291e8fc8b26a4b92f7c56028",
+          "format": "pe-x64"
+        },
+        {
+          "role": "sandbox-setup",
+          "path": "vendor/x86_64-pc-windows-msvc/codex-resources/codex-windows-sandbox-setup.exe",
+          "size": 15415600,
+          "sha256": "b3f81f743009c391b16b66b0d79a128a27ae00fad8a688482f26e7cae93abe6c",
+          "format": "pe-x64"
+        },
+        {
+          "role": "bundled-rg",
+          "path": "vendor/x86_64-pc-windows-msvc/codex-path/rg.exe",
+          "size": 4218880,
+          "sha256": "14231169855ec5205cf5a1b6f1db358ff4aed4247c86b69ce8aae647c77f6680",
+          "format": "pe-x64"
+        },
+        {
+          "role": "package-layout-manifest",
+          "path": "vendor/x86_64-pc-windows-msvc/codex-package.json",
+          "size": 223,
+          "sha256": "bf5638267ff76323f640a0df7ff10198a4fc39de8f2830156161baff6a977be4",
+          "format": "json-utf8"
+        },
+        {
+          "role": "package-manifest",
+          "path": "package.json",
+          "size": 519,
+          "sha256": "53edb7800a0a61046f92e4d3cb3d22f3d75f0be425be5200cc81c7a95bcfbc13",
+          "format": "json-utf8"
+        }
+      ],
+      "manifest": {
+        "artifactRole": "package-manifest",
+        "match": "exact-object",
+        "expected": {
+          "name": "@openai/codex",
+          "version": "0.149.0-alpha.4-win32-x64",
+          "license": "Apache-2.0",
+          "os": ["win32"],
+          "cpu": ["x64"],
+          "files": ["vendor"],
+          "repository": {
+            "type": "git",
+            "url": "git+https://github.com/openai/codex.git",
+            "directory": "codex-cli"
+          },
+          "engines": {"node": ">=16"},
+          "packageManager": "pnpm@10.33.0+sha512.10568bb4a6afb58c9eb3630da90cc9516417abebd3fabbe6739f0ae795728da1491e9db5a544c76ad8eb7570f5c4bb3d6c637b2cb41bfdcdb47fa823c8649319"
+        }
+      },
+      "argvPrefix": [],
+      "fixedEnvironment": [],
+      "inheritedEnvironmentNames": [
+        "PATH", "USERPROFILE", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT", "TMP", "TEMP",
+        "LANG", "LC_ALL", "LC_CTYPE", "TZ", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME",
+        "SSH_AUTH_SOCK", "CODEX_HOME", "CODEX_SQLITE_HOME"
+      ],
+      "strippedEnvironmentNames": [
+        "OPENPROSE_TOKEN", "PROSE_TOKEN", "PROSE_BILLING_TOKEN", "OPENAI_API_KEY", "CODEX_ACCESS_TOKEN",
+        "CODEX_MANAGED_PACKAGE_ROOT", "CODEX_MANAGED_BY_NPM", "CODEX_MANAGED_BY_BUN", "CODEX_MANAGED_BY_PNPM"
+      ],
+      "claims": {
+        "productAdmission": false,
+        "semanticConformance": false,
+        "releaseEligibility": false
+      }
+    },
+    {
+      "schema": "openprose.windows-launch-profile/1",
+      "profileId": "research/claude-npm-win32-x64-2.1.243",
+      "adapterId": "claude/print-stream-json",
+      "status": "research-feasible-non-admitted",
+      "platform": "win32-x64",
+      "harnessVersion": "2.1.243",
+      "versionPattern": "^2\\.1\\.243(?: \\(Claude Code\\))?$",
+      "resolution": {
+        "kind": "native-executable",
+        "commandNames": ["claude"],
+        "application": "claude.exe",
+        "packageName": "@anthropic-ai/claude-code-win32-x64",
+        "packageRootLayouts": ["node_modules/{packageName}"],
+        "manifestPath": "package.json"
+      },
+      "artifacts": [
+        {
+          "role": "application",
+          "path": "claude.exe",
+          "size": 370827424,
+          "sha256": "895a32a66e8a35a85fc7b9488e9858387cfd96829efda0cab96d14ba8e28c200",
+          "format": "pe-x64"
+        },
+        {
+          "role": "package-manifest",
+          "path": "package.json",
+          "size": 272,
+          "sha256": "f3b636618446d9659de6f332ab2354a144863c3f021d30add5d4f25aab53cb47",
+          "format": "json-utf8"
+        }
+      ],
+      "manifest": {
+        "artifactRole": "package-manifest",
+        "match": "exact-object",
+        "expected": {
+          "name": "@anthropic-ai/claude-code-win32-x64",
+          "version": "2.1.243",
+          "description": "Native binary for Claude Code on win32-x64",
+          "os": ["win32"],
+          "cpu": ["x64"],
+          "license": "SEE LICENSE IN LICENSE.md",
+          "files": ["claude.exe", "README.md", "LICENSE.md"]
+        }
+      },
+      "argvPrefix": [],
+      "fixedEnvironment": [
+        {"name": "CLAUDE_CODE_INSTALLED_VIA_NPM_WRAPPER", "value": "1"}
+      ],
+      "inheritedEnvironmentNames": [
+        "PATH", "USERPROFILE", "SYSTEMROOT", "WINDIR", "COMSPEC", "PATHEXT", "TMP", "TEMP",
+        "LANG", "LC_ALL", "LC_CTYPE", "TZ", "XDG_CONFIG_HOME", "XDG_CACHE_HOME", "XDG_DATA_HOME",
+        "SSH_AUTH_SOCK"
+      ],
+      "strippedEnvironmentNames": [
+        "OPENPROSE_TOKEN", "PROSE_TOKEN", "PROSE_BILLING_TOKEN", "ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "CLAUDE_CODE_USE_VERTEX", "CLAUDE_CODE_USE_FOUNDRY"
+      ],
+      "claims": {
+        "productAdmission": false,
+        "semanticConformance": false,
+        "releaseEligibility": false
+      }
+    }
+  ],
+  "providerFreeProfiles": [
+    {
+      "schema": "openprose.windows-launch-profile/1",
+      "profileId": "provider-free/direct-shape-v1",
+      "adapterId": "fixture/direct",
+      "status": "provider-free-fixture",
+      "platform": "win32-x64",
+      "harnessVersion": "1.2.3",
+      "versionPattern": "^agent 1\\.2\\.3$",
+      "resolution": {
+        "kind": "native-executable",
+        "commandNames": ["agent"],
+        "application": "agent.exe"
+      },
+      "artifacts": [
+        {
+          "role": "application",
+          "path": "agent.exe",
+          "size": 135,
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "format": "pe-x64"
+        }
+      ],
+      "manifest": null,
+      "argvPrefix": [],
+      "fixedEnvironment": [],
+      "inheritedEnvironmentNames": ["USERPROFILE"],
+      "strippedEnvironmentNames": ["OPENPROSE_TOKEN"],
+      "claims": {
+        "productAdmission": false,
+        "semanticConformance": false,
+        "releaseEligibility": false
+      }
+    },
+    {
+      "schema": "openprose.windows-launch-profile/1",
+      "profileId": "provider-free/runtime-entrypoint-shape-v1",
+      "adapterId": "fixture/runtime",
+      "status": "provider-free-fixture",
+      "platform": "win32-x64",
+      "harnessVersion": "1.2.3",
+      "versionPattern": "^agent 1\\.2\\.3$",
+      "resolution": {
+        "kind": "runtime-entrypoint",
+        "commandNames": ["agent"],
+        "runtimeApplication": "node.exe",
+        "packageName": "example-runtime-agent",
+        "packageRootLayouts": ["node_modules/{packageName}"],
+        "entrypoint": "dist/cli.js",
+        "manifestPath": "package.json"
+      },
+      "artifacts": [
+        {
+          "role": "application",
+          "path": "node.exe",
+          "size": 135,
+          "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "format": "pe-x64"
+        },
+        {
+          "role": "entrypoint",
+          "path": "dist/cli.js",
+          "size": 29,
+          "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "format": "utf8-lf"
+        },
+        {
+          "role": "package-manifest",
+          "path": "package.json",
+          "size": 91,
+          "sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "format": "canonical-json-lf"
+        }
+      ],
+      "manifest": {
+        "artifactRole": "package-manifest",
+        "match": "exact-object",
+        "expected": {
+          "bin": {"agent": "dist/cli.js"},
+          "name": "example-runtime-agent",
+          "version": "1.2.3"
+        }
+      },
+      "argvPrefix": [{"artifactRole": "entrypoint"}],
+      "fixedEnvironment": [{"name": "OPENPROSE_RUNTIME_PROFILE", "value": "fixture-v1"}],
+      "inheritedEnvironmentNames": ["USERPROFILE"],
+      "strippedEnvironmentNames": ["OPENPROSE_TOKEN"],
+      "claims": {
+        "productAdmission": false,
+        "semanticConformance": false,
+        "releaseEligibility": false
+      }
+    }
+  ],
+  "blockedAdapters": [
+    {
+      "adapterId": "prime/rpc",
+      "frozenIdentity": "prime-agent command with @earendil-works/pi-coding-agent@0.8.1 source",
+      "windowsLaunchFeasible": false,
+      "reasons": [
+        "The frozen source package exposes pi rather than prime-agent.",
+        "No matching public prime-agent@0.8.1 distribution artifact was available when this oracle was frozen.",
+        "The Node entrypoint imports chunks, dependencies, and native addons whose complete Windows load-bearing closure is not frozen."
+      ],
+      "futureSafeRoute": "Publish and freeze a native Windows executable, or freeze a Node runtime plus complete package/dependency closure and exact command identity."
+    },
+    {
+      "adapterId": "omp/rpc",
+      "frozenIdentity": "@oh-my-pi/pi-coding-agent@18.0.9 exposing the omp Bun entrypoint",
+      "windowsLaunchFeasible": false,
+      "reasons": [
+        "The ordinary upstream package exposes a JavaScript entrypoint that requires Bun >=1.3.14 rather than a self-contained native Windows executable.",
+        "The Bun runtime, package entrypoint, transitive dependencies, and native-module closure have not been frozen as one authenticated Windows launch profile.",
+        "Source-level Windows support does not by itself preserve package identity and load-bearing bytes through shell-free installed resolution."
+      ],
+      "futureSafeRoute": "Freeze a Bun runtime plus the complete @oh-my-pi/pi-coding-agent package/dependency closure and launch its authenticated entrypoint directly, or publish and freeze a native Windows executable."
+    }
+  ],
+  "sources": [
+    {
+      "id": "codex-npm-0.149.0-alpha.4-win32-x64",
+      "kind": "official-npm-artifact",
+      "location": "@openai/codex@0.149.0-alpha.4-win32-x64",
+      "fact": "The platform artifact contains the profiled native executable, resource closure, and codex-package.json."
+    },
+    {
+      "id": "claude-release-2.1.243",
+      "kind": "official-signed-release-manifest-and-npm-artifact",
+      "location": "https://downloads.claude.ai/claude-code-releases/2.1.243/manifest.json",
+      "fact": "The signed release manifest binds the Windows x64 binary size and SHA-256 used here."
+    },
+    {
+      "id": "prime-source-bc0fa760",
+      "kind": "official-upstream-source",
+      "location": "https://github.com/PrimeIntellect-ai/prime-agent/tree/bc0fa7606abb3b7af0f765319518d255e6ae553d",
+      "fact": "The package manifest binds source version 0.8.1 and its pi Node entrypoint."
+    },
+    {
+      "id": "omp-source-v18.0.9",
+      "kind": "official-upstream-source-and-npm-artifact",
+      "location": "https://github.com/can1357/oh-my-pi/tree/v18.0.9",
+      "fact": "The 18.0.9 package exposes the omp entrypoint and requires Bun >=1.3.14; this oracle does not yet freeze its complete Windows runtime and dependency closure."
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "openprose.runner-case/1",
+  "id": "core.duplicate-output-jsonl-invalid",
+  "summary": "A later invalid duplicate output value does not discard the earlier selected JSONL error channel.",
+  "phase": 7,
+  "tags": ["invocation", "jsonl", "agent-dx", "differential", "fail-closed", "machine-output"],
+  "controls": {
+    "fixedInvocationId": "fixture-invocation-0001",
+    "fixedTimestamp": "2025-01-01T00:00:00Z",
+    "fixedMonotonicMs": 0,
+    "network": "denied"
+  },
+  "invocation": {
+    "argv": ["--output=jsonl", "--output=invalid", "cli", "doctor"],
+    "cwd": "{{WORKSPACE}}",
+    "environment": {}
+  },
+  "expected": {
+    "exitCode": 2,
+    "stdout": {
+      "kind": "jsonl",
+      "eventTypes": ["runner.failed"],
+      "terminalType": "runner.failed"
+    },
+    "stderr": { "kind": "empty" },
+    "startedHarness": false,
+    "errorCode": "INVOCATION_INVALID",
+    "errorAction": "Review the runner syntax with the --help option, place global options before cli, and retry the command."
+  }
+}
