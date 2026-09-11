@@ -113,6 +113,7 @@ export async function superviseStructuredProcess(request: ProcessSupervisionRequ
 
   const stdoutReader = startBoundedJsonLines(child.stdout as ReadableStream<Uint8Array>, limits, async (record) => {
     firstRecordObserved = true;
+    await request.onNativeRecord?.(record);
     const parsed = protocol.accept(record);
     if (parsed !== null) {
       events.push(parsed);

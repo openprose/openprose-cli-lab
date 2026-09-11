@@ -48,6 +48,7 @@ export interface ProcessSupervisionRequest {
    * Receives only protocol-validated assistant text. The reader awaits this
    * hook so a human output sink cannot be outrun by the harness stream.
    */
+  onNativeRecord?(record: unknown): void | Promise<void>;
   onAcceptedAssistantMessage?(text: string): void | Promise<void>;
 }
 

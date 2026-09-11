@@ -1143,6 +1143,7 @@ impl OmpStagedController {
 }
 
 struct InstalledRunObserver<'a> {
+    capture: Option<NativeCapture>,
     human: Option<InstalledHumanStream<'a>>,
     omp: Option<OmpStagedController>,
 }
@@ -1159,6 +1160,7 @@ impl std::fmt::Debug for InstalledRunObserver<'_> {
 
 impl RecordObserver for InstalledRunObserver<'_> {
     fn observe(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
+        if let Some(capture)=self.capture.as_mut(){capture.write(record)?;}
         let mut projection = None;
         if let Some(omp) = self.omp.as_mut() {
             omp.observe(record)?;
@@ -2017,11 +2019,15 @@ fn execute_installed_adapter(
     let omp_controller = launch
         .omp_prompt_bytes()
         .map(|bytes| OmpStagedController::new(&invocation_id, bytes.to_vec()));
+    let capture=match config.native_log.value.as_ref().map(|path|NativeCapture::open(path,secret_values.clone())).transpose(){
+       Ok(value)=>value,Err(_)=>return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Native log must be a new writable absolute path"),argv,config,image,mode,clock,ids)
+    };
     let mut run_observer = InstalledRunObserver {
+        capture,
         human: human_stream,
         omp: omp_controller,
     };
-    let supervised = if run_observer.human.is_some() || run_observer.omp.is_some() {
+    let supervised = if run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
         supervise_observed(process_spec, &adapter.protocol(), &mut run_observer)
     } else {
         supervise(process_spec, &adapter.protocol())
@@ -4597,4 +4603,32 @@ fn native_output_preserves_arbitrary_prose_without_an_envelope(){
 fn native_output_requires_a_native_terminal_before_rendering(){
  let records=vec![json!({"type":"thread.started","thread_id":"fixture"}),json!({"type":"turn.started"}),json!({"type":"item.completed","item":{"type":"agent_message","text":"arbitrary prose"}})];
  assert!(installed_adapters::normalize_transport(installed_adapters::InstalledAdapter::CodexExecJson,&records,"fixture").is_err());
+}
+
+struct NativeCapture { file:std::fs::File, secrets:Vec<String>, bytes:usize }
+impl NativeCapture {
+ fn open(path:&str,secrets:Vec<String>)->std::io::Result<Self>{
+   if !std::path::Path::new(path).is_absolute(){return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput,"absolute path required"));}
+   let mut options=std::fs::OpenOptions::new();options.write(true).create_new(true);
+   #[cfg(unix)] {use std::os::unix::fs::OpenOptionsExt;options.mode(0o600);}
+   Ok(Self {file:options.open(path)?,secrets,bytes:0})
+ }
+ fn write(&mut self,record:&Value)->Result<(),SupervisorFailure>{
+   fn scrub(value:&mut Value,secrets:&[String]){match value {Value::String(text)=>{for secret in secrets{if !secret.is_empty(){*text=text.replace(secret,"[REDACTED]");}}},Value::Array(items)=>for item in items{scrub(item,secrets)},Value::Object(items)=>for item in items.values_mut(){scrub(item,secrets)},_=>{}}}
+   let mut record=record.clone();scrub(&mut record,&self.secrets);
+   let mut bytes=serde_json::to_vec(&record).expect("native JSON");bytes.push(b'\n');
+   if self.bytes+bytes.len()>64*1024*1024{return Err(stream_observer_failure(FailureKind::Internal,"native capture size exceeded"));}
+   self.file.write_all(&bytes).map_err(|_|stream_observer_failure(FailureKind::Internal,"native capture write failed"))?;self.bytes+=bytes.len();Ok(())
+ }
+}
+
+#[test]
+fn native_capture_is_private_new_bounded_and_redacts_known_values(){
+ let dir=tempfile::tempdir().unwrap();let path=dir.path().join("native.jsonl");
+ let mut capture=NativeCapture::open(path.to_str().unwrap(),vec!["fixture-secret".into()]).unwrap();
+ capture.write(&json!({"type":"tool_call","text":"prefix fixture-secret suffix"})).unwrap();
+ assert!(NativeCapture::open(path.to_str().unwrap(),vec![]).is_err());
+ assert!(std::fs::read_to_string(&path).unwrap().contains("[REDACTED]"));
+ #[cfg(unix)] {use std::os::unix::fs::PermissionsExt;assert_eq!(std::fs::metadata(path).unwrap().permissions().mode() & 0o777,0o600);}
+ capture.bytes=64*1024*1024;assert!(capture.write(&json!({"type":"final"})).is_err());
 }

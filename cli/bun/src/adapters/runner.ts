@@ -1,3 +1,4 @@
+import { NativeCapture } from "./native-capture";
 import { failure } from "../core/errors";
 import {
   createOmpControlOverlay,
@@ -141,7 +142,9 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     const assistantMessageSink = options.createAssistantMessageSink?.(protectedValues);
     const supervisedExecutable = options.fixtureInterpreter ?? options.executable;
     const supervisedArgv = options.fixtureInterpreter === undefined ? plan.argv.slice(1) : plan.argv;
-    const process = await superviseStructuredProcess({
+    const capture = new NativeCapture(options.nativeLog,protectedValues);
+    let process;
+    try { process = await superviseStructuredProcess({
       executable: supervisedExecutable,
       argv: supervisedArgv,
       cwd: options.invocation.cwd,
@@ -157,6 +160,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       runTimeoutMs: options.timeoutMs,
       graceMs: definition.recipe.cancellation.graceMs,
       hardKillAfterMs: definition.recipe.cancellation.hardKillAfterMs,
+      onNativeRecord:record=>capture.write(record),
       protocol: installedProtocol(
         options.adapterId,
         options.harnessVersion ?? null,
@@ -168,7 +172,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
         : { onAcceptedAssistantMessage: assistantMessageSink }),
       ...(options.cancelSignal === undefined ? {} : { cancelSignal: options.cancelSignal }),
       ...(options.platform === undefined ? {} : { platform: options.platform }),
-    });
+    }); } finally {capture.close();}
     return {
       plan,
       process,

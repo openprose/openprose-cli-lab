@@ -7,6 +7,7 @@ const valueOptions: Record<string, keyof GlobalFlags> = {
   "--cwd": "cwd",
   "--model": "model",
   "--auth-profile": "authProfile",
+  "--native-log": "nativeLog",
   "--output-contract": "outputContract",
   "--permission-mode": "permissionMode",
   "--timeout": "timeout",
@@ -31,6 +32,7 @@ function setValue(global: GlobalFlags, key: keyof GlobalFlags, value: string, op
   else if (key === "cwd") global.cwd = value;
   else if (key === "model") global.model = value;
   else if (key === "authProfile") global.authProfile = value;
+  else if (key === "nativeLog") global.nativeLog = value;
   else if (key === "outputContract") {
     if (value !== "native" && value !== "image-envelope") invalid("output contract must be native or image-envelope");
     global.outputContract = value;

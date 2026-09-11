@@ -1051,6 +1051,7 @@ async function runInstalledInvocation(
       ambient: dependencies.env,
       timeoutMs: parseDurationMs(config.values.timeout),
       model: config.values.model,
+      ...(config.values.nativeLog ? {nativeLog:config.values.nativeLog}:{}),
       permissionMode: config.values.permissionMode ?? null,
       wrapperExecutable: process.execPath,
       ...(mode !== "human"
