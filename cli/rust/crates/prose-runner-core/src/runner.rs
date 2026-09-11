@@ -2456,7 +2456,6 @@ fn installed_adapter_success_result(
     });
     if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
     if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
-    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,Some(&outcome.records)){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => {
@@ -2715,7 +2714,6 @@ fn render_installed_failure(
         "error":error
     });
     if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
-    if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
     if let Some(limits)=crate::config::native_output_limits(config){result["nativeOutputLimits"]=limits;}
     if let Some(native)=native_configuration(config,native_records){result["nativeConfiguration"]=native;}
     match mode {
