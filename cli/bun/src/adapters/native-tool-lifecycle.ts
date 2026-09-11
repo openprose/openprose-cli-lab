@@ -5,6 +5,17 @@ import type { RawTransportEvent } from "../supervision/types";
 const bad = (): never => { throw failure("PROTOCOL_MALFORMED", { reason: "Native tool lifecycle is malformed or out of order." }); };
 const object = (v: unknown): Record<string, any> => v !== null && typeof v === "object" && !Array.isArray(v) ? v as Record<string, any> : bad();
 const same = (a: unknown, b: unknown): boolean => isDeepStrictEqual(a,b);
+// OMP's schema validation may omit optional null fields before tool execution.
+// This is transport compatibility, not a claim of schema equivalence.
+export function nativeArgsMatch(actual: unknown, declared: unknown, omp:boolean):boolean {
+ if(!omp)return same(actual,declared);
+ if(Array.isArray(actual)&&Array.isArray(declared))return actual.length===declared.length&&actual.every((v,i)=>nativeArgsMatch(v,declared[i],true));
+ if(actual&&declared&&typeof actual==="object"&&typeof declared==="object"&&!Array.isArray(actual)&&!Array.isArray(declared)){
+   const a=actual as Record<string,unknown>,d=declared as Record<string,unknown>;
+   return Object.keys(a).every(k=>Object.hasOwn(d,k)&&nativeArgsMatch(a[k],d[k],true))&&Object.keys(d).every(k=>Object.hasOwn(a,k)||d[k]===null||d[k]==="null");
+ }
+ return same(actual,declared);
+}
 
 /** Native transport bookkeeping only. No language meaning or synthetic settlement. */
 export class NativeToolLifecycle {
@@ -94,9 +105,9 @@ export class NativeToolLifecycle {
         const c = this.calls.get(r.toolCallId) ?? bad();
         if (!this.turn || this.open || !c || r.toolName !== c.name) bad();
         if (r.type === "tool_execution_start") {
-          if (c.state !== "declared" || !same(r.args,c.args)) bad(); c.state = "started";
+          if (c.state !== "declared" || !nativeArgsMatch(r.args,c.args,this.omp)) bad(); c.state = "started";
         } else if (r.type === "tool_execution_update") {
-          if (c.state !== "started" || !same(r.args,c.args)) bad(); object(r.partialResult);
+          if (c.state !== "started" || !nativeArgsMatch(r.args,c.args,this.omp)) bad(); object(r.partialResult);
         } else {
           if (c.state !== "started" || typeof r.isError !== "boolean") bad(); object(r.result); c.result=r.result; c.isError=r.isError; c.state = "ended";
         }

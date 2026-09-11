@@ -23,3 +23,12 @@ for (const [id, frames] of [["prime/rpc",prime],["omp/rpc",omp]] as const) {
     expect(()=>[...frames.slice(0,cut+1),frames.find(f=>f.type==="agent_end")].forEach(f=>p.accept(f))).toThrow();
   });
 }
+
+test("OMP optional null omission preserves all non-null values",async()=>{
+ const {nativeArgsMatch}=await import("../src/adapters/native-tool-lifecycle");
+ const declared={op:"init",optional:null};
+ expect(nativeArgsMatch({op:"init"},declared,true)).toBe(true);
+ expect(nativeArgsMatch({op:"erase"},declared,true)).toBe(false);
+ expect(nativeArgsMatch({op:"init",extra:"invented"},declared,true)).toBe(false);
+ expect(nativeArgsMatch({op:"init"},declared,false)).toBe(false);
+});

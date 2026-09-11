@@ -325,12 +325,12 @@ pub(super) fn normalize(
                     return Err(bad());
                 }
                 if kind == "tool_execution_start" {
-                    if call.2 != 0 || r["args"] != call.1 {
+                    if call.2 != 0 || !native_args_match(&r["args"], &call.1, omp) {
                         return Err(bad());
                     }
                     call.2 = 1;
                 } else if kind == "tool_execution_update" {
-                    if call.2 != 1 || r["args"] != call.1 || !r["partialResult"].is_object() {
+                    if call.2 != 1 || !native_args_match(&r["args"], &call.1, omp) || !r["partialResult"].is_object() {
                         return Err(bad());
                     }
                 } else {
@@ -418,4 +418,21 @@ mod tests {
             assert!(normalize(&bad, "fixture-tools", omp, true).is_err());
         }
     }
+}
+
+// OMP may omit schema-optional null fields before native execution.
+fn native_args_match(actual:&Value,declared:&Value,omp:bool)->bool {
+ if !omp{return actual==declared;}
+ match (actual,declared){
+ (Value::Object(a),Value::Object(d))=>a.iter().all(|(k,v)|d.get(k).is_some_and(|other|native_args_match(v,other,true)))&&d.iter().all(|(k,v)|a.contains_key(k)||v.is_null()||v.as_str()==Some("null")),
+ (Value::Array(a),Value::Array(d))=>a.len()==d.len()&&a.iter().zip(d).all(|(v,o)|native_args_match(v,o,true)),
+ _=>actual==declared
+ }
+}
+#[test]
+fn omp_optional_null_omission_does_not_permit_changed_values(){
+ let declared=serde_json::json!({"op":"init","optional":null});
+ assert!(native_args_match(&serde_json::json!({"op":"init"}),&declared,true));
+ assert!(!native_args_match(&serde_json::json!({"op":"erase"}),&declared,true));
+ assert!(!native_args_match(&serde_json::json!({"op":"init"}),&declared,false));
 }
