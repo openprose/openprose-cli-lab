@@ -9,3 +9,11 @@ The installed Prime producer normally emits turn_start at each subsequent turn: 
 Provider-free tests cover a generic shared fixture, negative sequences, and an opt-in exact-recorded-prefix replay through PRIME_REPLAY_PATH. The captured prefix is incomplete and must remain incomplete; a separate synthetic continuation tests acceptance only once an actual test terminal record is supplied. No new live call is necessary to validate this observed parsing defect.
 
 Prime diagnostics now report the active native tool mode and its current state. They no longer show a stale phase from the earlier no-tool parser after switching modes.
+
+## Known Prime 0.7.0 event-loss case
+
+A separate observed native prefix omits both the current `turn_end` and the next `turn_start` before an empty assistant `message_start`. This exceeds the single missing-start compatibility rule above and remains rejected. No turn marker, tool result, or terminal completion is fabricated.
+
+A provider-free fixture using extracted installed Prime methods demonstrates that an extension-event exception can be swallowed by its session queue: the affected event is not forwarded, while later events continue. This is a possible native loss mechanism, not proof of the historical failure's cause. The installed harness has not been patched and the adapter remains strict for this discontinuity.
+
+Development evidence from the private expedition is retained separately in `lab/runs/strong-prime-diagnosis-v0` and `lab/runs/prime-queue-loss-mechanism-v0`, with source hashes and the controlled reproduction. These are diagnostic artifacts, not runner or language dependencies. No external issue report has been sent.
