@@ -122,6 +122,17 @@ class ClaudeProtocol extends InstalledProtocol {
       return this.start();
     }
     this.requireSession(record);
+    if (record.type === "system" && ["task_started", "task_progress", "task_updated", "task_notification"].includes(String(record.subtype))) {
+      if (typeof record.task_id !== "string" || !record.task_id || typeof record.uuid !== "string" || !record.uuid) malformed("Claude task identity missing.");
+      if (record.subtype === "task_started" && typeof record.description !== "string") malformed("Claude task description missing.");
+      if (record.subtype === "task_updated") asRecord(record.patch, "Claude task patch invalid.");
+      if (record.subtype === "task_notification" && !["completed", "failed", "stopped"].includes(String(record.status))) malformed("Claude task status invalid.");
+      if (record.subtype === "task_progress") {
+        const usage = asRecord(record.usage, "Claude task usage missing.");
+        for (const key of ["total_tokens", "tool_uses", "duration_ms"]) if (!Number.isSafeInteger(usage[key]) || (usage[key] as number) < 0) malformed("Claude task usage invalid.");
+      }
+      return null; // Native task settlement never settles the outer invocation.
+    }
     if (record.type === "system" && record.subtype === "permission_denied") {
       if (typeof record.tool_name !== "string" || typeof record.tool_use_id !== "string" || typeof record.message !== "string") malformed("Claude permission denial is invalid.");
       return null;

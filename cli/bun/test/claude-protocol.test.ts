@@ -25,3 +25,12 @@ test("permission denial is nonterminal and session-bound",()=>{
  expect(()=>ready().accept({...denial,session_id:"other"})).toThrow();
  expect(p.accept({type:"result",subtype:"success",is_error:false,session_id:"fixture-session"})).not.toBeNull();
 });
+
+import tasks from "../../shared/fixtures/adapters/claude-task-lifecycle.json";
+test("native task lifecycle remains session-bound nonterminal telemetry",()=>{
+ const p=ready();for(const task of tasks){expect(p.accept(task)).toBeNull();expect(p.terminalEventObserved).toBe(false);}
+ expect(p.accept({type:"result",subtype:"success",is_error:false,session_id:"fixture-session"})).not.toBeNull();
+ for(const task of tasks){expect(()=>ready().accept({...task,session_id:"other"})).toThrow();expect(()=>ready().accept({...task,task_id:""})).toThrow();}
+ expect(()=>ready().accept({...tasks.find(t=>t.subtype==="task_progress"),usage:{total_tokens:-1,tool_uses:1,duration_ms:1}})).toThrow();
+ expect(()=>ready().accept({...tasks[0],subtype:"task_invented"})).toThrow();
+});

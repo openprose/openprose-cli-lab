@@ -1026,6 +1026,20 @@ pub fn normalize_transport(
                         assistant_messages.extend(assistant_text_content(record)?);
                     }
                     Some("user" | "stream_event" | "tool_progress") => {}
+                    Some("system") if matches!(record.get("subtype").and_then(Value::as_str),Some("task_started"|"task_progress"|"task_updated"|"task_notification")) => {
+                        if !["task_id","uuid"].iter().all(|key|record.get(*key).and_then(Value::as_str).is_some_and(|v|!v.is_empty())) {return Err(malformed());}
+                        match record.get("subtype").and_then(Value::as_str) {
+                            Some("task_started") if record.get("description").and_then(Value::as_str).is_none() => return Err(malformed()),
+                            Some("task_updated") if !record.get("patch").is_some_and(Value::is_object) => return Err(malformed()),
+                            Some("task_notification") if !matches!(record.get("status").and_then(Value::as_str),Some("completed"|"failed"|"stopped")) => return Err(malformed()),
+                            Some("task_progress") => {
+                                let usage=record.get("usage").ok_or_else(malformed)?;
+                                if !["total_tokens","tool_uses","duration_ms"].iter().all(|key|usage.get(*key).and_then(Value::as_u64).is_some_and(|v|v<=9_007_199_254_740_991)) {return Err(malformed());}
+                            }
+                            _ => {}
+                        }
+                        // Child task completion does not settle the outer invocation.
+                    }
                     Some("system") if record.get("subtype").and_then(Value::as_str) == Some("permission_denied") => {
                         if !["tool_name","tool_use_id","message"].iter().all(|key|record.get(*key).and_then(Value::as_str).is_some()){return Err(malformed());}
                     }
@@ -6411,4 +6425,19 @@ fn agents_sdk_native_transport_requires_start_and_terminal(){
  assert_eq!(normalize_transport(InstalledAdapter::AgentsSdkJsonl,&records,"fixture").unwrap().assistant_messages,vec!["All done, no JSON."]);
  records.push(serde_json::json!({"type":"final","output":"duplicate"}));
  assert!(normalize_transport(InstalledAdapter::AgentsSdkJsonl,&records,"fixture").is_err());
+}
+
+#[test]
+fn claude_native_task_lifecycle_never_settles_outer_invocation(){
+ let tasks:Vec<Value>=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/claude-task-lifecycle.json")).unwrap();
+ let init=serde_json::json!({"type":"system","subtype":"init","session_id":"fixture-session"});
+ let done=serde_json::json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture-session"});
+ let adapter=InstalledAdapter::ClaudePrintStreamJson;
+ let mut records=vec![init.clone()];records.extend(tasks.clone());
+ assert!(normalize_transport(adapter,&records,"unused").is_err());records.push(done.clone());assert!(normalize_transport(adapter,&records,"unused").is_ok());
+ for task in tasks {
+  for (key,value) in [("session_id",serde_json::json!("other")),("task_id",serde_json::json!("")),("subtype",serde_json::json!("task_invented"))]{
+   let mut invalid=task.clone();invalid[key]=value;assert!(normalize_transport(adapter,&[init.clone(),invalid,done.clone()],"unused").is_err());
+  }
+ }
 }

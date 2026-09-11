@@ -1,0 +1,59 @@
+[
+  {
+    "type": "system",
+    "subtype": "task_started",
+    "task_id": "fixture-task",
+    "tool_use_id": "fixture-tool",
+    "description": "fixture text",
+    "subagent_type": "general-purpose",
+    "is_backgrounded": false,
+    "spawn_depth": 1,
+    "task_type": "local_agent",
+    "prompt": "fixture text",
+    "uuid": "fixture-uuid",
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "system",
+    "subtype": "task_progress",
+    "task_id": "fixture-task",
+    "tool_use_id": "fixture-tool",
+    "description": "fixture text",
+    "subagent_type": "general-purpose",
+    "usage": {
+      "total_tokens": 10274,
+      "tool_uses": 1,
+      "duration_ms": 1437
+    },
+    "last_tool_name": "Read",
+    "uuid": "fixture-uuid",
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "system",
+    "subtype": "task_updated",
+    "task_id": "fixture-task",
+    "patch": {
+      "status": "completed",
+      "end_time": 1789096843013
+    },
+    "uuid": "fixture-uuid",
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "system",
+    "subtype": "task_notification",
+    "task_id": "fixture-task",
+    "tool_use_id": "fixture-tool",
+    "status": "completed",
+    "output_file": "fixture text",
+    "summary": "fixture text",
+    "usage": {
+      "total_tokens": 16901,
+      "tool_uses": 7,
+      "duration_ms": 17567
+    },
+    "uuid": "fixture-uuid",
+    "session_id": "fixture-session"
+  }
+]
