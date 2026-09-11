@@ -1127,7 +1127,7 @@ impl OmpStagedController {
                 if tools.iter().any(|tool| tool.get("name").and_then(Value::as_str).is_none_or(str::is_empty)) {
                     return Err(stream_observer_failure(FailureKind::ProtocolMalformed,"OMP reported an invalid tool inventory"));
                 }
-                self.tool_inventory = tools.iter().map(|tool|json!({"name":tool["name"]})).collect();
+                self.tool_inventory = tools.iter().map(retained_omp_tool).collect();
                 self.pending_write = self.prompt_bytes.take();
                 self.state = OmpPreludeState::PromptSent;
                 Ok(())
@@ -1458,6 +1458,20 @@ fn stream_observer_failure(kind: FailureKind, message: &str) -> SupervisorFailur
         terminal_envelope: None,
         records: Vec::new(),
     }
+}
+
+// Preserve only the advertised task defaults required by native argument validation.
+// Keep every inventory entry so duplicate task names remain ambiguous.
+fn retained_omp_tool(tool:&Value)->Value {
+ let mut out=json!({"name":tool["name"]});let p=&tool["parameters"];
+ if tool["name"]!="task"||p["type"]!="object"{return out;}
+ let field=|v:&Value|v["type"]=="string"&&v["default"]=="task";
+ let mut properties=json!({});
+ if field(&p["properties"]["agent"]){properties["agent"]=json!({"type":"string","default":"task"});}
+ let t=&p["properties"]["tasks"];
+ if t["type"]=="array"&&t["items"]["type"]=="object"&&field(&t["items"]["properties"]["agent"]){properties["tasks"]=json!({"type":"array","items":{"type":"object","properties":{"agent":{"type":"string","default":"task"}}}});}
+ if !properties.as_object().unwrap().is_empty(){out["parameters"]=json!({"type":"object","properties":properties});}
+ out
 }
 
 #[derive(Debug)]

@@ -331,3 +331,4 @@ Decision 030 lease: cli_recon owns cli/bun/src/adapters/native-tool-lifecycle.ts
 
 ## Decision 032 isolated lease
 Root authorized eval_design on codex/decision-032-omp-task-defaults: bun/src/adapters/{native-tool-lifecycle,protocols}.ts, bun/test/omp-task-defaults.test.ts, rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs, shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json; branch-only commits/builds. No main mutation or live calls.
+Root expanded decision032 lease to rust/crates/prose-runner-core/src/runner.rs for minimal retained negotiated-default projection. Preserve duplicate inventory entries; final corrected freeze v27, v26 evidence retained.
