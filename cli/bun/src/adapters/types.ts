@@ -148,6 +148,7 @@ export interface InstalledLaunchPlan {
 }
 
 export interface InstalledAdapterOptions {
+  outputContract?: string;
   nativeLog?: string;
   adapterId: InstalledAdapterId;
   executable: string;

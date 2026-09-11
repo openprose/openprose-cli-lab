@@ -1,0 +1,26 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "session_id": "fixture-session",
+    "result": "opaque turn one",
+    "uuid": "one"
+  },
+  {
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "session_id": "fixture-session",
+    "result": "opaque turn two",
+    "uuid": "two",
+    "origin": {
+      "kind": "task-notification"
+    }
+  }
+]

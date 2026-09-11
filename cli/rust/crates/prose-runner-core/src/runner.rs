@@ -2037,7 +2037,7 @@ fn execute_installed_adapter(
     protected.sort();
     protected.dedup();
     let human_stream = human_stream
-        .filter(|_| mode == OutputMode::Human)
+        .filter(|_| mode == OutputMode::Human && !(adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native"))
         .map(|sink| InstalledHumanStream::new(adapter, &invocation_id, sink, protected));
     let omp_controller = launch
         .omp_prompt_bytes()
@@ -2052,10 +2052,13 @@ fn execute_installed_adapter(
         human: human_stream,
         omp: omp_controller,
     };
+    let native_claude=adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native";
+    let mut installed_protocol=adapter.protocol();
+    installed_protocol.terminal_is_candidate=native_claude;
     let supervised = if run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
-        supervise_observed(process_spec, &adapter.protocol(), &mut run_observer)
+        supervise_observed(process_spec, &installed_protocol, &mut run_observer)
     } else {
-        supervise(process_spec, &adapter.protocol())
+        supervise(process_spec, &installed_protocol)
     };
     #[cfg(feature = "test-seams")]
     let inject_private_cleanup_failure = controls.is_some_and(|value| value.cleanup_failure);
@@ -2182,7 +2185,7 @@ fn execute_installed_adapter(
         return installed_adapter_postprocess_failure(adapter,&task,&task_digest,&invocation_id,outcome,detected_version.as_deref(),error,config,image,mode,clock);
     }
     let normalized =
-        match installed_adapters::normalize_transport(adapter, &outcome.records, &invocation_id) {
+        match installed_adapters::normalize_transport_mode(adapter, &outcome.records, &invocation_id,native_claude) {
             Ok(normalized) => normalized,
             Err(error) => {
                 return installed_adapter_postprocess_failure(

@@ -299,3 +299,5 @@ Documentation scope extension: docs/native-capture.md, clarifying existing captu
 | PRIME-IMPLICIT-TURN | cli_recon | `cli/bun/src/adapters/native-tool-lifecycle.ts`, `cli/bun/src/adapters/protocols.ts`, `cli/bun/src/supervision/types.ts`, `cli/bun/test/native-tools.test.ts`, `cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs`, `cli/shared/fixtures/adapters/tool-lifecycle/prime-implicit-turn.json`, `cli/shared/schemas/adapter-diagnostic.schema.json` | native transport compatibility and diagnostic | active |
 
 Lease cli_recon: parsed native capture before admission, Rust supervisor/core tests and diagnostics, Bun capture parity test, docs/native-capture.md. Parent approved observability only; no admission relaxation.
+
+Lease cli_recon: native Claude candidate-turn settlement mode, cli/bun adapters/supervision/core integration and tests, cli/rust supervisor/core integration and tests, shared candidate fixture, docs/native-turn-settlement.md. Parent approves native-only behavior, conservative freshness, no language semantics.

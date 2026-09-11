@@ -257,6 +257,7 @@ pub struct JsonlProtocol {
     pub failure_events: BTreeSet<String>,
     pub allowed_after_terminal_events: BTreeSet<String>,
     pub terminal_envelope_field: Option<String>,
+    pub terminal_is_candidate: bool,
 }
 
 impl JsonlProtocol {
@@ -273,6 +274,7 @@ impl JsonlProtocol {
             failure_events: BTreeSet::new(),
             allowed_after_terminal_events: BTreeSet::new(),
             terminal_envelope_field: Some("terminalEnvelope".to_owned()),
+            terminal_is_candidate: false,
         }
     }
 
@@ -292,6 +294,7 @@ impl JsonlProtocol {
             failure_events: BTreeSet::new(),
             allowed_after_terminal_events: BTreeSet::new(),
             terminal_envelope_field: None,
+            terminal_is_candidate: false,
         }
     }
 
@@ -420,6 +423,7 @@ impl ProtocolState {
                 "harness emitted a record without an event type",
             )
         })?;
+        if protocol.terminal_is_candidate { self.terminal = None; }
         if self.terminal.is_some() && !protocol.allowed_after_terminal_events.contains(event_type) {
             return Err(SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
@@ -855,7 +859,7 @@ fn supervise_direct(
                         }
                     }
                 }
-                if failure.is_none() && state.terminal.is_some() {
+                if failure.is_none() && state.terminal.is_some() && !protocol.terminal_is_candidate {
                     if let Some(writer) = stdin_writer.as_ref() {
                         writer.request_close();
                     }
@@ -2378,4 +2382,21 @@ mod tests {
             FailureKind::ProtocolMalformed
         );
     }
+}
+
+#[cfg(test)]
+mod candidate_terminal_tests {
+ use super::*;
+ #[test]
+ fn candidate_requires_fresh_native_record_and_preserves_legacy(){
+  let records:Vec<Value>=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/claude-native-turns.json")).unwrap();
+  let mut protocol=JsonlProtocol::installed("system","result",["system","assistant"]);protocol.terminal_is_candidate=true;
+  let mut state=ProtocolState::default();for r in &records{state.accept(&serde_json::to_vec(r).unwrap(),&protocol).unwrap();}
+  assert!(state.terminal.is_some());assert_eq!(state.records.len(),3);
+  state.accept(br#"{"type":"assistant"}"#,&protocol).unwrap();assert!(state.terminal.is_none());
+  state.accept(&serde_json::to_vec(&records[2]).unwrap(),&protocol).unwrap();assert!(state.terminal.is_some());
+  protocol.terminal_is_candidate=false;let mut state=ProtocolState::default();
+  for r in &records[..2]{state.accept(&serde_json::to_vec(r).unwrap(),&protocol).unwrap();}
+  assert!(state.accept(&serde_json::to_vec(&records[2]).unwrap(),&protocol).is_err());
+ }
 }

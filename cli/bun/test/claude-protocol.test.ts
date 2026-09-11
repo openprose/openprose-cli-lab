@@ -46,3 +46,25 @@ test("identical init after native task notification resumes existing session onl
  expect(()=>ready().accept({type:"system",subtype:"init",session_id:"fixture-session",uuid:"duplicate"})).toThrow();
  const q=ready();q.accept(tasks.find(t=>t.subtype==="task_notification"));expect(()=>q.accept({type:"system",subtype:"init",session_id:"fixture-session",uuid:"resumed",cwd:"changed"})).toThrow();
 });
+
+import turns from "../../shared/fixtures/adapters/claude-native-turns.json";
+function native(){return installedProtocol("claude/print-stream-json","2.1.243","fixture",null,true);}
+test("native Claude turn results defer completion until process settlement; legacy stays strict",()=>{
+ const p=native();for(const r of turns)p.accept(r);
+ expect(p.terminalEventObserved).toBe(false);expect(p.stdinCloseRequested).toBe(false);
+ expect(p.settleProcess?.(0)?.type).toBe("session.completed");expect(p.terminalEventObserved).toBe(true);
+ const old=installedProtocol("claude/print-stream-json","2.1.243","fixture");expect(()=>turns.forEach(r=>old.accept(r))).toThrow();
+});
+test("native Claude requires fresh successful candidate and matching session",()=>{
+ const activity={type:"assistant",session_id:"fixture-session",message:{role:"assistant",content:[{type:"text",text:"more activity"}]}};
+ const p=native();turns.forEach(r=>p.accept(r));p.accept(activity);expect(()=>p.settleProcess?.(0)).toThrow();expect(p.terminalEventObserved).toBe(false);
+ p.accept(turns[2]);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+ for(const exit of [1,143,null]){const q=native();turns.forEach(r=>q.accept(r));expect(()=>q.settleProcess?.(exit)).toThrow();expect(q.terminalEventObserved).toBe(false);}
+ const q=native();q.accept(turns[0]);expect(()=>q.settleProcess?.(0)).toThrow();
+ expect(()=>q.accept({...turns[1],is_error:true,subtype:"error"})).toThrow();
+ expect(()=>q.accept({...turns[1],session_id:"other"})).toThrow();
+ expect(()=>q.accept({type:"unsupported",session_id:"fixture-session"})).toThrow();
+});
+test.skipIf(!process.env.CLAUDE_REPLAY_PATH)("recorded native Claude stream remains provisional until exit",async()=>{
+ const records=(await Bun.file(process.env.CLAUDE_REPLAY_PATH!).text()).trim().split("\n").map(l=>JSON.parse(l));const p=native();records.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+});

@@ -113,12 +113,21 @@ class AgentsSdkProtocol extends InstalledProtocol {
 }
 
 class ClaudeProtocol extends InstalledProtocol {
+  private candidateFresh=false;
+  constructor(version:string|null,private readonly nativeMode=false){super(version);}
+  settleProcess(exitCode:number|null):RawTransportEvent|null {
+    if(!this.nativeMode)return null;
+    if(exitCode!==0)throw failure("HARNESS_FAILED",{reason:"Claude process did not exit successfully."});
+    if(!this.candidateFresh)throw failure("PROTOCOL_TRUNCATED",{reason:"Claude has no fresh native result at process settlement."});
+    return this.complete();
+  }
   private sessionId: string | null = null;
   private initialRecord: Record<string, unknown> | null = null;
   private afterTaskNotification = false;
 
   accept(value: unknown): RawTransportEvent | null {
     const record = this.record(value);
+    if(this.nativeMode)this.candidateFresh=false;
     if (record.type === "system" && record.subtype === "init") {
       if (typeof record.session_id !== "string" || record.session_id.length === 0) malformed("Claude init session identity is invalid.");
       if (this.started) {
@@ -180,6 +189,7 @@ class ClaudeProtocol extends InstalledProtocol {
       if (record.subtype !== "success" || record.is_error !== false) {
         throw failure("HARNESS_FAILED", { reason: "Claude emitted a non-success result." });
       }
+      if(this.nativeMode){this.candidateFresh=true;return null;}
       return this.complete();
     }
     if (record.type === "user" || record.type === "tool_progress") return null;
@@ -715,10 +725,11 @@ export function installedProtocol(
   harnessVersion: string | null,
   invocationId: string,
   ompPromptBytes: Uint8Array | null = null,
+  nativeMode=false,
 ): StructuredProtocolState {
   if (adapterId === "codex/exec-json") return new CodexProtocol(harnessVersion);
   if (adapterId === "agents-sdk/jsonl") return new AgentsSdkProtocol(harnessVersion);
-  if (adapterId === "claude/print-stream-json") return new ClaudeProtocol(harnessVersion);
+  if (adapterId === "claude/print-stream-json") return new ClaudeProtocol(harnessVersion,nativeMode);
   if (adapterId === "omp/rpc") {
     if (ompPromptBytes === null) malformed("OMP staged prompt bytes are unavailable.");
     return new OmpProtocol(harnessVersion, invocationId, ompPromptBytes);

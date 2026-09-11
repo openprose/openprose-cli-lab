@@ -107,6 +107,8 @@ export interface AdapterDiagnostic {
 }
 
 export interface StructuredProtocolState {
+  /** Optional final validation after natural process/pipe settlement. */
+  settleProcess?(exitCode:number|null):RawTransportEvent|null;
   readonly terminalEventObserved: boolean;
   readonly terminalEnvelope: Record<string, unknown> | null;
   readonly harnessVersion: string | null;

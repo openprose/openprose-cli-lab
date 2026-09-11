@@ -1044,6 +1044,7 @@ async function runInstalledInvocation(
   let outcome: Awaited<ReturnType<typeof runInstalledAdapter>>;
   try {
     const options: InstalledAdapterOptions = {
+      outputContract: config.values.outputContract ?? "image-envelope",
       adapterId: readiness.adapterId,
       executable: readiness.executable,
       harnessVersion: readiness.version,

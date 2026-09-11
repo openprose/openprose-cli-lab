@@ -954,6 +954,10 @@ pub fn normalize_transport(
     records: &[Value],
     expected_rpc_id: &str,
 ) -> Result<TransportNormalization, RunnerError> {
+    normalize_transport_mode(adapter, records, expected_rpc_id, false)
+}
+
+pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expected_rpc_id:&str,native_claude:bool)->Result<TransportNormalization,RunnerError>{
     let malformed = || RunnerError::catalog(ErrorCode::ProtocolMalformed);
     let failed = || RunnerError::catalog(ErrorCode::HarnessFailed);
     match adapter {
@@ -1104,7 +1108,7 @@ pub fn normalize_transport(
                             return Err(malformed());
                         }
                     }
-                    Some("result") if index + 1 == records.len() => {
+                    Some("result") if native_claude || index + 1 == records.len() => {
                         if record.get("subtype").and_then(Value::as_str) != Some("success")
                             || record.get("is_error").and_then(Value::as_bool) != Some(false)
                         {
@@ -6499,4 +6503,27 @@ fn claude_background_inventory_is_nonterminal(){
 fn claude_task_resumption_preserves_initial_configuration(){
  let init=serde_json::json!({"type":"system","subtype":"init","session_id":"fixture-session","uuid":"initial"});let notice=serde_json::json!({"type":"system","subtype":"task_notification","session_id":"fixture-session","uuid":"n","task_id":"t","status":"completed"});let done=serde_json::json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture-session"});let mut repeated=init.clone();repeated["uuid"]=serde_json::json!("resumed");let a=InstalledAdapter::ClaudePrintStreamJson;
  assert!(normalize_transport(a,&[init.clone(),notice.clone(),repeated.clone(),done.clone()],"unused").is_ok());assert!(normalize_transport(a,&[init.clone(),repeated.clone(),done.clone()],"unused").is_err());repeated["cwd"]=serde_json::json!("changed");assert!(normalize_transport(a,&[init,notice,repeated,done],"unused").is_err());
+}
+
+#[cfg(test)]
+mod native_turn_tests {
+ use super::*;
+ #[test]
+ fn native_claude_turns_need_final_success_and_legacy_rejects_duplicates(){
+  let records:Vec<Value>=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/claude-native-turns.json")).unwrap();
+  let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
+  assert!(run(&records).is_ok());assert!(normalize_transport(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture").is_err());
+  let mut more=records.clone();more.push(json!({"type":"assistant","session_id":"fixture-session","message":{"role":"assistant","content":[]}}));assert!(run(&more).is_err());
+  more.push(records[2].clone());assert!(run(&more).is_ok());
+  for change in [json!({"session_id":"other"}),json!({"is_error":true}),json!({"type":"unsupported"})] {
+   let mut bad=records.clone();for(k,v)in change.as_object().unwrap(){bad[2][k]=v.clone();}assert!(run(&bad).is_err());
+  }
+  assert!(run(&records[..1]).is_err());
+ }
+ #[test]
+ #[ignore="set CLAUDE_REPLAY_PATH to a retained native trace"]
+ fn recorded_claude_native_turn_replay(){
+  let text=std::fs::read_to_string(std::env::var("CLAUDE_REPLAY_PATH").unwrap()).unwrap();let records:Vec<Value>=text.lines().map(|l|serde_json::from_str(l).unwrap()).collect();
+  assert!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture",true).is_ok());
+ }
 }

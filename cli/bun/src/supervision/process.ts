@@ -290,6 +290,10 @@ export async function superviseStructuredProcess(request: ProcessSupervisionRequ
   if (error === null && cancellationReason !== null) {
     error = failure("CANCELLED", { reason: cancellationReason });
   }
+  if(error===null && protocol.settleProcess){
+    try { const settled=protocol.settleProcess(child.exitCode);if(settled)events.push(settled); }
+    catch(caught){error=normalizeProtocolFailure(caught);}
+  }
   if (error === null && !protocol.terminalEventObserved) {
     error = failure("PROTOCOL_TRUNCATED", {
       reason: "The process reached EOF without the required harness terminal record.",

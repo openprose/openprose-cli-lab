@@ -149,7 +149,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     const supervisedArgv = options.fixtureInterpreter === undefined ? plan.argv.slice(1) : plan.argv;
     const capture = new NativeCapture(options.nativeLog,protectedValues);
     let observed: NativeObservation | null = null;
-    const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, options.adapterId === "omp/rpc" ? plan.stdinBytes : null);
+    const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, options.adapterId === "omp/rpc" ? plan.stdinBytes : null, options.outputContract === "native");
     if(options.nativeProfile === "claude-workspace-tools") {
       const accept=protocol.accept.bind(protocol);
       protocol.accept=(record)=>{ observed=observeNativeInit(record,options.credentialGroup) ?? observed; return accept(record); };
