@@ -162,6 +162,7 @@ export interface InstalledAdapterOptions {
   nativeProfile?: string;
   nativeMaxTurns?: string;
   nativeTimeout?: string;
+  nativeToolTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   permissionMode?: string | null;

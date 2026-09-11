@@ -42,6 +42,7 @@ pub struct GlobalFlags {
     pub native_profile: Option<String>,
     pub native_max_turns: Option<String>,
     pub native_timeout: Option<String>,
+    pub native_tool_timeout: Option<String>,
     pub native_add_dirs: Vec<String>,
     pub native_allow_tools: Vec<String>,
     pub timeout: Option<String>,
@@ -194,6 +195,7 @@ fn is_value_option(value: &str) -> bool {
             | "--auth-profile"
             | "--native-max-turns"
             | "--native-timeout"
+            | "--native-tool-timeout"
             | "--native-profile"
             | "--native-add-dir"
             | "--native-allow-tool"
@@ -229,6 +231,7 @@ fn set_value_option(globals: &mut GlobalFlags, name: &str, value: &str) -> Resul
         }
         "--native-max-turns" => set_once(&mut globals.native_max_turns, name, value)?,
         "--native-timeout" => set_once(&mut globals.native_timeout, name, value)?,
+        "--native-tool-timeout" => set_once(&mut globals.native_tool_timeout, name, value)?,
         "--native-profile" => set_once(&mut globals.native_profile, name, value)?,
         "--native-add-dir" => globals.native_add_dirs.push(value.to_owned()),
         "--native-allow-tool" => globals.native_allow_tools.push(value.to_owned()),
@@ -696,4 +699,11 @@ mod sdk_budget_flag_tests {
   assert_eq!(p.globals.native_max_turns.as_deref(),Some("40"));assert_eq!(p.globals.native_timeout.as_deref(),Some("5m"));
   assert!(parse_invocation(vec!["--native-max-turns=40","--native-max-turns=50"].into_iter().map(str::to_owned)).is_err());
  }
+}
+
+#[test]
+fn sdk_tool_timeout_flag_is_a_runner_option() {
+    let p=parse_invocation(vec!["--native-tool-timeout=1ms","run"].into_iter().map(str::to_owned)).unwrap();
+    assert_eq!(p.globals.native_tool_timeout.as_deref(),Some("1ms"));
+    assert!(parse_invocation(vec!["--native-tool-timeout","1s","--native-tool-timeout","2s"].into_iter().map(str::to_owned)).is_err());
 }

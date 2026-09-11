@@ -31,6 +31,7 @@
         "permissionMode": { "allOf": [{ "$ref": "#/$defs/sourcedString" }, { "properties": { "value": { "enum": ["default", "acceptEdits", "workspace-write", "read-only"] } } }] },
         "nativeMaxTurns": { "$ref": "#/$defs/sourcedString" },
         "nativeTimeout": { "$ref": "#/$defs/sourcedString" },
+        "nativeToolTimeout": { "$ref": "#/$defs/sourcedString" },
         "nativeProfile": { "$ref": "#/$defs/sourcedString" },
         "nativeAddDirs": { "allOf": [{ "$ref": "#/$defs/sourced" }, { "properties": { "value": { "type": "array", "items": { "type": "string" } } } }] },
         "nativeAllowTools": { "allOf": [{ "$ref": "#/$defs/sourced" }, { "properties": { "value": { "type": "array", "items": { "type": "string" } } } }] },

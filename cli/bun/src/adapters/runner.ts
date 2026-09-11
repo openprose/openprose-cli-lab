@@ -97,6 +97,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       credentialGroup: options.credentialGroup,
       ...(options.nativeMaxTurns===undefined?{}:{nativeMaxTurns:options.nativeMaxTurns}),
       ...(options.nativeTimeout===undefined?{}:{nativeTimeout:options.nativeTimeout}),
+      ...(options.nativeToolTimeout===undefined?{}:{nativeToolTimeout:options.nativeToolTimeout}),
       ...(options.nativeProfile === undefined ? {} : {nativeProfile:options.nativeProfile}),
       ...(options.nativeAddDirs === undefined ? {} : {nativeAddDirs:options.nativeAddDirs}),
       ...(options.nativeAllowTools === undefined ? {} : {nativeAllowTools:options.nativeAllowTools}),

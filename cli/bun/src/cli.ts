@@ -1060,6 +1060,7 @@ async function runInstalledInvocation(
       permissionMode: config.values.permissionMode ?? null,
       ...(config.values.nativeMaxTurns===undefined?{}:{nativeMaxTurns:config.values.nativeMaxTurns}),
       ...(config.values.nativeTimeout===undefined?{}:{nativeTimeout:config.values.nativeTimeout}),
+      ...(config.values.nativeToolTimeout===undefined?{}:{nativeToolTimeout:config.values.nativeToolTimeout}),
       ...(config.values.nativeProfile===undefined?{}:{nativeProfile:config.values.nativeProfile}),
       ...(config.values.nativeAddDirs===undefined?{}:{nativeAddDirs:config.values.nativeAddDirs}),
       ...(config.values.nativeAllowTools===undefined?{}:{nativeAllowTools:config.values.nativeAllowTools}),

@@ -21,6 +21,7 @@ Runner options:
   --auth-profile <ID>        Select an explicit harness credential route
   --native-max-turns <N>    SDK model-turn budget (default: 20)
   --native-timeout <TIME>   SDK inner deadline (default: 180s)
+  --native-tool-timeout <TIME>  SDK tool deadline (default: 30s)
   --native-profile <ID>     Select native context/tools (default: default)
   --native-add-dir <PATH>    Extend native directory access (repeatable)
   --native-allow-tool <RULE> Grant a native tool rule (repeatable)

@@ -180,6 +180,7 @@ pub struct EffectiveConfig {
     pub permission_mode: Sourced<Option<String>>,
     pub native_max_turns: Sourced<Option<String>>,
     pub native_timeout: Sourced<Option<String>>,
+    pub native_tool_timeout: Sourced<Option<String>>,
     pub native_profile: Sourced<String>,
     pub native_add_dirs: Sourced<Vec<String>>,
     pub native_allow_tools: Sourced<Vec<String>>,
@@ -457,6 +458,7 @@ impl EffectiveConfig {
             output_contract: Sourced { value:"image-envelope".into(),source:ConfigSource::default() },
             native_max_turns: Sourced {value:None,source:ConfigSource::default()},
             native_timeout: Sourced {value:None,source:ConfigSource::default()},
+            native_tool_timeout: Sourced {value:None,source:ConfigSource::default()},
             native_profile: Sourced {value:"default".into(),source:ConfigSource::default()},
             native_add_dirs: Sourced {value:vec![],source:ConfigSource::default()},
             native_allow_tools: Sourced {value:vec![],source:ConfigSource::default()},
@@ -485,6 +487,7 @@ struct FileConfig {
     permission_mode: Option<String>,
     native_max_turns: Option<String>,
     native_timeout: Option<String>,
+    native_tool_timeout: Option<String>,
     native_profile: Option<String>,
     native_add_dirs: Option<Vec<String>>,
     native_allow_tools: Option<Vec<String>>,
@@ -509,6 +512,7 @@ const FILE_CONFIG_KEYS: &[&str] = &[
     "permission_mode",
     "native_max_turns",
     "native_timeout",
+    "native_tool_timeout",
     "native_profile",
     "native_add_dirs",
     "native_allow_tools",
@@ -807,7 +811,7 @@ pub fn resolve_config(
     }
     apply_environment(&mut config, &system.environment)?;
     apply_flags(&mut config, flags)?;
-    if config.harness.value != "agents-sdk" && (config.native_max_turns.value.is_some() || config.native_timeout.value.is_some()) {return Err(RunnerError::config("Native budgets require agents-sdk."));}
+    if config.harness.value != "agents-sdk" && (config.native_max_turns.value.is_some() || config.native_timeout.value.is_some() || config.native_tool_timeout.value.is_some()) {return Err(RunnerError::config("Native budgets require agents-sdk."));}
     if config.native_profile.value != "default" && config.harness.value != "claude" {return Err(RunnerError::config("Native workspace profile requires Claude."));}
     if config.native_profile.value == "default" && (!config.native_add_dirs.value.is_empty() || !config.native_allow_tools.value.is_empty()) {return Err(RunnerError::config("Native directory/tool options require claude-workspace-tools."));}
     for directory in &mut config.native_add_dirs.value {
@@ -952,6 +956,7 @@ fn apply_file(
     }
     if let Some(value)=source_values.native_max_turns { validate_native_turns(&value)?; target.native_max_turns.replace(Some(value),source.clone()); }
     if let Some(value)=source_values.native_timeout { validate_native_timeout(&value)?; target.native_timeout.replace(Some(value),source.clone()); }
+    if let Some(value)=source_values.native_tool_timeout { validate_native_timeout(&value)?; target.native_tool_timeout.replace(Some(value),source.clone()); }
     if let Some(value)=source_values.native_profile {target.native_profile.replace(validate_native_profile(value)?,source.clone());}
     if let Some(value)=source_values.native_add_dirs {target.native_add_dirs.replace(validate_native_values(value)?,source.clone());}
     if let Some(value)=source_values.native_allow_tools {target.native_allow_tools.replace(validate_native_rules(value)?,source.clone());}
@@ -1024,6 +1029,7 @@ fn apply_environment(
     }
     if let Some(value)=environment.get("PROSE_NATIVE_MAX_TURNS") { validate_native_turns(value)?; target.native_max_turns.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_MAX_TURNS")); }
     if let Some(value)=environment.get("PROSE_NATIVE_TIMEOUT") { validate_native_timeout(value)?; target.native_timeout.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_TIMEOUT")); }
+    if let Some(value)=environment.get("PROSE_NATIVE_TOOL_TIMEOUT") { validate_native_timeout(value)?; target.native_tool_timeout.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_TOOL_TIMEOUT")); }
     if let Some(value)=environment.get("PROSE_NATIVE_PROFILE") {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::environment("PROSE_NATIVE_PROFILE"));}
     if let Some(value)=environment.get("PROSE_NATIVE_LOG"){target.native_log.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_LOG"));}
     if let Some(value) = environment.get("PROSE_OUTPUT_CONTRACT") { target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::environment("PROSE_OUTPUT_CONTRACT")); }
@@ -1062,6 +1068,7 @@ fn validate_permission_mode(value:String)->Result<String,RunnerError>{
 fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), RunnerError> {
     if let Some(value)=&flags.native_max_turns { validate_native_turns(value)?; target.native_max_turns.replace(Some(value.clone()),ConfigSource::flag("--native-max-turns")); }
     if let Some(value)=&flags.native_timeout { validate_native_timeout(value)?; target.native_timeout.replace(Some(value.clone()),ConfigSource::flag("--native-timeout")); }
+    if let Some(value)=&flags.native_tool_timeout { validate_native_timeout(value)?; target.native_tool_timeout.replace(Some(value.clone()),ConfigSource::flag("--native-tool-timeout")); }
     if let Some(value)=&flags.native_profile {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::flag("--native-profile"));}
     if !flags.native_add_dirs.is_empty() {target.native_add_dirs.replace(validate_native_values(flags.native_add_dirs.clone())?,ConfigSource::flag("--native-add-dir"));}
     if !flags.native_allow_tools.is_empty() {target.native_allow_tools.replace(validate_native_rules(flags.native_allow_tools.clone())?,ConfigSource::flag("--native-allow-tool"));}
@@ -1794,6 +1801,8 @@ pub(crate) fn validate_native_timeout(value: &str) -> Result<u64, RunnerError> {
 pub(crate) fn native_limits(config: &EffectiveConfig)->Option<serde_json::Value> {
  if config.harness.value!="agents-sdk" {return None;}
  let ms=config.native_timeout.value.as_deref().map(|v|validate_native_timeout(v).expect("validated")).unwrap_or(180000);
+ let tool_ms=config.native_tool_timeout.value.as_deref().map(|v|validate_native_timeout(v).expect("validated")).unwrap_or(30000);
+ let tool_seconds=if tool_ms%1000==0 {serde_json::json!(tool_ms/1000)}else{serde_json::json!(tool_ms as f64/1000.0)};
  let seconds=if ms%1000==0 {serde_json::json!(ms/1000)}else{serde_json::json!(ms as f64/1000.0)};
- Some(serde_json::json!({"maxTurns":config.native_max_turns.value.as_deref().map(|v|validate_native_turns(v).expect("validated")).unwrap_or(20),"timeoutSeconds":seconds,"toolTimeoutSeconds":30,"maxOutputTokens":12000}))
+ Some(serde_json::json!({"maxTurns":config.native_max_turns.value.as_deref().map(|v|validate_native_turns(v).expect("validated")).unwrap_or(20),"timeoutSeconds":seconds,"toolTimeoutSeconds":tool_seconds,"maxOutputTokens":12000}))
 }

@@ -50,5 +50,19 @@
       "error_type": "Untrusted secret text",
       "kind": "execution"
     }
+  ],
+  "toolOverrides": [
+    {
+      "value": "30s",
+      "seconds": 30
+    },
+    {
+      "value": "180s",
+      "seconds": 180
+    },
+    {
+      "value": "1ms",
+      "seconds": 0.001
+    }
   ]
 }

@@ -109,6 +109,8 @@ struct ConfigValuesReport<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     native_timeout: Option<&'a crate::config::Sourced<Option<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    native_tool_timeout: Option<&'a crate::config::Sourced<Option<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     native_add_dirs: Option<&'a crate::config::Sourced<Vec<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     native_allow_tools: Option<&'a crate::config::Sourced<Vec<String>>>,
@@ -3560,7 +3562,7 @@ fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
         config_source_entry("verbose", &config.verbose.source, false),
         config_source_entry("authProfile", &config.auth_profile.source, true),
     ];
-    for (key,source) in [("outputContract",&config.output_contract.source),("permissionMode",&config.permission_mode.source),("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
+    for (key,source) in [("outputContract",&config.output_contract.source),("permissionMode",&config.permission_mode.source),("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeToolTimeout",&config.native_tool_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
         if source.kind != ConfigSourceKind::Default {entries.push(config_source_entry(key,source,false));}
     }
     entries
@@ -3964,6 +3966,7 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
             permission_mode:(config.permission_mode.source.kind!=ConfigSourceKind::Default).then_some(&config.permission_mode),
             native_max_turns:config.native_max_turns.value.as_ref().map(|_|&config.native_max_turns),
             native_timeout:config.native_timeout.value.as_ref().map(|_|&config.native_timeout),
+            native_tool_timeout:config.native_tool_timeout.value.as_ref().map(|_|&config.native_tool_timeout),
             native_profile:(config.native_profile.source.kind!=ConfigSourceKind::Default).then_some(&config.native_profile),
             native_add_dirs:(config.native_add_dirs.source.kind!=ConfigSourceKind::Default).then_some(&config.native_add_dirs),
             native_allow_tools:(config.native_allow_tools.source.kind!=ConfigSourceKind::Default).then_some(&config.native_allow_tools),
@@ -4221,6 +4224,21 @@ mod tests {
             config.permission_mode.value=Some(case["permissionMode"].as_str().unwrap().into()); config.permission_mode.source=crate::config::ConfigSource{kind:ConfigSourceKind::Flag,location:Some("--permission-mode".into())};
             let report=serde_json::to_value(config_report(&config)).unwrap();
             for key in ["outputContract","permissionMode"] {assert_eq!(report["values"][key]["value"],case[key]);assert_eq!(report["values"][key]["source"]["kind"],"flag");assert!(config_source_entries(&config).iter().any(|v|v["key"]==key));}
+        }
+    }
+
+    #[test]
+    fn sdk_tool_timeout_arguments_preserve_parent_defaults() {
+        let temp=TempDir::new().unwrap();
+        let mut config=installed_config(temp.path(),"agents-sdk","jsonl",Some("fixture-model"),"openai-api-key");
+        config.harness.value = "agents-sdk".into();
+        assert!(sdk_limit_arguments(&config).is_empty());
+        for (value, seconds) in [("30s", "30"), ("180s", "180"), ("1ms", "0.001")] {
+            config.native_tool_timeout.value = Some(value.into());
+            assert_eq!(sdk_limit_arguments(&config), vec![std::ffi::OsString::from("--tool-timeout"), seconds.into()]);
+            let limits = crate::config::native_limits(&config).unwrap();
+            assert_eq!(limits["timeoutSeconds"], 180);
+            assert_eq!(limits["toolTimeoutSeconds"].as_f64().unwrap(), seconds.parse::<f64>().unwrap());
         }
     }
 
@@ -4837,6 +4855,9 @@ fn sdk_limit_arguments(config: &EffectiveConfig) -> Vec<std::ffi::OsString> {
     }
     if let Some(v)=&config.native_timeout.value {
         args.extend([std::ffi::OsString::from("--timeout"),(crate::config::validate_native_timeout(v).expect("validated") as f64/1000.0).to_string().into()]);
+    }
+    if let Some(v)=&config.native_tool_timeout.value {
+        args.extend([std::ffi::OsString::from("--tool-timeout"),(crate::config::validate_native_timeout(v).expect("validated") as f64/1000.0).to_string().into()]);
     }
     args
 }

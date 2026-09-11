@@ -17,6 +17,7 @@ export interface GlobalFlags {
   nativeProfile?: string;
   nativeMaxTurns?: string;
   nativeTimeout?: string;
+  nativeToolTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   nativeLog?: string;
@@ -41,6 +42,7 @@ export interface EffectiveValues {
   nativeProfile?: string;
   nativeMaxTurns?: string;
   nativeTimeout?: string;
+  nativeToolTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   nativeLog?: string;

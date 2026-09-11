@@ -41,3 +41,21 @@ test("SDK native errors preserve only closed diagnostic data and never settle",(
  for(const sample of fixture.errorCases){const p=installedProtocol("agents-sdk/jsonl","0.1.0","fixture");p.accept({type:"start",model:"fixture",cwd:"/tmp"});let caught:any;try{p.accept({type:"error",error_type:sample.error_type,elapsed_seconds:1.5,limits:fixture.defaults});}catch(e){caught=e;}expect(caught.details.nativeFailure).toEqual({kind:sample.kind,elapsedSeconds:1.5,limits:fixture.defaults});expect(p.terminalEventObserved).toBe(false);}
  expect(sdkNativeFailure({error_type:"secret",elapsed_seconds:Infinity,limits:{...fixture.defaults,secret:"value"}})).toEqual({kind:"execution"});
 });
+
+test("optional SDK tool timeout keeps parent and outer limits independent",async()=>{
+ for(const sample of fixture.toolOverrides){
+  const selected={harness:"agents-sdk",nativeToolTimeout:sample.value};
+  expect(nativeLimits(selected)).toEqual({...fixture.defaults,toolTimeoutSeconds:sample.seconds});
+  expect(nativeLimitsArgv(selected)).toEqual(["--tool-timeout",String(sample.seconds)]);
+ }
+ for(const nativeToolTimeout of fixture.invalidTimeouts)expect(()=>nativeLimits({harness:"agents-sdk",nativeToolTimeout})).toThrow();
+ for(const harness of ["claude","codex","prime","omp","mock"])expect(()=>nativeLimits({harness,nativeToolTimeout:"30s"})).toThrow();
+ expect(()=>parseEntrypoint(["--native-tool-timeout","1s","--native-tool-timeout","2s","task"])).toThrow();
+ const root=await mkdtemp(join(tmpdir(),"sdk-tool-limits-"));try{
+  const userConfigPath=join(root,"user.toml");await writeFile(userConfigPath,'harness="agents-sdk"\nnative_tool_timeout="1s"\n');
+  const parsed=parseEntrypoint(["--native-tool-timeout","180s","--timeout","10m","task"]);
+  const c=await resolveConfiguration(parsed.global,{processCwd:root,userConfigPath,env:{PROSE_NATIVE_TOOL_TIMEOUT:"2s"}});
+  expect(nativeLimits(c.values)).toEqual({...fixture.defaults,toolTimeoutSeconds:180});
+  expect(c.sources.nativeToolTimeout?.kind).toBe("flag");expect(c.values.timeout).toBe("10m");
+ }finally{await rm(root,{recursive:true,force:true});}
+});
