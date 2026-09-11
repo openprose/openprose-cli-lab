@@ -27,6 +27,8 @@
         },
         "color": { "$ref": "#/$defs/sourcedBoolean" },
         "verbose": { "$ref": "#/$defs/sourcedBoolean" },
+        "outputContract": { "allOf": [{ "$ref": "#/$defs/sourcedString" }, { "properties": { "value": { "enum": ["image-envelope", "native"] } } }] },
+        "permissionMode": { "allOf": [{ "$ref": "#/$defs/sourcedString" }, { "properties": { "value": { "enum": ["default", "acceptEdits", "workspace-write", "read-only"] } } }] },
         "nativeMaxTurns": { "$ref": "#/$defs/sourcedString" },
         "nativeTimeout": { "$ref": "#/$defs/sourcedString" },
         "nativeProfile": { "$ref": "#/$defs/sourcedString" },

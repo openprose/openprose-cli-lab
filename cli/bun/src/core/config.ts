@@ -425,7 +425,7 @@ function parseFlags(flags: GlobalFlags): ParsedValues {
   for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "nativeProfile", "nativeMaxTurns", "nativeTimeout", "nativeAddDirs", "nativeAllowTools", "outputContract", "nativeLog", "timeout", "output", "color", "verbose"] as const) {
     const value = flags[key];
     if (value === undefined) continue;
-    const location = key === "nativeMaxTurns" ? "--native-max-turns" : key === "nativeTimeout" ? "--native-timeout" : key === "nativeProfile" ? "--native-profile" : key === "nativeAddDirs" ? "--native-add-dir" : key === "nativeAllowTools" ? "--native-allow-tool" : key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
+    const location = key === "outputContract" ? "--output-contract" : key === "nativeMaxTurns" ? "--native-max-turns" : key === "nativeTimeout" ? "--native-timeout" : key === "nativeProfile" ? "--native-profile" : key === "nativeAddDirs" ? "--native-add-dir" : key === "nativeAllowTools" ? "--native-allow-tool" : key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
     assignValidated(values, key, value, location);
     locations[key] = location;
   }

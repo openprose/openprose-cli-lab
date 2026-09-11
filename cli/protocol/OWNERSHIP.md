@@ -308,3 +308,6 @@ Lease cli_recon decision021: correlated native-Claude shutdown bookkeeping helpe
 
 Decision022 active lease: cli_recon owns cli/bun/**, cli/shared/**, harnesses/agents-sdk/**, docs/** and root docs; coordination_library owns cli/rust/** in sdk-native-budgets worktree. Sole git owner cli_recon.
 Decision022 lease includes canonical cli/conformance/cases/fixtures/runner-help.txt and shared-schema registrations in Bun tests. Rust worker handoff complete; cli_recon owns integration.
+
+Decision023 active lease cli_recon: cli/bun/src/core/output.ts, cli/bun/src/cli.ts, cli/bun/test/reporting-parity.test.ts, cli/rust/crates/prose-runner-core/src/runner.rs, cli/shared/schemas/configuration-explanation.schema.json, cli/shared/fixtures/config/optional-reporting.json, cli/shared/tests/test_contracts.py, docs/configuration-reporting.md. Reporting only; no runtime defaults or launch changes.
+Decision023 lease also includes cli/bun/src/core/config.ts for canonical --output-contract source location only.

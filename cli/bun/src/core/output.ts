@@ -328,9 +328,14 @@ export function humanVersionRepairDetails(error: RunnerErrorShape): string[] {
   return [...runtimeDetails, ...detected, ...admitted, ...repair];
 }
 
+export function reportedConfigurationKeys(config: EffectiveConfiguration): Array<keyof typeof config.values> {
+  return (Object.keys(config.values) as Array<keyof typeof config.values>).filter(key =>
+    !["outputContract", "permissionMode"].includes(key) || config.sources[key]?.kind !== "default");
+}
+
 export function configurationExplanation(config: EffectiveConfiguration): Record<string, unknown> {
   const values = Object.fromEntries(
-    (Object.keys(config.values) as Array<keyof typeof config.values>).map((key) => [key, {
+    reportedConfigurationKeys(config).map((key) => [key, {
       value: config.values[key],
       source: config.sources[key],
     }]),
@@ -346,7 +351,7 @@ export function configurationExplanation(config: EffectiveConfiguration): Record
 
 export function humanConfiguration(config: EffectiveConfiguration): string {
   const lines = [`cwd = ${humanSafeScalar(config.cwd)} (${humanSafeScalar(config.cwdSource.kind)}: ${humanSafeScalar(config.cwdSource.location)})`];
-  for (const key of Object.keys(config.values) as Array<keyof typeof config.values>) {
+  for (const key of reportedConfigurationKeys(config)) {
     const raw = config.values[key];
     const value = raw === null ? "unset" : humanSafeScalar(String(raw));
     const source = config.sources[key] ?? {kind:"default",location:"built-in"};

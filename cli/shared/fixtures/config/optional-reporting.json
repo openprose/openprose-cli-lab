@@ -1,0 +1,36 @@
+{
+  "defaultsOmitted": [
+    "outputContract",
+    "permissionMode"
+  ],
+  "cases": [
+    {
+      "name": "explicit-default",
+      "outputContract": "image-envelope",
+      "permissionMode": "default"
+    },
+    {
+      "name": "explicit-selected",
+      "outputContract": "native",
+      "permissionMode": "acceptEdits"
+    }
+  ],
+  "precedence": {
+    "user": {
+      "outputContract": "image-envelope",
+      "permissionMode": "default"
+    },
+    "project": {
+      "outputContract": "native",
+      "permissionMode": "read-only"
+    },
+    "environment": {
+      "outputContract": "image-envelope",
+      "permissionMode": "workspace-write"
+    },
+    "flag": {
+      "outputContract": "native",
+      "permissionMode": "acceptEdits"
+    }
+  }
+}

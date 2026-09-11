@@ -10,7 +10,7 @@ import { failure } from "./core/errors";
 import { harnessById, harnesses, type HarnessDescriptor } from "./core/harnesses";
 import { canonicalJson, sha256, verifyRuntimeImage } from "./core/image";
 import { uuidV7 } from "./core/ids";
-import { configurationExplanation, formatHumanError, humanAction, humanConfiguration, humanRunnerCommand, humanSafeMultiline, humanSafeScalar, humanVersionRepairDetails, jsonLine } from "./core/output";
+import { reportedConfigurationKeys, configurationExplanation, formatHumanError, humanAction, humanConfiguration, humanRunnerCommand, humanSafeMultiline, humanSafeScalar, humanVersionRepairDetails, jsonLine } from "./core/output";
 import { HumanAssistantStream } from "./core/human-stream";
 import { parseDurationMs, runFakeProcessTransport } from "./supervision/fake-transport";
 import { collectSecretValues } from "./supervision/environment";
@@ -1575,7 +1575,7 @@ function configurationProvenance(config: EffectiveConfiguration): Array<Record<s
   };
   return [
     { key: "cwd", source: source(config.cwdSource.kind), location: config.cwdSource.location, redacted: false },
-    ...(Object.keys(config.values) as Array<keyof typeof config.values>).map((key) => ({
+    ...reportedConfigurationKeys(config).map((key) => ({
       key,
       source: source(config.sources[key]?.kind ?? "default"),
       location: config.sources[key]?.location ?? "built-in",

@@ -99,6 +99,10 @@ struct ConfigValuesReport<'a> {
     verbose: &'a crate::config::Sourced<bool>,
     auth_profile: &'a crate::config::Sourced<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    output_contract: Option<&'a crate::config::Sourced<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    permission_mode: Option<&'a crate::config::Sourced<Option<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     native_profile: Option<&'a crate::config::Sourced<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     native_max_turns: Option<&'a crate::config::Sourced<Option<String>>>,
@@ -3556,7 +3560,7 @@ fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
         config_source_entry("verbose", &config.verbose.source, false),
         config_source_entry("authProfile", &config.auth_profile.source, true),
     ];
-    for (key,source) in [("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
+    for (key,source) in [("outputContract",&config.output_contract.source),("permissionMode",&config.permission_mode.source),("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
         if source.kind != ConfigSourceKind::Default {entries.push(config_source_entry(key,source,false));}
     }
     entries
@@ -3956,6 +3960,8 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
             color: &config.color,
             verbose: &config.verbose,
             auth_profile: &config.auth_profile,
+            output_contract:(config.output_contract.source.kind!=ConfigSourceKind::Default).then_some(&config.output_contract),
+            permission_mode:(config.permission_mode.source.kind!=ConfigSourceKind::Default).then_some(&config.permission_mode),
             native_max_turns:config.native_max_turns.value.as_ref().map(|_|&config.native_max_turns),
             native_timeout:config.native_timeout.value.as_ref().map(|_|&config.native_timeout),
             native_profile:(config.native_profile.source.kind!=ConfigSourceKind::Default).then_some(&config.native_profile),
@@ -3966,7 +3972,7 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
 }
 
 fn render_config_human(config: &EffectiveConfig) -> String {
-    format!(
+    let mut output = format!(
         "Working directory: {}\nHarness: {} ({})\nTransport: {} ({})\nModel: {} ({})\nTimeout: {} ({})\nOutput: {:?} ({})\nColor: {} ({})\nVerbose: {} ({})\nAuth profile: {} ({})\n",
         human_safe_scalar(&config.cwd.display().to_string()),
         human_safe_scalar(&config.harness.value),
@@ -3985,7 +3991,11 @@ fn render_config_human(config: &EffectiveConfig) -> String {
         source_label(&config.verbose.source),
         human_safe_scalar(config.auth_profile.value.as_deref().unwrap_or("unset")),
         source_label(&config.auth_profile.source),
-    )
+    );
+    for (name,value,source) in [("outputContract",config.output_contract.value.as_str(),&config.output_contract.source),("permissionMode",config.permission_mode.value.as_deref().unwrap_or("unset"),&config.permission_mode.source)] {
+        if source.kind!=ConfigSourceKind::Default {let _=writeln!(output,"{} = {} ({})",name,human_safe_scalar(value),source_label(source));}
+    }
+    output
 }
 
 fn source_label(source: &crate::config::ConfigSource) -> String {
@@ -4197,6 +4207,21 @@ mod tests {
         assert_eq!(observer.native_failure,Some(json!({"kind":"max-turns","elapsedSeconds":2.0})));
         observer.sdk=false;observer.native_failure=None;
         observer.observe_parsed(&json!({"type":"error","error_type":"MaxTurnsExceeded"})).unwrap();assert!(observer.native_failure.is_none());
+    }
+
+    #[test]
+    fn optional_reporting_preserves_defaults_and_explicit_selections() {
+        let fixture:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/config/optional-reporting.json")).unwrap();
+        let temp=TempDir::new().unwrap();let mut config=installed_config(temp.path(),"agents-sdk","jsonl",Some("fixture"),"openai-api-key");
+        let base=serde_json::to_value(config_report(&config)).unwrap();
+        assert_eq!(config.output_contract.value,"image-envelope");assert!(config.permission_mode.value.is_none());
+        for k in fixture["defaultsOmitted"].as_array().unwrap(){assert!(base["values"].get(k.as_str().unwrap()).is_none());}
+        for case in fixture["cases"].as_array().unwrap(){
+            config.output_contract.value=case["outputContract"].as_str().unwrap().into(); config.output_contract.source=crate::config::ConfigSource{kind:ConfigSourceKind::Flag,location:Some("--output-contract".into())};
+            config.permission_mode.value=Some(case["permissionMode"].as_str().unwrap().into()); config.permission_mode.source=crate::config::ConfigSource{kind:ConfigSourceKind::Flag,location:Some("--permission-mode".into())};
+            let report=serde_json::to_value(config_report(&config)).unwrap();
+            for key in ["outputContract","permissionMode"] {assert_eq!(report["values"][key]["value"],case[key]);assert_eq!(report["values"][key]["source"]["kind"],"flag");assert!(config_source_entries(&config).iter().any(|v|v["key"]==key));}
+        }
     }
 
     #[test]

@@ -89,6 +89,16 @@ class ContractsTest(unittest.TestCase):
         for bad in [{'kind':'arbitrary'}, {'kind':'execution','message':'secret'}, {'kind':'timeout','elapsedSeconds':-1}]:
             self.assertTrue(list(self.validator('native-failure.schema.json').iter_errors(bad)))
 
+    def test_optional_reporting_fields_are_named_and_closed(self):
+        fixture=json.loads((SHARED / 'fixtures/config/optional-reporting.json').read_text())
+        config=json.loads((SHARED / 'fixtures/operations/configuration-explanation.json').read_text())
+        for case in fixture['cases']:
+            for key in fixture['defaultsOmitted']:
+                config['values'][key]={'value':case[key],'source':{'kind':'flag','location':'test'}}
+            self.assert_valid('configuration-explanation.schema.json',config)
+        config['values']['permissionMode']['value']='arbitrary'
+        self.assertTrue(list(self.validator('configuration-explanation.schema.json').iter_errors(config)))
+
     def test_every_schema_is_valid_draft_2020_12_and_has_unique_id(self) -> None:
         self.assertGreaterEqual(len(self.schemas), 10)
         ids = []
