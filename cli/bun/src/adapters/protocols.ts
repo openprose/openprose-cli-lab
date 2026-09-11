@@ -133,7 +133,7 @@ class ClaudeProtocol extends InstalledProtocol {
       if (this.started) {
         const {uuid: _old, ...initial}=this.initialRecord!;
         const {uuid, ...repeated}=record;
-        if (!this.afterTaskNotification || typeof uuid !== "string" || !uuid || !isDeepStrictEqual(initial,repeated)) malformed("Claude duplicate init is not a matching task resumption.");
+        if ((!this.nativeMode && !this.afterTaskNotification) || typeof uuid !== "string" || !uuid || !isDeepStrictEqual(initial,repeated)) malformed("Claude duplicate init is not a matching task resumption.");
         this.afterTaskNotification=false;
         return null;
       }

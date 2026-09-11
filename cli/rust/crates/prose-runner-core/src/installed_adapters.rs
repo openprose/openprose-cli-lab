@@ -1051,7 +1051,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
                     Some("user" | "stream_event" | "tool_progress") => {}
                     Some("system") if record.get("subtype").and_then(Value::as_str)==Some("init") => {
                         let previous=&records[index-1];
-                        if previous.get("subtype").and_then(Value::as_str)!=Some("task_notification") || !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
+                        if (!native_claude && previous.get("subtype").and_then(Value::as_str)!=Some("task_notification")) || !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
                         let mut first=records[0].as_object().ok_or_else(malformed)?.clone();let mut repeated=record.as_object().ok_or_else(malformed)?.clone();first.remove("uuid");repeated.remove("uuid");if first!=repeated{return Err(malformed());}
                     }
                     Some("system") if record.get("subtype").and_then(Value::as_str)==Some("background_tasks_changed") => {
@@ -6524,6 +6524,18 @@ mod native_turn_tests {
  #[ignore="set CLAUDE_REPLAY_PATH to a retained native trace"]
  fn recorded_claude_native_turn_replay(){
   let text=std::fs::read_to_string(std::env::var("CLAUDE_REPLAY_PATH").unwrap()).unwrap();let records:Vec<Value>=text.lines().map(|l|serde_json::from_str(l).unwrap()).collect();
-  assert!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture",true).is_ok());
+  assert_eq!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture",true).is_ok(),records.last().unwrap()["type"]=="result");
+  if records.last().unwrap()["type"]!="result" { let mut synthetic=records.clone();synthetic.push(json!({"type":"result","subtype":"success","is_error":false,"session_id":records[0]["session_id"]}));assert!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&synthetic,"fixture",true).is_ok()); }
  }
+}
+
+#[cfg(test)]
+#[test]
+fn native_repeated_init_requires_metadata_identity_and_fresh_result(){
+ let init=json!({"type":"system","subtype":"init","session_id":"fixture","uuid":"one","tools":["Read"],"model":"fixture-model","apiKeySource":"fixture-auth"});
+ let result=json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture"});
+ let mut repeated=init.clone();repeated["uuid"]=json!("two");let records=vec![init.clone(),result.clone(),repeated.clone(),result.clone()];
+ let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
+ assert!(run(&records).is_ok());assert!(run(&records[..3]).is_err());assert!(normalize_transport(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture").is_err());
+ for (key,value) in [("uuid",json!("")),("tools",json!(["Write"])),("model",json!("other")),("apiKeySource",json!("other")),("session_id",json!("other"))]{let mut bad=records.clone();bad[2][key]=value;assert!(run(&bad).is_err());}
 }

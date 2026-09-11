@@ -66,5 +66,15 @@ test("native Claude requires fresh successful candidate and matching session",()
  expect(()=>q.accept({type:"unsupported",session_id:"fixture-session"})).toThrow();
 });
 test.skipIf(!process.env.CLAUDE_REPLAY_PATH)("recorded native Claude stream remains provisional until exit",async()=>{
- const records=(await Bun.file(process.env.CLAUDE_REPLAY_PATH!).text()).trim().split("\n").map(l=>JSON.parse(l));const p=native();records.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+ const records=(await Bun.file(process.env.CLAUDE_REPLAY_PATH!).text()).trim().split("\n").map(l=>JSON.parse(l));const p=native();records.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);if(records.at(-1).type==="result")expect(p.settleProcess?.(0)?.type).toBe("session.completed");else expect(()=>p.settleProcess?.(0)).toThrow();
+});
+
+test("native repeated init requires exact metadata and invalidates prior result",()=>{
+ const init={...turns[0],uuid:"initial",tools:["Read"],model:"fixture-model",apiKeySource:"fixture-auth"};
+ const p=native();p.accept(init);p.accept(turns[1]);p.accept({...init,uuid:"resumed"});
+ expect(()=>p.settleProcess?.(0)).toThrow();p.accept(turns[2]);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+ for(const mutation of [{uuid:""},{tools:["Write"]},{model:"other"},{apiKeySource:"other"},{session_id:"other"}]){
+  const q=native();q.accept(init);q.accept(turns[1]);expect(()=>q.accept({...init,uuid:"resumed",...mutation})).toThrow();
+ }
+ const old=installedProtocol("claude/print-stream-json","2.1.243","fixture");old.accept(init);expect(()=>old.accept({...init,uuid:"resumed"})).toThrow();
 });
