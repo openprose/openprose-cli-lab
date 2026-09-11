@@ -1,10 +1,10 @@
 # OpenProse CLI lab
 
-Two independent outer runners, Rust and Bun (packaged through npm), connect an opaque Markdown-owned image and task to an existing agent harness. They do not interpret Contracts or implement the OpenProse language. Keep the interpreter, standard library, and component definitions in the separate Markdown library.
+Two independent outer runners, Rust and Bun (packaged through npm), connect an opaque Markdown-owned image and task to an existing agent harness. They do not interpret Contracts or implement the OpenProse language. Keep the kernel, standard library, and component definitions in the separate Markdown library.
 
 ## Choose the image and output contract
 
-Unconfigured builds embed `echo-v0`, a deliberately nonsemantic transport fixture. Running that image does not execute the language. To run a language directory, build with a verified image whose entry directs the agent to its interpreter and requested program. Image source, bundle, and checksum are build inputs; changing them requires no CLI source edit. See [image bundle configuration](cli/shared/image/bundle/README.md).
+Unconfigured builds embed `echo-v0`, a deliberately nonsemantic transport fixture. Running that image does not execute the language. To run a language directory, build with a verified image whose entry directs the agent to its kernel and requested program. Image source, bundle, and checksum are build inputs; changing them requires no CLI source edit. See [image bundle configuration](cli/shared/image/bundle/README.md).
 
 Both runners support:
 
