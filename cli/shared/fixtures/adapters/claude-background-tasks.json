@@ -1,0 +1,13 @@
+{
+  "session_id": "fixture-session",
+  "subtype": "background_tasks_changed",
+  "tasks": [
+    {
+      "task_id": "fixture-task",
+      "description": "fixture task",
+      "task_type": "local_agent"
+    }
+  ],
+  "type": "system",
+  "uuid": "fixture-uuid"
+}

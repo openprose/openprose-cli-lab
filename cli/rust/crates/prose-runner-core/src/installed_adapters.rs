@@ -1026,6 +1026,16 @@ pub fn normalize_transport(
                         assistant_messages.extend(assistant_text_content(record)?);
                     }
                     Some("user" | "stream_event" | "tool_progress") => {}
+                    Some("system") if record.get("subtype").and_then(Value::as_str)==Some("init") => {
+                        let previous=&records[index-1];
+                        if previous.get("subtype").and_then(Value::as_str)!=Some("task_notification") || !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
+                        let mut first=records[0].as_object().ok_or_else(malformed)?.clone();let mut repeated=record.as_object().ok_or_else(malformed)?.clone();first.remove("uuid");repeated.remove("uuid");if first!=repeated{return Err(malformed());}
+                    }
+                    Some("system") if record.get("subtype").and_then(Value::as_str)==Some("background_tasks_changed") => {
+                        if !record.get("uuid").and_then(Value::as_str).is_some_and(|v|!v.is_empty()) {return Err(malformed());}
+                        let tasks=record.get("tasks").and_then(Value::as_array).ok_or_else(malformed)?;
+                        if !tasks.iter().all(|task|["task_id","description","task_type"].iter().all(|key|task.get(*key).and_then(Value::as_str).is_some_and(|v|!v.is_empty()))) {return Err(malformed());}
+                    }
                     Some("system") if matches!(record.get("subtype").and_then(Value::as_str),Some("task_started"|"task_progress"|"task_updated"|"task_notification")) => {
                         if !["task_id","uuid"].iter().all(|key|record.get(*key).and_then(Value::as_str).is_some_and(|v|!v.is_empty())) {return Err(malformed());}
                         match record.get("subtype").and_then(Value::as_str) {
@@ -6440,4 +6450,15 @@ fn claude_native_task_lifecycle_never_settles_outer_invocation(){
    let mut invalid=task.clone();invalid[key]=value;assert!(normalize_transport(adapter,&[init.clone(),invalid,done.clone()],"unused").is_err());
   }
  }
+}
+#[test]
+fn claude_background_inventory_is_nonterminal(){
+ let event:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/claude-background-tasks.json")).unwrap();
+ let init=serde_json::json!({"type":"system","subtype":"init","session_id":"fixture-session"});let done=serde_json::json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture-session"});let a=InstalledAdapter::ClaudePrintStreamJson;
+ assert!(normalize_transport(a,&[init.clone(),event.clone()],"unused").is_err());assert!(normalize_transport(a,&[init.clone(),event.clone(),done.clone()],"unused").is_ok());let mut bad=event;bad["tasks"]=serde_json::json!([{}]);assert!(normalize_transport(a,&[init,bad,done],"unused").is_err());
+}
+#[test]
+fn claude_task_resumption_preserves_initial_configuration(){
+ let init=serde_json::json!({"type":"system","subtype":"init","session_id":"fixture-session","uuid":"initial"});let notice=serde_json::json!({"type":"system","subtype":"task_notification","session_id":"fixture-session","uuid":"n","task_id":"t","status":"completed"});let done=serde_json::json!({"type":"result","subtype":"success","is_error":false,"session_id":"fixture-session"});let mut repeated=init.clone();repeated["uuid"]=serde_json::json!("resumed");let a=InstalledAdapter::ClaudePrintStreamJson;
+ assert!(normalize_transport(a,&[init.clone(),notice.clone(),repeated.clone(),done.clone()],"unused").is_ok());assert!(normalize_transport(a,&[init.clone(),repeated.clone(),done.clone()],"unused").is_err());repeated["cwd"]=serde_json::json!("changed");assert!(normalize_transport(a,&[init,notice,repeated,done],"unused").is_err());
 }

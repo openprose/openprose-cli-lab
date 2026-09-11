@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { NativeToolLifecycle, hasNativeTools } from "./native-tool-lifecycle";
 import { failure } from "../core/errors";
 import { RunnerFailure } from "../core/types";
@@ -113,15 +114,34 @@ class AgentsSdkProtocol extends InstalledProtocol {
 
 class ClaudeProtocol extends InstalledProtocol {
   private sessionId: string | null = null;
+  private initialRecord: Record<string, unknown> | null = null;
+  private afterTaskNotification = false;
 
   accept(value: unknown): RawTransportEvent | null {
     const record = this.record(value);
     if (record.type === "system" && record.subtype === "init") {
       if (typeof record.session_id !== "string" || record.session_id.length === 0) malformed("Claude init session identity is invalid.");
+      if (this.started) {
+        const {uuid: _old, ...initial}=this.initialRecord!;
+        const {uuid, ...repeated}=record;
+        if (!this.afterTaskNotification || typeof uuid !== "string" || !uuid || !isDeepStrictEqual(initial,repeated)) malformed("Claude duplicate init is not a matching task resumption.");
+        this.afterTaskNotification=false;
+        return null;
+      }
+      this.initialRecord=record;
       this.sessionId = record.session_id;
       return this.start();
     }
     this.requireSession(record);
+    this.afterTaskNotification=record.type==="system" && record.subtype==="task_notification";
+    if (record.type === "system" && record.subtype === "background_tasks_changed") {
+      if (typeof record.uuid !== "string" || !record.uuid || !Array.isArray(record.tasks)) malformed("Claude background inventory invalid.");
+      for (const item of record.tasks as unknown[]) {
+        const task=asRecord(item,"Claude background task invalid.");
+        if (!["task_id","description","task_type"].every(key=>typeof task[key]==="string" && (task[key] as string).length>0)) malformed("Claude background task identity invalid.");
+      }
+      return null;
+    }
     if (record.type === "system" && ["task_started", "task_progress", "task_updated", "task_notification"].includes(String(record.subtype))) {
       if (typeof record.task_id !== "string" || !record.task_id || typeof record.uuid !== "string" || !record.uuid) malformed("Claude task identity missing.");
       if (record.subtype === "task_started" && typeof record.description !== "string") malformed("Claude task description missing.");

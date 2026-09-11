@@ -34,3 +34,15 @@ test("native task lifecycle remains session-bound nonterminal telemetry",()=>{
  expect(()=>ready().accept({...tasks.find(t=>t.subtype==="task_progress"),usage:{total_tokens:-1,tool_uses:1,duration_ms:1}})).toThrow();
  expect(()=>ready().accept({...tasks[0],subtype:"task_invented"})).toThrow();
 });
+import background from "../../shared/fixtures/adapters/claude-background-tasks.json";
+test("native background inventory is validated nonterminal telemetry",()=>{
+ const p=ready();expect(p.accept(background)).toBeNull();expect(p.terminalEventObserved).toBe(false);
+ expect(()=>ready().accept({...background,tasks:[{}]})).toThrow();expect(()=>ready().accept({...background,session_id:"other"})).toThrow();
+ expect(p.accept({...background,tasks:[]})).toBeNull();
+});
+test("identical init after native task notification resumes existing session only",()=>{
+ const p=ready();p.accept(tasks.find(t=>t.subtype==="task_notification"));
+ expect(p.accept({type:"system",subtype:"init",session_id:"fixture-session",uuid:"resumed"})).toBeNull();expect(p.terminalEventObserved).toBe(false);
+ expect(()=>ready().accept({type:"system",subtype:"init",session_id:"fixture-session",uuid:"duplicate"})).toThrow();
+ const q=ready();q.accept(tasks.find(t=>t.subtype==="task_notification"));expect(()=>q.accept({type:"system",subtype:"init",session_id:"fixture-session",uuid:"resumed",cwd:"changed"})).toThrow();
+});
