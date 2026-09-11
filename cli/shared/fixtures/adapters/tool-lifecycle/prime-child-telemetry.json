@@ -1,0 +1,364 @@
+{
+  "valid": [
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child"
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "running",
+        "sessionDir": "/tmp/native-child"
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "done",
+        "sessionDir": "/tmp/native-child"
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "error",
+        "sessionDir": "/tmp/native-child"
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "cancelled",
+        "sessionDir": "/tmp/native-child"
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": null,
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "completed",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": -1,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 1.5,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": -1,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": "true",
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": 1,
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "unknown"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": "",
+        "extra": 1
+      }
+    },
+    {
+      "type": "rlm_child_update",
+      "child": {
+        "id": "sub-1",
+        "label": "review",
+        "status": "queued",
+        "sessionDir": "/tmp/native-child",
+        "parentId": "parent",
+        "activeSessionId": "session",
+        "sessionName": "child",
+        "model": "provider/model",
+        "durationMs": 1.5,
+        "answerPreview": "",
+        "toolUseCount": 2,
+        "tokenCount": 10,
+        "recap": "",
+        "activity": {
+          "kind": "executing",
+          "toolName": "ipython"
+        },
+        "repliedSinceTask": false,
+        "error": ""
+      },
+      "extra": true
+    }
+  ]
+}

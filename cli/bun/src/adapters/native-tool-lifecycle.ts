@@ -17,6 +17,21 @@ export function nativeArgsMatch(actual: unknown, declared: unknown, omp:boolean)
  return same(actual,declared);
 }
 
+function validPrimeChildUpdate(r: Record<string, any>): boolean {
+ if(Object.keys(r).some(k=>!["type","child"].includes(k)))return false;
+ const c=r.child;
+ if(!c||typeof c!=="object"||Array.isArray(c))return false;
+ const strings=["parentId","activeSessionId","sessionName","model","answerPreview","recap","error"];
+ const fields=["id","label","status","sessionDir","durationMs","toolUseCount","tokenCount","activity","repliedSinceTask",...strings];
+ if(Object.keys(c).some(k=>!fields.includes(k))||typeof c.id!=="string"||!c.id||typeof c.sessionDir!=="string"||!c.sessionDir||typeof c.label!=="string"||!["queued","running","done","error","cancelled"].includes(c.status))return false;
+ if(strings.some(k=>k in c&&typeof c[k]!=="string"))return false;
+ if("durationMs" in c&&(typeof c.durationMs!=="number"||!Number.isFinite(c.durationMs)||c.durationMs<0))return false;
+ if(["toolUseCount","tokenCount"].some(k=>k in c&&(!Number.isSafeInteger(c[k])||c[k]<0)))return false;
+ if("repliedSinceTask" in c&&typeof c.repliedSinceTask!=="boolean")return false;
+ if("activity" in c){const a=c.activity;if(!a||typeof a!=="object"||Array.isArray(a)||Object.keys(a).some(k=>!["kind","toolName"].includes(k))||!["waiting","writing","executing"].includes(a.kind)||("toolName" in a&&typeof a.toolName!=="string"))return false;}
+ return true;
+}
+
 /** Native transport bookkeeping only. No language meaning or synthetic settlement. */
 export class NativeToolLifecycle {
   started = false;
@@ -46,6 +61,9 @@ export class NativeToolLifecycle {
     const r = object(value);
     if (this.ended) bad();
     switch (r.type) {
+      case "rlm_child_update":
+        if(this.omp||!this.started||!validPrimeChildUpdate(r))bad();
+        return null;
       case "agent_start":
         if (this.started) bad();
         this.started = true;

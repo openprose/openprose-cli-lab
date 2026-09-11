@@ -20,6 +20,44 @@ pub(super) fn rich(record: &Value) -> bool {
             .and_then(Value::as_array)
             .is_some_and(|t| !t.is_empty())
 }
+// Child progress is telemetry only: it never settles a parent tool or message.
+fn valid_prime_child_update(record: &Value) -> bool {
+    if !has_exact_keys(record, &["type", "child"]) {
+        return false;
+    }
+    let Some(child) = record["child"].as_object() else { return false; };
+    let allowed = ["id", "label", "status", "sessionDir", "parentId", "activeSessionId",
+        "sessionName", "model", "answerPreview", "recap", "error", "durationMs",
+        "toolUseCount", "tokenCount", "repliedSinceTask", "activity"];
+    if child.keys().any(|key| !allowed.contains(&key.as_str()))
+        || ["id", "sessionDir"].iter().any(|key| child.get(*key).and_then(Value::as_str).is_none_or(str::is_empty))
+        || child.get("label").and_then(Value::as_str).is_none()
+        || !matches!(child.get("status").and_then(Value::as_str), Some("queued" | "running" | "done" | "error" | "cancelled")) {
+        return false;
+    }
+    for key in ["parentId", "activeSessionId", "sessionName", "model", "answerPreview", "recap", "error"] {
+        if child.get(key).is_some_and(|v| !v.is_string()) { return false; }
+    }
+    if child.get("durationMs").is_some_and(|v| v.as_f64().is_none_or(|n| !n.is_finite() || n < 0.0)) {
+        return false;
+    }
+    for key in ["toolUseCount", "tokenCount"] {
+        if child.get(key).is_some_and(|v| v.as_f64().is_none_or(|n| !n.is_finite() || n < 0.0 || n.fract() != 0.0 || n > 9_007_199_254_740_991.0)) {
+            return false;
+        }
+    }
+    if child.get("repliedSinceTask").is_some_and(|v| !v.is_boolean()) { return false; }
+    if let Some(activity) = child.get("activity") {
+        let Some(a) = activity.as_object() else { return false; };
+        if a.keys().any(|key| !["kind", "toolName"].contains(&key.as_str()))
+            || !matches!(a.get("kind").and_then(Value::as_str), Some("waiting" | "writing" | "executing"))
+            || a.get("toolName").is_some_and(|v| !v.is_string()) {
+            return false;
+        }
+    }
+    true
+}
+
 fn same_message(a: &Value, b: &Value, omp: bool) -> bool {
     if !omp {
         return a == b;
@@ -146,6 +184,12 @@ pub(super) fn normalize(
         }
         if !inventory || (!omp && !ack) || ended {
             return Err(bad());
+        }
+        if kind == "rlm_child_update" {
+            if omp || !started || !valid_prime_child_update(r) {
+                return Err(bad());
+            }
+            continue;
         }
         match kind {
             "agent_start" => {
@@ -414,6 +458,45 @@ mod tests {
         })
         .unwrap()
     }
+    #[test]
+    fn prime_child_telemetry_is_typed_and_cannot_settle_parent() {
+        let fixture: Value = serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime-child-telemetry.json")).unwrap();
+        let original = frames(false);
+        let at = original.iter().position(|r| r["type"] == "tool_execution_start").unwrap() + 1;
+        let expected = normalize(&original, "fixture-tools", false, true).unwrap();
+        for record in fixture["valid"].as_array().unwrap() {
+            assert!(valid_prime_child_update(record));
+            let mut with_child = original.clone();
+            with_child.insert(at, record.clone());
+            let actual = normalize(&with_child, "fixture-tools", false, true).unwrap();
+            assert_eq!(actual, expected);
+            // Child completion cannot replace native parent terminal evidence.
+            with_child.pop();
+            assert!(normalize(&with_child, "fixture-tools", false, false).is_ok());
+            assert!(normalize(&with_child, "fixture-tools", false, true).is_err());
+            // Nor can it supply the still-pending parent tool result.
+            let mut pending = original[..at].to_vec();
+            pending.push(record.clone());
+            assert!(normalize(&pending, "fixture-tools", false, false).is_ok());
+            assert!(normalize(&pending, "fixture-tools", false, true).is_err());
+            for position in [1, original.len()] {
+                let mut outside = original.clone();
+                outside.insert(position, record.clone());
+                assert!(normalize(&outside, "fixture-tools", false, true).is_err());
+            }
+            let mut omp = frames(true);
+            let at = omp.iter().position(|r| r["type"] == "tool_execution_start").unwrap() + 1;
+            omp.insert(at, record.clone());
+            assert!(normalize(&omp, "fixture-tools", true, true).is_err());
+        }
+        for record in fixture["invalid"].as_array().unwrap() {
+            assert!(!valid_prime_child_update(record), "{record}");
+            let mut invalid = original.clone();
+            invalid.insert(at, record.clone());
+            assert!(normalize(&invalid, "fixture-tools", false, true).is_err());
+        }
+    }
+
     #[test]
     fn actual_tool_streams_and_corruptions() {
         for omp in [false, true] {

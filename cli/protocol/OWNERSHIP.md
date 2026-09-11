@@ -311,3 +311,7 @@ Decision022 lease includes canonical cli/conformance/cases/fixtures/runner-help.
 
 Decision023 active lease cli_recon: cli/bun/src/core/output.ts, cli/bun/src/cli.ts, cli/bun/test/reporting-parity.test.ts, cli/rust/crates/prose-runner-core/src/runner.rs, cli/shared/schemas/configuration-explanation.schema.json, cli/shared/fixtures/config/optional-reporting.json, cli/shared/tests/test_contracts.py, docs/configuration-reporting.md. Reporting only; no runtime defaults or launch changes.
 Decision023 lease also includes cli/bun/src/core/config.ts for canonical --output-contract source location only.
+
+Decision024 Rust active lease: coordination_library owns only cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs for typed active-parent Prime child telemetry validation and provider-free tests. cli_recon is sole Git owner.
+
+Decision024 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/prime-child-telemetry.test.ts; cli/shared/fixtures/adapters/tool-lifecycle/prime-child-telemetry.json; docs/prime-child-telemetry.md. Generic native compatibility only.
