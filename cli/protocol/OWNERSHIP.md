@@ -288,3 +288,10 @@ Lease extension cli_recon: cli/shared/fixtures/adapters/claude-background-tasks.
 Lease cli_recon documentation audit: cli/rust/README.md and cli/bun/README.md. Root explicitly also assigns repository README.md and linked docs/api-credentials.md and docs/permissions-and-native-notices.md; current behavior only, no source or semantic changes.
 
 Documentation scope extension: docs/native-capture.md, clarifying existing capture limits only.
+
+| NATIVE-PROFILE-BUN | cli_recon | `cli/bun/src/core/args.ts`, `cli/bun/src/core/config.ts`, `cli/bun/src/core/types.ts`, `cli/bun/src/cli.ts`, `cli/bun/src/adapters/types.ts`, `cli/bun/src/adapters/plan.ts`, `cli/bun/src/adapters/runner.ts`, `cli/bun/src/adapters/environment.ts`, `cli/bun/src/adapters/native-profile.ts`, `cli/bun/test/native-profile.test.ts`, `cli/shared/fixtures/adapters/native-profile.json`, `cli/shared/schemas/runner-result.schema.json`, `cli/shared/schemas/dry-run-report.schema.json` | native profile public contract | active |
+| NATIVE-PROFILE-RUST | coordination_library | `cli/rust/**` | parent authorized Rust-only implementation | active |
+
+| NATIVE-PROFILE-SCHEMA | cli_recon | `cli/shared/schemas/native-configuration.schema.json`, `cli/shared/schemas/runner-dry-run-report.schema.json`, `cli/shared/schemas/runner-invocation.schema.json`, `cli/shared/schemas/configuration-explanation.schema.json` | optional native profile metadata | active |
+
+| NATIVE-PROFILE-HELP | cli_recon | `cli/conformance/cases/fixtures/runner-help.txt` | shared native option help | active |

@@ -1,0 +1,35 @@
+{
+  "profile": "claude-workspace-tools",
+  "tools": [
+    "Read",
+    "Write",
+    "Edit",
+    "Glob",
+    "Grep",
+    "Agent",
+    "Bash"
+  ],
+  "flags": [
+    "--setting-sources",
+    "",
+    "--tools",
+    "Read,Write,Edit,Glob,Grep,Agent,Bash"
+  ],
+  "defaults": {
+    "profile": "default",
+    "additionalDirectories": [],
+    "allowedToolRules": []
+  },
+  "acceptedAuthSource": "ANTHROPIC_API_KEY",
+  "rejectedProfiles": [
+    "full",
+    "claude-bare"
+  ],
+  "rejectedHarnesses": [
+    "codex",
+    "prime",
+    "omp",
+    "agents-sdk",
+    "mock"
+  ]
+}

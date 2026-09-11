@@ -1162,7 +1162,11 @@ fn operation_fixture(name: &str) -> Value {
 
 fn expected_harness_inventory() -> Value {
     let mut harnesses = operation_fixture("harnesses")["harnesses"].clone();
-    for harness in &mut harnesses.as_array_mut().unwrap()[1..5] {
+    // The generic SDK adapter was added after the older operation fixture.
+    if !harnesses.as_array().unwrap().iter().any(|h|h["id"]=="agents-sdk") {
+        harnesses.as_array_mut().unwrap().insert(5,json!({"id":"agents-sdk","runtime":"installed-process","availability":"missing","transports":["jsonl"],"detectedVersion":null,"billingOwner":"user-provider","authCategory":"harness-managed","strictWrapperConformant":false,"testOnly":false}));
+    }
+    for harness in &mut harnesses.as_array_mut().unwrap()[1..6] {
         harness["availability"] = json!("missing");
         harness["detectedVersion"] = Value::Null;
         harness["strictWrapperConformant"] = json!(false);
@@ -1963,7 +1967,7 @@ fn ordinary_installed_adapters_discover_probe_and_run_without_internal_seams() {
             "omp/rpc" => {
                 assert_eq!(model_index + 4, observed_argv.len());
                 assert_eq!(observed_argv[model_index + 2], "--config");
-                assert!(observed_argv.iter().any(|value| value == "--no-tools"));
+                assert!(!observed_argv.iter().any(|value| value == "--no-tools"));
             }
             _ => unreachable!(),
         }
@@ -4599,9 +4603,9 @@ fn runner_diagnostics_and_identity_stay_local() {
             .iter()
             .map(|harness| harness["id"].as_str().unwrap())
             .collect::<Vec<_>>(),
-        ["openprose", "prime", "omp", "codex", "claude", "mock"]
+        ["openprose", "prime", "omp", "codex", "claude", "agents-sdk", "mock"]
     );
-    for harness in &harnesses[1..5] {
+    for harness in &harnesses[1..6] {
         assert_eq!(harness["runtime"], "installed-process");
         assert_eq!(harness["availability"], "missing");
         assert_eq!(harness["detectedVersion"], Value::Null);
@@ -4611,9 +4615,9 @@ fn runner_diagnostics_and_identity_stay_local() {
         assert_eq!(harness["testOnly"], false);
         assert_eq!(harness["admissionBlock"], Value::Null);
     }
-    assert_eq!(harnesses[5]["id"], "mock");
+    assert_eq!(harnesses[6]["id"], "mock");
     assert_eq!(
-        harnesses[5]["detectedVersion"],
+        harnesses[6]["detectedVersion"],
         if cfg!(feature = "test-seams") {
             json!("1.0.0")
         } else {
@@ -4621,14 +4625,14 @@ fn runner_diagnostics_and_identity_stay_local() {
         }
     );
     assert_eq!(
-        harnesses[5]["availability"],
+        harnesses[6]["availability"],
         if cfg!(feature = "test-seams") {
             "available"
         } else {
             "unavailable"
         }
     );
-    assert_eq!(harnesses[5]["testOnly"], true);
+    assert_eq!(harnesses[6]["testOnly"], true);
 
     let installed_doctor = prose(
         temp.path(),

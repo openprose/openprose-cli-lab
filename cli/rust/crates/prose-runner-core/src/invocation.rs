@@ -39,6 +39,9 @@ pub struct GlobalFlags {
     pub native_log: Option<String>,
     pub output_contract: Option<String>,
     pub permission_mode: Option<String>,
+    pub native_profile: Option<String>,
+    pub native_add_dirs: Vec<String>,
+    pub native_allow_tools: Vec<String>,
     pub timeout: Option<String>,
     pub output: Option<OutputMode>,
     pub dry_run: bool,
@@ -187,6 +190,9 @@ fn is_value_option(value: &str) -> bool {
             | "--cwd"
             | "--model"
             | "--auth-profile"
+            | "--native-profile"
+            | "--native-add-dir"
+            | "--native-allow-tool"
             | "--native-log"
             | "--output-contract"
             | "--permission-mode"
@@ -217,6 +223,9 @@ fn set_value_option(globals: &mut GlobalFlags, name: &str, value: &str) -> Resul
             if !matches!(value,"native"|"image-envelope") { return Err(RunnerError::invocation("output contract must be native or image-envelope")); }
             set_once(&mut globals.output_contract,name,value)?;
         }
+        "--native-profile" => set_once(&mut globals.native_profile, name, value)?,
+        "--native-add-dir" => globals.native_add_dirs.push(value.to_owned()),
+        "--native-allow-tool" => globals.native_allow_tools.push(value.to_owned()),
         "--permission-mode" => set_once(&mut globals.permission_mode, name, value)?,
         "--timeout" => globals.timeout = Some(value.to_owned()),
         "--output" => {
@@ -662,4 +671,12 @@ mod tests {
             assert_eq!(error.boundary, "invocation", "{args:?}");
         }
     }
+}
+
+#[test]
+fn parses_repeated_native_values_without_shell_interpretation(){
+ let p=parse_invocation(vec!["--native-profile=claude-workspace-tools","--native-add-dir","a b","--native-add-dir=other","--native-allow-tool","Bash(git status:*)","run"].into_iter().map(str::to_owned)).unwrap();
+ assert_eq!(p.globals.native_profile.as_deref(),Some("claude-workspace-tools"));
+ assert_eq!(p.globals.native_add_dirs,vec!["a b","other"]);
+ assert_eq!(p.globals.native_allow_tools,vec!["Bash(git status:*)"]);
 }

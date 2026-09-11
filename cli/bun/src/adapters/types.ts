@@ -158,6 +158,9 @@ export interface InstalledAdapterOptions {
   ambient: Readonly<Record<string, string | undefined>>;
   timeoutMs: number;
   model?: string | null;
+  nativeProfile?: string;
+  nativeAddDirs?: string[];
+  nativeAllowTools?: string[];
   permissionMode?: string | null;
   fixtureInterpreter?: string;
   wrapperExecutable?: string;
@@ -182,6 +185,7 @@ export interface InstalledAdapterOptions {
 }
 
 export interface InstalledAdapterResult {
+  nativeConfiguration?: Record<string,unknown> | undefined;
   plan: InstalledLaunchPlan;
   process: ProcessSupervisionResult;
   /** Public projection; raw process events remain private terminal-recovery input. */

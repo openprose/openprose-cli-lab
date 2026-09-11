@@ -11,6 +11,7 @@
     "runnerExitCode"
   ],
   "properties": {
+    "nativeConfiguration": { "$ref": "native-configuration.schema.json" },
     "schema": { "const": "openprose.runner-result/1" },
     "invocationId": { "$ref": "common.schema.json#/$defs/nonEmptyString", "x-openprose-volatile": true },
     "runner": {

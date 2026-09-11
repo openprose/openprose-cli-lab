@@ -178,6 +178,9 @@ pub struct EffectiveConfig {
     pub native_log: Sourced<Option<String>>,
     pub output_contract: Sourced<String>,
     pub permission_mode: Sourced<Option<String>>,
+    pub native_profile: Sourced<String>,
+    pub native_add_dirs: Sourced<Vec<String>>,
+    pub native_allow_tools: Sourced<Vec<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -450,6 +453,9 @@ impl EffectiveConfig {
             },
             native_log:Sourced {value:None,source:ConfigSource::default()},
             output_contract: Sourced { value:"image-envelope".into(),source:ConfigSource::default() },
+            native_profile: Sourced {value:"default".into(),source:ConfigSource::default()},
+            native_add_dirs: Sourced {value:vec![],source:ConfigSource::default()},
+            native_allow_tools: Sourced {value:vec![],source:ConfigSource::default()},
             permission_mode: Sourced { value:None, source:ConfigSource::default() },
             auth_profile: Sourced {
                 value: None,
@@ -473,6 +479,9 @@ struct FileConfig {
     native_log: Option<String>,
     output_contract: Option<String>,
     permission_mode: Option<String>,
+    native_profile: Option<String>,
+    native_add_dirs: Option<Vec<String>>,
+    native_allow_tools: Option<Vec<String>>,
 }
 
 struct LoadedFileConfig {
@@ -492,6 +501,9 @@ const FILE_CONFIG_KEYS: &[&str] = &[
     "native_log",
     "output_contract",
     "permission_mode",
+    "native_profile",
+    "native_add_dirs",
+    "native_allow_tools",
 ];
 
 fn config_line_error(path: &Path, line: usize, reason: impl Into<String>) -> RunnerError {
@@ -664,6 +676,12 @@ fn validate_flat_toml(source: &str, path: &Path) -> Result<BTreeMap<String, usiz
             );
         }
         let value = &bytes[cursor..];
+        if matches!(key, "native_add_dirs" | "native_allow_tools") {
+            let parsed: toml::Table = raw.parse().map_err(|_|config_line_error(path,line_number,"Expected a single-line string array."))?;
+            let array = parsed.get(key).and_then(toml::Value::as_array).ok_or_else(||config_line_error(path,line_number,"Expected a single-line string array."))?;
+            if !array.iter().all(|v|v.as_str().is_some()) {return Err(config_line_error(path,line_number,"Expected a string array."));}
+            continue;
+        }
         let (end, literal, value_kind) = match value.first() {
             Some(b'"') => (
                 scan_basic_string(value)
@@ -781,6 +799,14 @@ pub fn resolve_config(
     }
     apply_environment(&mut config, &system.environment)?;
     apply_flags(&mut config, flags)?;
+    if config.native_profile.value != "default" && config.harness.value != "claude" {return Err(RunnerError::config("Native workspace profile requires Claude."));}
+    if config.native_profile.value == "default" && (!config.native_add_dirs.value.is_empty() || !config.native_allow_tools.value.is_empty()) {return Err(RunnerError::config("Native directory/tool options require claude-workspace-tools."));}
+    for directory in &mut config.native_add_dirs.value {
+        let path=Path::new(directory);let path=if path.is_absolute(){path.to_owned()}else{config.cwd.join(path)};
+        let resolved=fs::canonicalize(&path).map_err(|_|RunnerError::config("Native additional directory does not exist."))?;
+        if !resolved.is_dir(){return Err(RunnerError::config("Native additional path is not a directory."));}
+        *directory=resolved.to_string_lossy().into_owned();
+    }
     Ok(config)
 }
 
@@ -915,6 +941,9 @@ fn apply_file(
     if let Some(value) = source_values.verbose {
         target.verbose.replace(value, source.clone());
     }
+    if let Some(value)=source_values.native_profile {target.native_profile.replace(validate_native_profile(value)?,source.clone());}
+    if let Some(value)=source_values.native_add_dirs {target.native_add_dirs.replace(validate_native_values(value)?,source.clone());}
+    if let Some(value)=source_values.native_allow_tools {target.native_allow_tools.replace(validate_native_rules(value)?,source.clone());}
     if let Some(value)=source_values.native_log {target.native_log.replace(Some(value),source.clone());}
     if let Some(value) = source_values.output_contract { target.output_contract.replace(validate_output_contract(value)?,source.clone()); }
     if let Some(value) = source_values.permission_mode {
@@ -982,6 +1011,7 @@ fn apply_environment(
             ConfigSource::environment("PROSE_VERBOSE"),
         );
     }
+    if let Some(value)=environment.get("PROSE_NATIVE_PROFILE") {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::environment("PROSE_NATIVE_PROFILE"));}
     if let Some(value)=environment.get("PROSE_NATIVE_LOG"){target.native_log.replace(Some(value.clone()),ConfigSource::environment("PROSE_NATIVE_LOG"));}
     if let Some(value) = environment.get("PROSE_OUTPUT_CONTRACT") { target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::environment("PROSE_OUTPUT_CONTRACT")); }
     if let Some(value) = environment.get("PROSE_PERMISSION_MODE") {
@@ -996,6 +1026,18 @@ fn apply_environment(
     Ok(())
 }
 
+fn validate_native_profile(value:String)->Result<String,RunnerError>{
+    if matches!(value.as_str(),"default"|"claude-workspace-tools"){Ok(value)}else{Err(RunnerError::config("Unknown native profile."))}
+}
+fn validate_native_values(values:Vec<String>)->Result<Vec<String>,RunnerError>{
+    if values.iter().any(|v|v.trim().is_empty() || v.contains('\0')) {Err(RunnerError::config("Native directory/tool values must be nonempty and contain no NUL."))}else{Ok(values)}
+}
+
+fn validate_native_rules(values:Vec<String>)->Result<Vec<String>,RunnerError>{
+    let values=validate_native_values(values)?;
+    if values.iter().any(|v|v.starts_with('-')) {Err(RunnerError::config("Native tool rules must not start with '-'."))}else{Ok(values)}
+}
+
 fn validate_output_contract(value:String)->Result<String,RunnerError>{
  if matches!(value.as_str(),"native"|"image-envelope") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Output contract must be native or image-envelope"))}
 }
@@ -1005,6 +1047,9 @@ fn validate_permission_mode(value:String)->Result<String,RunnerError>{
 }
 
 fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), RunnerError> {
+    if let Some(value)=&flags.native_profile {target.native_profile.replace(validate_native_profile(value.clone())?,ConfigSource::flag("--native-profile"));}
+    if !flags.native_add_dirs.is_empty() {target.native_add_dirs.replace(validate_native_values(flags.native_add_dirs.clone())?,ConfigSource::flag("--native-add-dir"));}
+    if !flags.native_allow_tools.is_empty() {target.native_allow_tools.replace(validate_native_rules(flags.native_allow_tools.clone())?,ConfigSource::flag("--native-allow-tool"));}
     if let Some(value)=&flags.native_log {target.native_log.replace(Some(value.clone()),ConfigSource::flag("--native-log"));}
     if let Some(value)=&flags.output_contract {target.output_contract.replace(validate_output_contract(value.clone())?,ConfigSource::flag("--output-contract"));}
     if let Some(value)=&flags.permission_mode {target.permission_mode.replace(Some(validate_permission_mode(value.clone())?),ConfigSource::flag("--permission-mode"));}
@@ -1123,6 +1168,19 @@ mod tests {
             environment: BTreeMap::new(),
             platform: Platform::Unix,
         }
+    }
+
+    #[test]
+    fn native_profile_precedence_arrays_and_directory_validation(){
+        let temp=TempDir::new().unwrap();let home=temp.path().join("home");fs::create_dir_all(temp.path().join(".prose")).unwrap();fs::create_dir(temp.path().join("a b")).unwrap();
+        fs::write(temp.path().join(".prose/cli.toml"),"harness='claude'\nnative_profile='claude-workspace-tools'\nnative_add_dirs=['a b']\nnative_allow_tools=['Read','Bash(git status:*)']\n").unwrap();
+        let mut system=context(temp.path(),&home);let mut flags=GlobalFlags::default();
+        let cfg=resolve_config(&flags,&system).unwrap();assert_eq!(cfg.native_add_dirs.value,vec![fs::canonicalize(temp.path().join("a b")).unwrap().to_string_lossy()]);assert_eq!(cfg.native_allow_tools.value.len(),2);
+        system.environment.insert("PROSE_NATIVE_PROFILE".into(),"default".into());assert!(resolve_config(&flags,&system).is_err());
+        flags.native_profile=Some("claude-workspace-tools".into());flags.native_allow_tools=vec!["Agent".into()];assert_eq!(resolve_config(&flags,&system).unwrap().native_allow_tools.value,vec!["Agent"]);
+        flags.native_add_dirs=vec!["missing".into()];assert!(resolve_config(&flags,&system).is_err());
+        flags.native_add_dirs=vec!["a b".into()];flags.harness=Some("codex".into());assert!(resolve_config(&flags,&system).is_err());
+        assert!(validate_native_values(vec![" ".into()]).is_err());assert!(validate_native_rules(vec!["--dangerous".into()]).is_err());assert!(validate_native_profile("unknown".into()).is_err());
     }
 
     #[test]

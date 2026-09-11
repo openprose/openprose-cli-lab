@@ -118,3 +118,5 @@ OPENPROSE_BUILD_VERSION=0.1.0-alpha.1 \
 OPENPROSE_REQUIRE_RELEASE_IMAGE=1 \
 cargo build --release --locked -p prose-cli
 ```
+
+The optional [native workspace profile](../../docs/native-profiles.md) exposes Claude’s ordinary workspace tools, including native delegation, with separate explicit directory access and tool permission rules. Existing defaults remain unchanged.

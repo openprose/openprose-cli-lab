@@ -1,3 +1,4 @@
+import { nativeProfileArgv } from "./native-profile";
 import codexApiSettings from "../../../shared/capabilities/adapters/codex-env-route.v1.json";
 import { failure } from "../core/errors";
 import { canonicalJson, sha256 } from "../core/image";
@@ -22,6 +23,9 @@ export interface BuildInstalledLaunchPlanInput {
   taskPath: string;
   credentialGroup: string;
   model?: string | null;
+  nativeProfile?: string;
+  nativeAddDirs?: string[];
+  nativeAllowTools?: string[];
   permissionMode?: string | null;
   renderedConfigPath?: string;
   daemonSocketPath?: string;
@@ -86,10 +90,11 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
     if (token.value === "image-utf8") assertInlineImage(value);
     argv.push(value);
   }
-  if (input.adapterId === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key") {
+  if (input.adapterId === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key" && (input.nativeProfile ?? "default") === "default") {
     argv.splice(1, 0, "--bare");
   }
   if(input.adapterId === "codex/exec-json" && input.credentialGroup === "openai-api-key") argv.splice(2,0,...codexApiSettings.flatMap(setting=>["-c",setting]));
+  argv.splice(1,0,...nativeProfileArgv(input));
   if (input.permissionMode != null) {
     if(input.adapterId === "claude/print-stream-json" && ["default","acceptEdits"].includes(input.permissionMode)) argv.splice(1,0,"--permission-mode",input.permissionMode);
     else if(input.adapterId === "codex/exec-json" && ["workspace-write","read-only"].includes(input.permissionMode)) argv.splice(2,0,"--sandbox",input.permissionMode);

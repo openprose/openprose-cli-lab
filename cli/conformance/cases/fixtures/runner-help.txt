@@ -19,6 +19,12 @@ Runner options:
   --cwd <PATH>               Set the canonical working directory
   --model <ID>               Select a model without changing billing owner
   --auth-profile <ID>        Select an explicit harness credential route
+  --native-profile <ID>     Select native context/tools (default: default)
+  --native-add-dir <PATH>    Extend native directory access (repeatable)
+  --native-allow-tool <RULE> Grant a native tool rule (repeatable)
+  --permission-mode <MODE>   Select a supported native permission mode
+  --output-contract <MODE>   image-envelope (default) or native settlement
+  --native-log <PATH>        Capture bounded native events (opt-in)
   --timeout <DURATION>       Set the noninteractive run deadline
   --output <human|json|jsonl>
   --dry-run                  Probe and negotiate without starting a model run

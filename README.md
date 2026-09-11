@@ -35,10 +35,12 @@ The native-log parent directory must already exist. The image determines how it 
 
 Exact admitted versions and platforms are checked at readiness; see the product docs and `cli harness list`. Selected auth is not proof of successful authentication, billing identity, or sufficient capabilities. See [credential routes](docs/api-credentials.md), [permissions](docs/permissions-and-native-notices.md), and [isolated evaluation](docs/isolated-evaluation.md).
 
-Full native Claude delegation was evaluated through an explicitly recorded, opt-in launcher using nonbare mode, fresh configuration, explicit ordinary tools and directory access. It is **not** a stock CLI profile today. The API profile's bare/tool coupling remains an environment limitation; do not describe a missing reviewer as a language failure or invent one. Native task progress and completion are transported without interpreting their purpose.
+Native Claude delegation is available through the opt-in `claude-workspace-tools` native profile. It uses nonbare mode with explicit tools, separate caller-supplied permission rules and directory access, and fresh native configuration for API authentication. The default API profile retains its bare/tool coupling. Native task progress and completion are transported without interpreting their purpose.
 
 ## Development and provenance
 
 [Build Rust](cli/rust/README.md) · [Build Bun](cli/bun/README.md) · [Native output semantics](docs/native-output.md) · [Native task events](docs/native-task-events.md)
 
 The initial import preserved the predecessor's current dirty `cli/` tree. `provenance/import.json` records imported hashes and predecessor HEAD; `provenance/source-status.txt` records the working-tree state. This is not a claim that the import equals that commit. Private development binaries, runtime compatibility evidence, and language conformance are separate artifacts; no 1.0 or public-release claim follows from transport success.
+
+The optional [native workspace profile](docs/native-profiles.md) exposes Claude’s ordinary workspace tools, including native delegation, with separate explicit directory access and tool permission rules. Existing defaults remain unchanged.

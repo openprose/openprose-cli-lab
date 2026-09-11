@@ -167,3 +167,5 @@ executed from a private verified snapshot with its original CommonJS package
 context. The interpreter's dynamic/resource closure is not captured, and a
 same-user mutation between the last check and process start remains possible;
 that lane cannot provide release or strict-custody authority.
+
+The optional [native workspace profile](../../docs/native-profiles.md) exposes Claude’s ordinary workspace tools, including native delegation, with separate explicit directory access and tool permission rules. Existing defaults remain unchanged.

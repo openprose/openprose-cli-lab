@@ -55,7 +55,9 @@ export function buildInstalledAdapterEnvironment(input: AdapterEnvironmentInput)
   if (input.credentialConfigDirectory !== undefined) {
     const configName = input.definition.id === "prime/rpc"
       ? "PRIME_AGENT_CODING_AGENT_DIR"
-      : input.definition.id === "omp/rpc"
+      : input.definition.id === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key"
+        ? "CLAUDE_CONFIG_DIR"
+        : input.definition.id === "omp/rpc"
         ? "PI_CODING_AGENT_DIR"
         : undefined;
     if (configName === undefined || input.credentialGroup.endsWith("-harness-login")) {

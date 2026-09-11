@@ -7,6 +7,9 @@ const valueOptions: Record<string, keyof GlobalFlags> = {
   "--cwd": "cwd",
   "--model": "model",
   "--auth-profile": "authProfile",
+  "--native-profile": "nativeProfile",
+  "--native-add-dir": "nativeAddDirs",
+  "--native-allow-tool": "nativeAllowTools",
   "--native-log": "nativeLog",
   "--output-contract": "outputContract",
   "--permission-mode": "permissionMode",
@@ -20,6 +23,8 @@ function invalid(message: string): never {
 
 function setValue(global: GlobalFlags, key: keyof GlobalFlags, value: string, option: string): void {
   if (value.length === 0) invalid(`${option} requires a non-empty value.`);
+  if (key === "nativeAddDirs" || key === "nativeAllowTools") { (global[key] ??= []).push(value); return; }
+  if (key === "nativeProfile") { global.nativeProfile=value; return; }
   if (key === "output") {
     if (value !== "human" && value !== "json" && value !== "jsonl") {
       invalid(`invalid output mode ${JSON.stringify(value)}; expected human, json, or jsonl`);
@@ -77,7 +82,7 @@ export function parseEntrypoint(args: readonly string[]): ParsedEntrypoint {
     if (key !== undefined) {
       const value = equals >= 0 ? token.slice(equals + 1) : args[index + 1];
       if (value === undefined) invalid(`${option} requires a value.`);
-      if ((key === "model" || key === "authProfile") && global[key] !== undefined) {
+      if ((key === "model" || key === "authProfile" || key === "nativeProfile") && global[key] !== undefined) {
         invalid(`runner option ${option} was specified more than once`);
       }
       setValue(global, key, value, option);
@@ -199,21 +204,8 @@ export function inferOutputMode(args: readonly string[]): OutputMode {
       index += 1;
       continue;
     }
-    if (token === "--harness" || token === "--transport" || token === "--cwd" || token === "--model" || token === "--auth-profile" || token === "--timeout") {
-      index += 2;
-      continue;
-    }
-    if (
-      token.startsWith("--harness=")
-      || token.startsWith("--transport=")
-      || token.startsWith("--cwd=")
-      || token.startsWith("--model=")
-      || token.startsWith("--auth-profile=")
-      || token.startsWith("--timeout=")
-    ) {
-      index += 1;
-      continue;
-    }
+    if (valueOptions[token] !== undefined) { index += 2; continue; }
+    if (token.includes("=") && valueOptions[token.slice(0,token.indexOf("="))] !== undefined) { index += 1; continue; }
     if (token === "--dry-run" || token === "--no-color" || token === "--verbose") {
       index += 1;
       continue;

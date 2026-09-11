@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.openprose.org/cli/v1/native-configuration.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile",
+    "toolsRequested",
+    "additionalDirectories",
+    "allowedToolRules",
+    "permissionMode",
+    "authProfile",
+    "configOwnership",
+    "observed"
+  ],
+  "properties": {
+    "profile": {
+      "const": "claude-workspace-tools"
+    },
+    "toolsRequested": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "additionalDirectories": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowedToolRules": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "permissionMode": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "authProfile": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "configOwnership": {
+      "enum": [
+        "runner-private",
+        "native-auth-store"
+      ]
+    },
+    "observed": {
+      "anyOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tools",
+            "apiKeySource"
+          ],
+          "properties": {
+            "tools": {
+              "type": ["array", "null"],
+              "items": {
+                "type": "string"
+              }
+            },
+            "apiKeySource": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }
+}

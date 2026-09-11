@@ -1,3 +1,4 @@
+import { nativeConfiguration } from "./adapters/native-profile";
 import { parseEntrypoint, inferOutputMode } from "./core/args";
 import { embeddedRuntimeImage } from "./assets/sentinel";
 import runnerHelp from "../../conformance/cases/fixtures/runner-help.txt" with { type: "text" };
@@ -497,6 +498,7 @@ async function runLanguage(
   const taskDigestSha256 = await sha256(canonicalJson(task));
   const invocation: RunnerInvocation = {
     schema: "openprose.runner-invocation/1",
+    ...(nativeConfiguration({...config.values,authProfile:config.values.authProfile??"claude-subscription"})?{nativeConfiguration:nativeConfiguration({...config.values,authProfile:config.values.authProfile??"claude-subscription"})!}:{}),
     invocationId,
     cwd: config.cwd,
     languageImage: {
@@ -1053,6 +1055,9 @@ async function runInstalledInvocation(
       model: config.values.model,
       ...(config.values.nativeLog ? {nativeLog:config.values.nativeLog}:{}),
       permissionMode: config.values.permissionMode ?? null,
+      ...(config.values.nativeProfile===undefined?{}:{nativeProfile:config.values.nativeProfile}),
+      ...(config.values.nativeAddDirs===undefined?{}:{nativeAddDirs:config.values.nativeAddDirs}),
+      ...(config.values.nativeAllowTools===undefined?{}:{nativeAllowTools:config.values.nativeAllowTools}),
       wrapperExecutable: process.execPath,
       ...(mode !== "human"
         ? {}
@@ -1134,6 +1139,7 @@ async function runInstalledInvocation(
     deliveredImageSha256: outcome.plan.imageSha256,
     renderedPayloadSha256: outcome.plan.renderedPayloadSha256,
   });
+  if(outcome.nativeConfiguration) result.nativeConfiguration=outcome.nativeConfiguration;
   if (attemptedError !== null) {
     humanOutput.stream?.abort();
     emitAttemptFailure(result, attemptedError, mode, invocation.invocationId, baseEvents, dependencies);
@@ -1335,6 +1341,7 @@ async function buildResult(input: ResultInput): Promise<Record<string, unknown>>
   const runnerExitCode = input.error?.exitCode ?? (semanticStatus === "semantic-failed" ? 30 : 0);
   return {
     schema: "openprose.runner-result/1",
+    ...(input.invocation.nativeConfiguration?{nativeConfiguration:input.invocation.nativeConfiguration}:{}),
     invocationId: input.invocation.invocationId,
     runner: { name: RUNNER_NAME, version: RUNNER_VERSION, commit: RUNNER_BUILD_COMMIT },
     adapter: {
@@ -1486,6 +1493,7 @@ function emitDryRun(
   const report = {
     schema: "openprose.runner-dry-run-report/1",
     wouldStartModel: false,
+    ...(nativeConfiguration({...config.values,authProfile:readiness?.credentialGroup??config.values.authProfile}) ? {nativeConfiguration:nativeConfiguration({...config.values,authProfile:readiness?.credentialGroup??config.values.authProfile})}:{}),
     cwd: config.cwd,
     selection: {
       harness: harness.id,
@@ -1530,6 +1538,7 @@ function emitDryRun(
       `Dry run: ${humanReadiness}`,
       `Harness: ${humanSafeScalar(harness.id)}`,
       `Transport: ${humanSafeScalar(transport)}`,
+      ...(report.nativeConfiguration?[`Native profile: ${humanSafeScalar(config.values.nativeProfile??"default")} (requested; observed tools unavailable in dry run)`,`Native configuration: ${humanSafeScalar(JSON.stringify(report.nativeConfiguration))}`]:[]),
       `Working directory: ${humanSafeScalar(config.cwd)}`,
       `Prompt placement: ${humanSafeScalar(report.prompt.placement ?? "unavailable")} (${humanSafeScalar(report.prompt.strictness)})`,
       `Isolation: ${humanSafeScalar(report.isolation)}`,

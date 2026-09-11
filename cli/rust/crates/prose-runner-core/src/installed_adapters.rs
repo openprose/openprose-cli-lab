@@ -630,6 +630,25 @@ pub struct PreparedLaunch {
 }
 
 impl PreparedLaunch {
+    /// Opt-in native tool selection; the default launch is left byte-for-byte unchanged.
+    pub fn apply_workspace_profile(&mut self, auth_group:&str, dirs:&[String], rules:&[String])->Result<(),RunnerError>{
+        if self.adapter != InstalledAdapter::ClaudePrintStreamJson {return Err(RunnerError::config("Workspace profile requires Claude."));}
+        if rules.iter().any(|v|v.trim().is_empty() || v.contains('\0') || v.starts_with('-')) {return Err(RunnerError::config("Invalid native tool permission rule."));}
+        self.argv.retain(|arg|arg != "--bare");
+        let mut flags:Vec<OsString>=vec!["--setting-sources".into(),"".into(),"--tools".into(),"Read,Write,Edit,Glob,Grep,Agent,Bash".into()];
+        for directory in dirs {flags.extend(["--add-dir".into(),directory.into()]);}
+        for rule in rules {flags.extend(["--allowedTools".into(),rule.into()]);}
+        self.argv.splice(0..0,flags);
+        if auth_group == "anthropic-api-key" {
+            let files=self.prompt_files.as_ref().ok_or_else(||RunnerError::catalog(ErrorCode::InternalRunnerFault))?;
+            let directory=files.create_credential_config_directory().map_err(|_|RunnerError::catalog(ErrorCode::InternalRunnerFault).with_detail("reason","Cannot create private native config"))?;
+            // Closed environment excludes inherited SIMPLE, config overrides and competing credentials.
+            self.environment=self.environment.clone().set("CLAUDE_CONFIG_DIR",directory.as_os_str(),Sensitivity::Secret);
+            self.credential_config_directory=Some(directory);
+        }
+        assert_argv_limits(self.adapter,&self.executable,&self.argv,HostPlatform::current())
+    }
+
     #[must_use]
     pub fn image_path(&self) -> Option<&Path> {
         self.prompt_files
@@ -6410,6 +6429,25 @@ mod tests {
             let launch = prepare_launch(adapter,root.path().join("claude"),root.path(),&full_image(),FRAMING,TASK.as_bytes(),"fixture",None,group,empty_environment(adapter)).unwrap();
             assert_eq!(launch.argv.iter().any(|arg| arg == "--bare"),group == "anthropic-api-key");
         }
+    }
+
+    #[test]
+    fn workspace_profile_launch_matches_shared_fixture(){
+        let fixture:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/native-profile.json")).unwrap();
+        let root=TempDir::new().unwrap();let adapter=InstalledAdapter::ClaudePrintStreamJson;
+        for group in ["anthropic-api-key","claude-subscription"] {
+            let mut launch=prepare_launch(adapter,root.path().join("claude"),root.path(),&full_image(),FRAMING,TASK.as_bytes(),"fixture",None,group,empty_environment(adapter)).unwrap();
+            launch.apply_workspace_profile(group,&[],&[]).unwrap();
+            let flags:Vec<_>=fixture["flags"].as_array().unwrap().iter().map(|x|OsString::from(x.as_str().unwrap())).collect();assert_eq!(&launch.argv[..flags.len()],flags.as_slice());
+            assert!(!launch.argv.iter().any(|x|x=="--bare" || x=="--allowedTools" || x=="--add-dir"));
+            assert!(launch.argv.iter().any(|x|x=="--safe-mode"));
+            assert_eq!(launch.credential_config_directory().is_some(),group=="anthropic-api-key");
+            let owned=launch.credential_config_directory().map(Path::to_owned);launch.finalize_private_files().unwrap();if let Some(path)=owned {assert!(!path.exists());}
+        }
+        let mut launch=prepare_launch(adapter,root.path().join("claude"),root.path(),&full_image(),FRAMING,TASK.as_bytes(),"fixture",None,"claude-subscription",empty_environment(adapter)).unwrap();
+        launch.apply_workspace_profile("claude-subscription",&["/tmp/a b".into()],&["Bash(git status:*)".into(),"Agent".into()]).unwrap();
+        assert!(launch.argv.windows(2).any(|x|x==[OsString::from("--add-dir"),OsString::from("/tmp/a b")]));
+        assert_eq!(launch.argv.iter().filter(|x|*x=="--allowedTools").count(),2);
     }
 
     #[test]

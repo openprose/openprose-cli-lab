@@ -4,6 +4,7 @@ import { dirname, join, parse, posix, resolve, win32 } from "node:path";
 import type { GlobalFlags, EffectiveConfiguration, EffectiveValues, SourceKind, ValueSource } from "./types";
 import { failure } from "./errors";
 import { RunnerFailure } from "./types";
+import { validateNativeConfiguration } from "../adapters/native-profile";
 
 export interface ConfigDependencies {
   processCwd: string;
@@ -25,6 +26,9 @@ const fileKeyMap: Record<string, ConfigKey> = {
   color: "color",
   verbose: "verbose",
   auth_profile: "authProfile",
+  native_profile: "nativeProfile",
+  native_add_dirs: "nativeAddDirs",
+  native_allow_tools: "nativeAllowTools",
   native_log: "nativeLog",
   output_contract: "outputContract",
   permission_mode: "permissionMode",
@@ -39,6 +43,7 @@ const environmentKeyMap: Record<string, ConfigKey> = {
   PROSE_COLOR: "color",
   PROSE_VERBOSE: "verbose",
   PROSE_AUTH_PROFILE: "authProfile",
+  PROSE_NATIVE_PROFILE: "nativeProfile",
   PROSE_NATIVE_LOG: "nativeLog",
   PROSE_OUTPUT_CONTRACT: "outputContract",
   PROSE_PERMISSION_MODE: "permissionMode",
@@ -104,6 +109,9 @@ export async function resolveConfiguration(
   const invocation = parseFlags(flags);
   apply(values, sources, invocation.values, "flag", invocation.locations);
 
+  if (values.nativeProfile !== undefined || values.nativeAddDirs !== undefined || values.nativeAllowTools !== undefined) {
+    await validateNativeConfiguration(values, cwd);
+  }
   return {
     cwd,
     cwdSource: flags.cwd === undefined
@@ -303,9 +311,10 @@ function assignFileValue(
   values: PartialValues,
   key: ConfigKey,
   rawKey: string,
-  value: string | boolean,
+  value: string | boolean | string[],
   location: string,
 ): void {
+  if (key === "nativeAddDirs" || key === "nativeAllowTools") { assignValidated(values,key,value,location); return; }
   const requiresBoolean = key === "color" || key === "verbose";
   if (requiresBoolean && typeof value !== "boolean") {
     fail(`Configuration key ${rawKey} requires a boolean value.`, location);
@@ -350,9 +359,11 @@ function parseFlatToml(source: string, path: string): ParsedValues {
     if (seen.has(rawKey)) configLineFailure(path, lineNumber, `Duplicate configuration key: ${rawKey}.`);
     seen.add(rawKey);
     const rawValue = line.slice(match[0].length);
-    let parsed: string | boolean;
+    let parsed: string | boolean | string[];
     let end: number;
-    if (rawValue.startsWith("\"")) {
+    if (rawValue.startsWith("[") && (key === "nativeAddDirs" || key === "nativeAllowTools")) {
+      ({value:parsed,end}=parseStringArray(rawValue,path,lineNumber));
+    } else if (rawValue.startsWith("\"")) {
       ({ value: parsed, end } = parseBasicString(rawValue, path, lineNumber));
     } else if (rawValue.startsWith("'")) {
       ({ value: parsed, end } = parseLiteralString(rawValue, path, lineNumber));
@@ -405,19 +416,23 @@ function parseEnvironment(env: Readonly<Record<string, string | undefined>>): Pa
 function parseFlags(flags: GlobalFlags): ParsedValues {
   const values: PartialValues = {};
   const locations: Partial<Record<ConfigKey, string>> = {};
-  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "outputContract", "nativeLog", "timeout", "output", "color", "verbose"] as const) {
+  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "nativeProfile", "nativeAddDirs", "nativeAllowTools", "outputContract", "nativeLog", "timeout", "output", "color", "verbose"] as const) {
     const value = flags[key];
     if (value === undefined) continue;
-    const location = key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
+    const location = key === "nativeProfile" ? "--native-profile" : key === "nativeAddDirs" ? "--native-add-dir" : key === "nativeAllowTools" ? "--native-allow-tool" : key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
     assignValidated(values, key, value, location);
     locations[key] = location;
   }
   return { values, locations };
 }
 
-function assignValidated(values: PartialValues, key: ConfigKey, raw: string | boolean, location: string): void {
+function assignValidated(values: PartialValues, key: ConfigKey, raw: string | boolean | string[], location: string): void {
+  if (key === "nativeAddDirs" || key === "nativeAllowTools") {
+    if (!Array.isArray(raw) || raw.some(v=>typeof v!=="string" || !v.trim() || v.includes("\0"))) fail(`${key} must be an array of nonempty strings.`,location);
+    values[key]=[...raw]; return;
+  }
   if (key === "color" || key === "verbose") {
-    const parsed = typeof raw === "boolean" ? raw : parseBoolean(raw, location);
+    const parsed = typeof raw === "boolean" ? raw : typeof raw === "string" ? parseBoolean(raw, location) : fail("Expected boolean",location);
     values[key] = parsed;
     return;
   }
@@ -440,7 +455,11 @@ function assignValidated(values: PartialValues, key: ConfigKey, raw: string | bo
     values.harness = raw;
     return;
   }
-  if (key === "model") values.model = raw;
+  if (key === "nativeProfile") {
+    if (!["default","claude-workspace-tools"].includes(raw)) fail("Unknown native profile.",location);
+    values.nativeProfile=raw;
+  }
+  else if (key === "model") values.model = raw;
   else if (key === "authProfile") values.authProfile = raw;
   else if (key === "nativeLog") values.nativeLog = raw;
   else if (key === "outputContract") {
@@ -585,4 +604,19 @@ export async function writeUserHarnessSelection(
     fail("OpenProse user configuration could not be written atomically.", path);
   }
   return true;
+}
+
+function parseStringArray(raw:string,path:string,line:number):{value:string[];end:number} {
+  const value:string[]=[];let cursor=1;
+  for (;;) {
+    while (/\s/.test(raw[cursor]??"") && cursor<raw.length) cursor++;
+    if(raw[cursor]==="]") return {value,end:cursor+1};
+    const rest=raw.slice(cursor);
+    const parsed=rest.startsWith('"')?parseBasicString(rest,path,line):rest.startsWith("'")?parseLiteralString(rest,path,line):configLineFailure(path,line,"Array entries must be strings.");
+    value.push(parsed.value);cursor+=parsed.end;
+    while (/\s/.test(raw[cursor]??"") && cursor<raw.length) cursor++;
+    if(raw[cursor]==="]") return {value,end:cursor+1};
+    if(raw[cursor]!==",") configLineFailure(path,line,"Expected comma or array end.");
+    cursor++;
+  }
 }

@@ -98,6 +98,12 @@ struct ConfigValuesReport<'a> {
     color: &'a crate::config::Sourced<bool>,
     verbose: &'a crate::config::Sourced<bool>,
     auth_profile: &'a crate::config::Sourced<Option<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_profile: Option<&'a crate::config::Sourced<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_add_dirs: Option<&'a crate::config::Sourced<Vec<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_allow_tools: Option<&'a crate::config::Sourced<Vec<String>>>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1143,6 +1149,8 @@ impl OmpStagedController {
 }
 
 struct InstalledRunObserver<'a> {
+    require_api_source:bool,
+    auth_source_failed:bool,
     capture: Option<NativeCapture>,
     human: Option<InstalledHumanStream<'a>>,
     omp: Option<OmpStagedController>,
@@ -1161,6 +1169,10 @@ impl std::fmt::Debug for InstalledRunObserver<'_> {
 impl RecordObserver for InstalledRunObserver<'_> {
     fn observe(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
         if let Some(capture)=self.capture.as_mut(){capture.write(record)?;}
+        if self.require_api_source && record["type"]=="system" && record["subtype"]=="init" && record["apiKeySource"]!="ANTHROPIC_API_KEY" {
+            self.auth_source_failed=true;
+            return Err(stream_observer_failure(FailureKind::HarnessFailed,"Native init did not confirm selected API credential route"));
+        }
         let mut projection = None;
         if let Some(omp) = self.omp.as_mut() {
             omp.observe(record)?;
@@ -1960,6 +1972,11 @@ fn execute_installed_adapter(
             return forward_error_outcome(error, argv, config, image, mode, clock, ids);
         }
     };
+    if config.native_profile.value != "default" {
+        if let Err(error)=launch.apply_workspace_profile(&auth_group,&config.native_add_dirs.value,&config.native_allow_tools.value) {
+            return forward_error_outcome(error,argv,config,image,mode,clock,ids);
+        }
+    }
     if let Some(permission)=&config.permission_mode.value {
         if adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && matches!(permission.as_str(),"default"|"acceptEdits") {launch.argv.splice(0..0,["--permission-mode".into(),permission.into()]);}
         else if adapter == installed_adapters::InstalledAdapter::CodexExecJson && matches!(permission.as_str(),"workspace-write"|"read-only") {launch.argv.splice(1..1,["--sandbox".into(),permission.into()]);}
@@ -2024,11 +2041,13 @@ fn execute_installed_adapter(
        Ok(value)=>value,Err(_)=>return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Native log must be a new writable absolute path"),argv,config,image,mode,clock,ids)
     };
     let mut run_observer = InstalledRunObserver {
+        require_api_source:config.native_profile.value != "default" && auth_group=="anthropic-api-key",
+        auth_source_failed:false,
         capture,
         human: human_stream,
         omp: omp_controller,
     };
-    let supervised = if run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
+    let supervised = if run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
         supervise_observed(process_spec, &adapter.protocol(), &mut run_observer)
     } else {
         supervise(process_spec, &adapter.protocol())
@@ -2137,6 +2156,9 @@ fn execute_installed_adapter(
     let outcome = match supervised {
         Ok(outcome) => outcome,
         Err(failure) => {
+            if run_observer.auth_source_failed {
+                return installed_adapter_cleanup_failure_result(adapter,&task,&task_digest,&invocation_id,failure,detected_version.as_deref(),RunnerError::catalog(ErrorCode::HarnessNeedsAuth).with_detail("reason","Native init did not confirm selected API credential route").with_detail("fallbackAttempted",false),config,image,mode,clock);
+            }
             return installed_adapter_failure_result(
                 adapter,
                 &task,
@@ -2151,6 +2173,9 @@ fn execute_installed_adapter(
             );
         }
     };
+    if let Err(error)=validate_native_auth(config,&outcome.records) {
+        return installed_adapter_postprocess_failure(adapter,&task,&task_digest,&invocation_id,outcome,detected_version.as_deref(),error,config,image,mode,clock);
+    }
     let normalized =
         match installed_adapters::normalize_transport(adapter, &outcome.records, &invocation_id) {
             Ok(normalized) => normalized,
@@ -2275,6 +2300,7 @@ fn installed_adapter_cleanup_failure_result(
         image,
         mode,
         clock,
+        Some(&failure.records),
     )
 }
 
@@ -2345,7 +2371,7 @@ fn installed_adapter_success_result(
     let terminal_digest = if terminal.envelope.is_null() { None } else {
         Some(sha256_hex(&serde_json::to_vec(&terminal.envelope).expect("terminal envelope JSON")))
     };
-    let result = json!({
+    let mut result = json!({
         "schema":"openprose.runner-result/1",
         "invocationId":invocation_id,
         "runner":{"name":RUNNER_NAME,"version":RUNNER_VERSION,"commit":RUNNER_COMMIT},
@@ -2363,6 +2389,7 @@ fn installed_adapter_success_result(
         "diagnosticRefs":[],
         "runnerExitCode":0
     });
+    if let Some(native)=native_configuration(config,Some(&outcome.records)){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => {
             let remaining = &terminal.visible_text[human_stream_settlement.emitted_prefix_bytes..];
@@ -2489,6 +2516,7 @@ fn installed_adapter_postprocess_failure(
         image,
         mode,
         clock,
+        Some(&outcome.records),
     )
 }
 
@@ -2539,6 +2567,7 @@ fn installed_adapter_failure_result(
         image,
         mode,
         clock,
+        Some(&failure.records),
     )
 }
 
@@ -2563,6 +2592,7 @@ fn render_installed_failure(
     image: &RuntimeImage,
     mode: OutputMode,
     clock: &dyn Clock,
+    native_records:Option<&[Value]>,
 ) -> CommandOutcome {
     let timestamp = clock.now_rfc3339();
     let invocation = installed_invocation(adapter, task, task_digest, invocation_id, config, image);
@@ -2590,7 +2620,7 @@ fn render_installed_failure(
         event_bytes.push(b'\n');
     }
     let exit_code = error.exit_code;
-    let result = json!({
+    let mut result = json!({
         "schema":"openprose.runner-result/1",
         "invocationId":invocation_id,
         "runner":{"name":RUNNER_NAME,"version":RUNNER_VERSION,"commit":RUNNER_COMMIT},
@@ -2609,6 +2639,7 @@ fn render_installed_failure(
         "runnerExitCode":exit_code,
         "error":error
     });
+    if let Some(native)=native_configuration(config,native_records){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => CommandOutcome::human(
             "",
@@ -2630,6 +2661,25 @@ fn render_installed_failure(
     }
 }
 
+fn native_configuration(config:&EffectiveConfig,records:Option<&[Value]>)->Option<Value>{
+    if config.native_profile.value == "default" {return None;}
+    let observed=records.and_then(|r|r.iter().find(|v|v["type"]=="system" && v["subtype"]=="init"))
+        .map(|v|json!({"tools":v.get("tools").cloned().unwrap_or(Value::Null),"apiKeySource":v.get("apiKeySource").cloned().unwrap_or(Value::Null)}));
+    Some(json!({"profile":config.native_profile.value,"toolsRequested":["Read","Write","Edit","Glob","Grep","Agent","Bash"],
+        "additionalDirectories":config.native_add_dirs.value,"allowedToolRules":config.native_allow_tools.value,
+        "permissionMode":config.permission_mode.value,"authProfile":config.auth_profile.value,
+        "configOwnership":if config.auth_profile.value.as_deref()==Some("anthropic-api-key"){"runner-private"}else{"native-auth-store"},"observed":observed}))
+}
+fn validate_native_auth(config:&EffectiveConfig,records:&[Value])->Result<(),RunnerError>{
+    if config.native_profile.value != "default" && config.auth_profile.value.as_deref()==Some("anthropic-api-key") {
+        let inits:Vec<_>=records.iter().filter(|v|v["type"]=="system" && v["subtype"]=="init").collect();
+        if inits.is_empty() || inits.iter().any(|v|v["apiKeySource"]!="ANTHROPIC_API_KEY") {
+            return Err(RunnerError::catalog(ErrorCode::HarnessNeedsAuth).with_detail("reason","Native init did not confirm the selected ANTHROPIC_API_KEY route").with_detail("fallbackAttempted",false));
+        }
+    }
+    Ok(())
+}
+
 fn installed_invocation(
     adapter: installed_adapters::InstalledAdapter,
     task: &Value,
@@ -2638,7 +2688,7 @@ fn installed_invocation(
     config: &EffectiveConfig,
     image: &RuntimeImage,
 ) -> Value {
-    json!({
+    let mut value=json!({
         "schema":"openprose.runner-invocation/1",
         "invocationId":invocation_id,
         "cwd":config.cwd.display().to_string(),
@@ -2649,7 +2699,9 @@ fn installed_invocation(
         "recursionToken":format!("installed-recursion-{invocation_id}"),
         "task":task,
         "taskDigestSha256":task_digest
-    })
+    });
+    if let Some(native)=native_configuration(config,None){value["nativeConfiguration"]=native;}
+    value
 }
 
 const fn containment_label(containment: ContainmentClaim) -> &'static str {
@@ -3370,7 +3422,7 @@ fn dry_run_outcome(
     } else {
         "ready"
     };
-    let report = json!({
+    let mut report = json!({
         "schema":"openprose.runner-dry-run-report/1",
         "wouldStartModel":false,
         "cwd":config.cwd.display().to_string(),
@@ -3395,6 +3447,7 @@ fn dry_run_outcome(
         "readiness":readiness,
         "blockingError":blocking_error
     });
+    if let Some(native)=native_configuration(config,None){report["nativeConfiguration"]=native;}
     if mode == OutputMode::Human {
         let human_readiness =
             human_readiness_label(blocking_error.is_none(), auth_readiness, "blocked");
@@ -3414,6 +3467,10 @@ fn dry_run_outcome(
             human_safe_scalar(image.aggregate_sha256()),
             human_safe_scalar(human_readiness)
         );
+        if config.native_profile.value != "default" {
+            let _=writeln!(output,"Native profile: {} (requested; observed tools unavailable in dry run)",config.native_profile.value);
+            let _=writeln!(output,"Native configuration: {}",human_safe_scalar(&report["nativeConfiguration"].to_string()));
+        }
         if let Some(error) = report["blockingError"].as_object() {
             if let (Some(code), Some(action)) = (
                 error.get("code").and_then(Value::as_str),
@@ -3438,7 +3495,7 @@ fn dry_run_outcome(
 }
 
 fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
-    vec![
+    let mut entries=vec![
         config_source_entry("cwd", &config.cwd_source, false),
         config_source_entry("harness", &config.harness.source, false),
         config_source_entry("transport", &config.transport.source, false),
@@ -3448,7 +3505,11 @@ fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
         config_source_entry("color", &config.color.source, false),
         config_source_entry("verbose", &config.verbose.source, false),
         config_source_entry("authProfile", &config.auth_profile.source, true),
-    ]
+    ];
+    for (key,source) in [("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
+        if source.kind != ConfigSourceKind::Default {entries.push(config_source_entry(key,source,false));}
+    }
+    entries
 }
 
 fn config_source_entry(key: &str, source: &crate::config::ConfigSource, redacted: bool) -> Value {
@@ -3845,6 +3906,9 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
             color: &config.color,
             verbose: &config.verbose,
             auth_profile: &config.auth_profile,
+            native_profile:(config.native_profile.source.kind!=ConfigSourceKind::Default).then_some(&config.native_profile),
+            native_add_dirs:(config.native_add_dirs.source.kind!=ConfigSourceKind::Default).then_some(&config.native_add_dirs),
+            native_allow_tools:(config.native_allow_tools.source.kind!=ConfigSourceKind::Default).then_some(&config.native_allow_tools),
         },
     }
 }
@@ -4072,6 +4136,20 @@ mod tests {
             },
         )
         .unwrap()
+    }
+
+    #[test]
+    fn workspace_native_metadata_and_auth_evidence(){
+        let temp=TempDir::new().unwrap();let mut config=installed_config(temp.path(),"claude","print-stream-json",None,"anthropic-api-key");
+        assert!(native_configuration(&config,None).is_none());
+        config.native_profile.value="claude-workspace-tools".into();
+        let good=json!({"type":"system","subtype":"init","tools":["Read","Task"],"apiKeySource":"ANTHROPIC_API_KEY"});
+        assert!(validate_native_auth(&config,&[good.clone()]).is_ok());
+        let meta=native_configuration(&config,Some(&[good])).unwrap();assert_eq!(meta["observed"]["tools"],json!(["Read","Task"]));assert_eq!(meta["configOwnership"],"runner-private");
+        for records in [vec![],vec![json!({"type":"system","subtype":"init"})],vec![json!({"type":"system","subtype":"init","apiKeySource":"oauth"})]] {assert_eq!(validate_native_auth(&config,&records).unwrap_err().code,ErrorCode::HarnessNeedsAuth);}
+        let mut observer=InstalledRunObserver{require_api_source:true,auth_source_failed:false,capture:None,human:None,omp:None};
+        assert!(observer.observe(&json!({"type":"system","subtype":"init","apiKeySource":"oauth"})).is_err());assert!(observer.auth_source_failed);
+        config.auth_profile.value=Some("claude-subscription".into());assert!(validate_native_auth(&config,&[]).is_ok());assert_eq!(native_configuration(&config,None).unwrap()["configOwnership"],"native-auth-store");
     }
 
     #[test]

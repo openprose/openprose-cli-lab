@@ -10,6 +10,7 @@
     "blockingError"
   ],
   "properties": {
+    "nativeConfiguration": { "$ref": "native-configuration.schema.json" },
     "schema": { "const": "openprose.runner-dry-run-report/1" },
     "wouldStartModel": { "const": false },
     "cwd": { "type": "string", "minLength": 1 },

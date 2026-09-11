@@ -1,3 +1,4 @@
+import { nativeConfiguration, observeNativeInit, type NativeObservation } from "./native-profile";
 import { NativeCapture } from "./native-capture";
 import { failure } from "../core/errors";
 import {
@@ -94,6 +95,9 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       daemonSocketPath: files.daemonSocketPath,
       ...(renderedConfigPath === undefined ? {} : { renderedConfigPath }),
       credentialGroup: options.credentialGroup,
+      ...(options.nativeProfile === undefined ? {} : {nativeProfile:options.nativeProfile}),
+      ...(options.nativeAddDirs === undefined ? {} : {nativeAddDirs:options.nativeAddDirs}),
+      ...(options.nativeAllowTools === undefined ? {} : {nativeAllowTools:options.nativeAllowTools}),
       ...(options.model === undefined ? {} : { model: options.model }),
       ...(options.permissionMode === undefined ? {} : { permissionMode: options.permissionMode }),
       ...(options.platform === undefined ? {} : { platform: options.platform }),
@@ -109,7 +113,8 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     let credentialConfigDirectory: string | undefined;
     try {
       credentialConfigDirectory = (
-        (options.adapterId === "prime/rpc" && options.credentialGroup !== "prime-harness-login")
+        (options.adapterId === "claude/print-stream-json" && options.nativeProfile === "claude-workspace-tools" && options.credentialGroup === "anthropic-api-key")
+        || (options.adapterId === "prime/rpc" && options.credentialGroup !== "prime-harness-login")
         || (options.adapterId === "omp/rpc" && options.credentialGroup !== "omp-harness-login")
       )
         ? await createPrivateTransportDirectory(files, "credential-config")
@@ -143,6 +148,12 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
     const supervisedExecutable = options.fixtureInterpreter ?? options.executable;
     const supervisedArgv = options.fixtureInterpreter === undefined ? plan.argv.slice(1) : plan.argv;
     const capture = new NativeCapture(options.nativeLog,protectedValues);
+    let observed: NativeObservation | null = null;
+    const protocol=installedProtocol(options.adapterId, options.harnessVersion ?? null, options.invocation.invocationId, options.adapterId === "omp/rpc" ? plan.stdinBytes : null);
+    if(options.nativeProfile === "claude-workspace-tools") {
+      const accept=protocol.accept.bind(protocol);
+      protocol.accept=(record)=>{ observed=observeNativeInit(record,options.credentialGroup) ?? observed; return accept(record); };
+    }
     let process;
     try { process = await superviseStructuredProcess({
       executable: supervisedExecutable,
@@ -161,12 +172,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       graceMs: definition.recipe.cancellation.graceMs,
       hardKillAfterMs: definition.recipe.cancellation.hardKillAfterMs,
       onNativeRecord:record=>capture.write(record),
-      protocol: installedProtocol(
-        options.adapterId,
-        options.harnessVersion ?? null,
-        options.invocation.invocationId,
-        options.adapterId === "omp/rpc" ? plan.stdinBytes : null,
-      ),
+      protocol,
       ...(assistantMessageSink === undefined
         ? {}
         : { onAcceptedAssistantMessage: assistantMessageSink }),
@@ -178,6 +184,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       process,
       publicEvents: redactInstalledAdapterEvents(process.events, protectedValues),
       publicStderr: redactDiagnostic(process.stderr, protectedValues),
+      nativeConfiguration:nativeConfiguration({...options,authProfile:options.credentialGroup},observed),
     };
   } finally {
     if (options.adapterId === "prime/rpc") {
