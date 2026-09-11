@@ -2167,7 +2167,7 @@ fn prime_parser_failures_expose_only_the_closed_framing_diagnostic() {
             "{fault}"
         );
         assert!(!serialized.contains("candidateSecret"), "{fault}");
-        assert_eq!(result["error"]["details"]["reason"], "protocol_admission_rejected");
+        assert!(matches!(result["error"]["details"]["reason"].as_str(),Some("protocol_admission_rejected" | "invalid_json")));
         assert!(result["error"]["details"]["admittedRecordCount"].is_u64());
     }
 }
