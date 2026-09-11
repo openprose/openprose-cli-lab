@@ -22,6 +22,7 @@ for (const name of [
   "transport-diagnostic",
   "native-configuration",
   "native-limits",
+  "native-output-limits",
   "native-failure",
   "runner-error",
   "runner-invocation",
