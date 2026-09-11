@@ -34,3 +34,5 @@ test("native history accounting projection is typed and never changes execution 
  for(const mutate of [(x:any)=>delete x.usage.input,(x:any)=>x.usage.extra=1,(x:any)=>x.usage.input="1",(x:any)=>x.usage.cost.total=-1,(x:any)=>x.content[0].text="different",(x:any)=>x.model="other",(x:any)=>delete x.usage]){const x=copy(b);mutate(x);expect(primeHistorySame(a,x)).toBe(false);}
  const p=new PrimeDrain(fixture.sessionId);p.resumed=true;p.child((fixture.frames[10] as any).child);p.queue((fixture.frames[11] as any).actions);const ms=(fixture.frames[17] as any).messages;expect(p.history(ms,ms.slice(1))).toBe(true);expect(p.history(ms,ms.slice(1))).toBe(false);
 });
+
+test("a prior segment empty queue cannot settle resumed work",()=>{const frames=copy(fixture.frames);const empty=frames.pop()!;frames.splice(13,0,empty);const p=start();for(const f of frames)p.accept(f);expect(()=>p.settleProcess!(0)).toThrow();});

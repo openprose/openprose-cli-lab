@@ -295,7 +295,7 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
             continue;
         }
         if drain && drain_state.segment_closed && matches!(kind,"turn_start"|"message_start") {
-            drain_state.segment_closed=false; drain_state.resumed=true; history.clear();
+            drain_state.segment_closed=false; drain_state.resumed=true; drain_state.queue_empty=false; history.clear();
         }
         match kind {
             "agent_start" => {
@@ -570,6 +570,7 @@ mod tests {
         let mut bad=r.clone();bad.remove(0);assert!(run(&bad,true).is_err());
         for path in ["/messages/0/details/target/sessionId","/messages/0/details/from/activeSessionId","/messages/0/details/message","/messages/0/content"] {let mut bad=r.clone();*bad[ends[1]].pointer_mut(path).unwrap()=json!("wrong");assert!(run(&bad,true).is_err());}
         let mut bad=r.clone();bad.pop();assert!(run(&bad,true).is_err());
+        let mut stale=r.clone();let empty=stale.pop().unwrap();stale.insert(ends[0],empty);assert!(run(&stale,true).is_err());
         let mut bad=r.clone();let pos=bad.iter().position(|v|v["type"]=="tool_execution_end").unwrap();bad.remove(pos);assert!(run(&bad,true).is_err());
         let mut bad=r.clone();bad[ends[0]]["messages"][0]["content"]=json!([]);assert!(run(&bad,true).is_err());
         let mut bad=r.clone();bad[1]["success"]=json!(false);assert!(run(&bad,true).is_err());
