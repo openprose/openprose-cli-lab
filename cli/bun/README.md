@@ -169,3 +169,5 @@ same-user mutation between the last check and process start remains possible;
 that lane cannot provide release or strict-custody authority.
 
 The optional [native workspace profile](../../docs/native-profiles.md) exposes Claude’s ordinary workspace tools, including native delegation, with separate explicit directory access and tool permission rules. Existing defaults remain unchanged.
+
+Generic SDK budgets and their separate inner/outer deadlines are documented in [SDK execution budgets](../../docs/sdk-budgets.md).

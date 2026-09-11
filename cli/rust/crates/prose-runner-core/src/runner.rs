@@ -101,6 +101,10 @@ struct ConfigValuesReport<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
     native_profile: Option<&'a crate::config::Sourced<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    native_max_turns: Option<&'a crate::config::Sourced<Option<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    native_timeout: Option<&'a crate::config::Sourced<Option<String>>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     native_add_dirs: Option<&'a crate::config::Sourced<Vec<String>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     native_allow_tools: Option<&'a crate::config::Sourced<Vec<String>>>,
@@ -1151,6 +1155,8 @@ impl OmpStagedController {
 struct InstalledRunObserver<'a> {
     require_api_source:bool,
     auth_source_failed:bool,
+    sdk: bool,
+    native_failure: Option<Value>,
     capture: Option<NativeCapture>,
     human: Option<InstalledHumanStream<'a>>,
     omp: Option<OmpStagedController>,
@@ -1168,6 +1174,9 @@ impl std::fmt::Debug for InstalledRunObserver<'_> {
 
 impl RecordObserver for InstalledRunObserver<'_> {
     fn observe_parsed(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
+        if self.sdk && record.get("type").and_then(Value::as_str)==Some("error") {
+            self.native_failure=Some(installed_adapters::sdk_native_failure(record));
+        }
         if let Some(capture)=self.capture.as_mut(){capture.write(record)?;}
         Ok(())
     }
@@ -1978,6 +1987,7 @@ fn execute_installed_adapter(
             return forward_error_outcome(error, argv, config, image, mode, clock, ids);
         }
     };
+    launch.argv.splice(0..0, sdk_limit_arguments(config));
     if config.native_profile.value != "default" {
         if let Err(error)=launch.apply_workspace_profile(&auth_group,&config.native_add_dirs.value,&config.native_allow_tools.value) {
             return forward_error_outcome(error,argv,config,image,mode,clock,ids);
@@ -2049,6 +2059,8 @@ fn execute_installed_adapter(
     let mut run_observer = InstalledRunObserver {
         require_api_source:config.native_profile.value != "default" && auth_group=="anthropic-api-key",
         auth_source_failed:false,
+        sdk: adapter == installed_adapters::InstalledAdapter::AgentsSdkJsonl,
+        native_failure: None,
         capture,
         human: human_stream,
         omp: omp_controller,
@@ -2056,7 +2068,7 @@ fn execute_installed_adapter(
     let native_claude=adapter == installed_adapters::InstalledAdapter::ClaudePrintStreamJson && config.output_contract.value == "native";
     let mut installed_protocol=adapter.protocol();
     installed_protocol.terminal_is_candidate=native_claude;
-    let supervised = if run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
+    let supervised = if run_observer.sdk || run_observer.require_api_source || run_observer.human.is_some() || run_observer.omp.is_some() || run_observer.capture.is_some() {
         supervise_observed(process_spec, &installed_protocol, &mut run_observer)
     } else {
         supervise(process_spec, &installed_protocol)
@@ -2174,6 +2186,7 @@ fn execute_installed_adapter(
                 &task_digest,
                 &invocation_id,
                 failure,
+                run_observer.native_failure.clone(),
                 detected_version.as_deref(),
                 config,
                 image,
@@ -2398,6 +2411,7 @@ fn installed_adapter_success_result(
         "diagnosticRefs":[],
         "runnerExitCode":0
     });
+    if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
     if let Some(native)=native_configuration(config,Some(&outcome.records)){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => {
@@ -2536,6 +2550,7 @@ fn installed_adapter_failure_result(
     task_digest: &str,
     invocation_id: &str,
     failure: SupervisorFailure,
+    native_failure: Option<Value>,
     detected_version: Option<&str>,
     config: &EffectiveConfig,
     image: &RuntimeImage,
@@ -2560,6 +2575,12 @@ fn installed_adapter_failure_result(
             ),
         );
     }
+    if adapter == installed_adapters::InstalledAdapter::AgentsSdkJsonl {
+        if let Some(record)=failure.records.iter().rev().find(|r|r.get("type").and_then(Value::as_str)==Some("error")) {
+            error=error.with_detail("nativeFailure",installed_adapters::sdk_native_failure(record));
+        }
+    }
+    if let Some(diagnostic)=native_failure {error=error.with_detail("nativeFailure",diagnostic);}
     render_installed_failure(
         adapter,
         task,
@@ -2648,6 +2669,7 @@ fn render_installed_failure(
         "runnerExitCode":exit_code,
         "error":error
     });
+    if let Some(limits)=crate::config::native_limits(config){result["nativeLimits"]=limits;}
     if let Some(native)=native_configuration(config,native_records){result["nativeConfiguration"]=native;}
     match mode {
         OutputMode::Human => CommandOutcome::human(
@@ -2709,6 +2731,7 @@ fn installed_invocation(
         "task":task,
         "taskDigestSha256":task_digest
     });
+    if let Some(limits)=crate::config::native_limits(config){value["nativeLimits"]=limits;}
     if let Some(native)=native_configuration(config,None){value["nativeConfiguration"]=native;}
     value
 }
@@ -3473,6 +3496,7 @@ fn dry_run_outcome(
         "readiness":readiness,
         "blockingError":blocking_error
     });
+    if let Some(limits)=crate::config::native_limits(config){report["nativeLimits"]=limits;}
     if let Some(native)=native_configuration(config,None){report["nativeConfiguration"]=native;}
     if mode == OutputMode::Human {
         let human_readiness =
@@ -3532,7 +3556,7 @@ fn config_source_entries(config: &EffectiveConfig) -> Vec<Value> {
         config_source_entry("verbose", &config.verbose.source, false),
         config_source_entry("authProfile", &config.auth_profile.source, true),
     ];
-    for (key,source) in [("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
+    for (key,source) in [("nativeMaxTurns",&config.native_max_turns.source),("nativeTimeout",&config.native_timeout.source),("nativeProfile",&config.native_profile.source),("nativeAddDirs",&config.native_add_dirs.source),("nativeAllowTools",&config.native_allow_tools.source)] {
         if source.kind != ConfigSourceKind::Default {entries.push(config_source_entry(key,source,false));}
     }
     entries
@@ -3932,6 +3956,8 @@ fn config_report(config: &EffectiveConfig) -> ConfigReport<'_> {
             color: &config.color,
             verbose: &config.verbose,
             auth_profile: &config.auth_profile,
+            native_max_turns:config.native_max_turns.value.as_ref().map(|_|&config.native_max_turns),
+            native_timeout:config.native_timeout.value.as_ref().map(|_|&config.native_timeout),
             native_profile:(config.native_profile.source.kind!=ConfigSourceKind::Default).then_some(&config.native_profile),
             native_add_dirs:(config.native_add_dirs.source.kind!=ConfigSourceKind::Default).then_some(&config.native_add_dirs),
             native_allow_tools:(config.native_allow_tools.source.kind!=ConfigSourceKind::Default).then_some(&config.native_allow_tools),
@@ -4165,6 +4191,28 @@ mod tests {
     }
 
     #[test]
+    fn sdk_error_is_captured_safely_before_admission_without_log() {
+        let mut observer=InstalledRunObserver{require_api_source:false,auth_source_failed:false,sdk:true,native_failure:None,capture:None,human:None,omp:None};
+        observer.observe_parsed(&json!({"type":"error","error_type":"MaxTurnsExceeded","elapsed_seconds":2,"message":"do not expose"})).unwrap();
+        assert_eq!(observer.native_failure,Some(json!({"kind":"max-turns","elapsedSeconds":2.0})));
+        observer.sdk=false;observer.native_failure=None;
+        observer.observe_parsed(&json!({"type":"error","error_type":"MaxTurnsExceeded"})).unwrap();assert!(observer.native_failure.is_none());
+    }
+
+    #[test]
+    fn sdk_budget_arguments_and_invocation_metadata() {
+        let f:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/sdk-native-limits.json")).unwrap();
+        let temp=TempDir::new().unwrap();let mut config=installed_config(temp.path(),"agents-sdk","jsonl",Some("fixture-model"),"openai-api-key");
+        config.harness.value="agents-sdk".into();
+        assert!(sdk_limit_arguments(&config).is_empty());
+        assert_eq!(crate::config::native_limits(&config).unwrap(),f["defaults"]);
+        config.native_max_turns.value=Some("40".into());config.native_timeout.value=Some("5m".into());
+        let args:Vec<String>=sdk_limit_arguments(&config).iter().map(|s|s.to_string_lossy().into_owned()).collect();
+        assert_eq!(serde_json::to_value(args).unwrap(),f["override"]["argv"]);
+        config.native_timeout.value=Some("1ms".into());assert_eq!(sdk_limit_arguments(&config).last().unwrap(),"0.001");
+    }
+
+    #[test]
     fn workspace_native_metadata_and_auth_evidence(){
         let temp=TempDir::new().unwrap();let mut config=installed_config(temp.path(),"claude","print-stream-json",None,"anthropic-api-key");
         assert!(native_configuration(&config,None).is_none());
@@ -4173,7 +4221,7 @@ mod tests {
         assert!(validate_native_auth(&config,&[good.clone()]).is_ok());
         let meta=native_configuration(&config,Some(&[good])).unwrap();assert_eq!(meta["observed"]["tools"],json!(["Read","Task"]));assert_eq!(meta["configOwnership"],"runner-private");
         for records in [vec![],vec![json!({"type":"system","subtype":"init"})],vec![json!({"type":"system","subtype":"init","apiKeySource":"oauth"})]] {assert_eq!(validate_native_auth(&config,&records).unwrap_err().code,ErrorCode::HarnessNeedsAuth);}
-        let mut observer=InstalledRunObserver{require_api_source:true,auth_source_failed:false,capture:None,human:None,omp:None};
+        let mut observer=InstalledRunObserver{require_api_source:true,auth_source_failed:false,sdk:false,native_failure:None,capture:None,human:None,omp:None};
         assert!(observer.observe(&json!({"type":"system","subtype":"init","apiKeySource":"oauth"})).is_err());assert!(observer.auth_source_failed);
         config.auth_profile.value=Some("claude-subscription".into());assert!(validate_native_auth(&config,&[]).is_ok());assert_eq!(native_configuration(&config,None).unwrap()["configOwnership"],"native-auth-store");
     }
@@ -4754,4 +4802,16 @@ fn rendered_error_keeps_safe_transport_diagnostic() {
     let rendered=serde_json::to_value(map_supervisor_failure(&failure)).unwrap();
     assert_eq!(rendered["details"]["transportDiagnostic"]["reason"],"invalid-json");
     assert_eq!(rendered["exitCode"],22);
+}
+
+fn sdk_limit_arguments(config: &EffectiveConfig) -> Vec<std::ffi::OsString> {
+    let mut args = Vec::new();
+    if config.harness.value != "agents-sdk" {return args;}
+    if let Some(v)=&config.native_max_turns.value {
+        args.extend([std::ffi::OsString::from("--max-turns"),v.into()]);
+    }
+    if let Some(v)=&config.native_timeout.value {
+        args.extend([std::ffi::OsString::from("--timeout"),(crate::config::validate_native_timeout(v).expect("validated") as f64/1000.0).to_string().into()]);
+    }
+    args
 }

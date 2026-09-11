@@ -40,6 +40,8 @@ pub struct GlobalFlags {
     pub output_contract: Option<String>,
     pub permission_mode: Option<String>,
     pub native_profile: Option<String>,
+    pub native_max_turns: Option<String>,
+    pub native_timeout: Option<String>,
     pub native_add_dirs: Vec<String>,
     pub native_allow_tools: Vec<String>,
     pub timeout: Option<String>,
@@ -190,6 +192,8 @@ fn is_value_option(value: &str) -> bool {
             | "--cwd"
             | "--model"
             | "--auth-profile"
+            | "--native-max-turns"
+            | "--native-timeout"
             | "--native-profile"
             | "--native-add-dir"
             | "--native-allow-tool"
@@ -223,6 +227,8 @@ fn set_value_option(globals: &mut GlobalFlags, name: &str, value: &str) -> Resul
             if !matches!(value,"native"|"image-envelope") { return Err(RunnerError::invocation("output contract must be native or image-envelope")); }
             set_once(&mut globals.output_contract,name,value)?;
         }
+        "--native-max-turns" => set_once(&mut globals.native_max_turns, name, value)?,
+        "--native-timeout" => set_once(&mut globals.native_timeout, name, value)?,
         "--native-profile" => set_once(&mut globals.native_profile, name, value)?,
         "--native-add-dir" => globals.native_add_dirs.push(value.to_owned()),
         "--native-allow-tool" => globals.native_allow_tools.push(value.to_owned()),
@@ -679,4 +685,15 @@ fn parses_repeated_native_values_without_shell_interpretation(){
  assert_eq!(p.globals.native_profile.as_deref(),Some("claude-workspace-tools"));
  assert_eq!(p.globals.native_add_dirs,vec!["a b","other"]);
  assert_eq!(p.globals.native_allow_tools,vec!["Bash(git status:*)"]);
+}
+
+#[cfg(test)]
+mod sdk_budget_flag_tests {
+ use super::*;
+ #[test]
+ fn sdk_budget_flags_reject_duplicates() {
+  let p=parse_invocation(vec!["--native-max-turns=40","--native-timeout","5m","run"].into_iter().map(str::to_owned)).unwrap();
+  assert_eq!(p.globals.native_max_turns.as_deref(),Some("40"));assert_eq!(p.globals.native_timeout.as_deref(),Some("5m"));
+  assert!(parse_invocation(vec!["--native-max-turns=40","--native-max-turns=50"].into_iter().map(str::to_owned)).is_err());
+ }
 }

@@ -15,6 +15,8 @@ export interface GlobalFlags {
   model?: string;
   authProfile?: string;
   nativeProfile?: string;
+  nativeMaxTurns?: string;
+  nativeTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   nativeLog?: string;
@@ -37,6 +39,8 @@ export interface EffectiveValues {
   verbose: boolean;
   authProfile: string | null;
   nativeProfile?: string;
+  nativeMaxTurns?: string;
+  nativeTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   nativeLog?: string;
@@ -77,6 +81,7 @@ export interface TaskEnvelope {
 
 export interface RunnerInvocation {
   nativeConfiguration?: Record<string,unknown>;
+  nativeLimits?: Record<string,number>;
   schema: "openprose.runner-invocation/1";
   invocationId: string;
   cwd: string;

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "$id": "https://schemas.openprose.org/cli/v1/native-failure.schema.json",
+  "required": [
+    "kind"
+  ],
+  "properties": {
+    "kind": {
+      "enum": [
+        "max-turns",
+        "timeout",
+        "execution"
+      ]
+    },
+    "elapsedSeconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "limits": {
+      "$ref": "native-limits.schema.json"
+    }
+  }
+}

@@ -1022,7 +1022,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
                 if !matches!(record_type(r),Some("tool_call"|"tool_result")) || r.get("name").and_then(Value::as_str).is_none() {return Err(malformed());}
             }
             let last=records.last().ok_or_else(malformed)?;
-            if record_type(last)==Some("error") {return Err(failed());}
+            if record_type(last)==Some("error") {return Err(failed().with_detail("nativeFailure",sdk_native_failure(last)));}
             if records.len()<2 || record_type(last)!=Some("final") {return Err(malformed());}
             let output=last.get("output").and_then(Value::as_str).ok_or_else(malformed)?;
             Ok(TransportNormalization{terminal_event:"final",assistant_messages:vec![output.to_owned()]})
@@ -6563,4 +6563,33 @@ fn claude_correlated_shutdown_requires_closed_known_native_tasks(){
  for event in [json!({"type":"assistant","session_id":"fixture-session","message":{"role":"assistant","content":[]}}),json!({"type":"tool_progress","session_id":"fixture-session"})]{let mut bad=records.clone();bad.push(event);variants.push(bad);}
  let mut bad=records.clone();bad[6]["patch"]["end_time"]=json!(-1);variants.push(bad);
  for bad in variants{assert!(run(&bad).is_err());}
+}
+
+pub(crate) fn sdk_native_failure(record: &Value)->Value {
+ let kind=match record.get("error_type").and_then(Value::as_str) {Some("MaxTurnsExceeded")=>"max-turns",Some("TimeoutError")=>"timeout",_=>"execution"};
+ let mut result=json!({"kind":kind});
+ if let Some(n)=record.get("elapsed_seconds").and_then(Value::as_f64).filter(|n|n.is_finite() && *n>=0.0) {result["elapsedSeconds"]=json!(n);}
+ if let Some(l)=record.get("limits").filter(|l|l.as_object().is_some_and(|m|m.len()==4)) {
+  let ints=["maxTurns","maxOutputTokens"].iter().all(|k|l.get(k).and_then(Value::as_f64).is_some_and(|n|n.is_finite() && n>0.0 && n.fract()==0.0 && n<=9_007_199_254_740_991.0));
+  let times=["timeoutSeconds","toolTimeoutSeconds"].iter().all(|k|l.get(k).and_then(Value::as_f64).is_some_and(|n|n.is_finite() && n>0.0 && n<=9_007_199_254_740.991));
+  if ints && times {result["limits"]=l.clone();}
+ }
+ result
+}
+
+#[cfg(test)]
+mod sdk_budget_diagnostic_tests {
+ use super::*;
+ #[test]
+ fn native_failure_is_closed_and_validated() {
+  let f:Value=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/sdk-native-limits.json")).unwrap();
+  for case in f["errorCases"].as_array().unwrap() {
+   let record=json!({"error_type":case["error_type"],"limits":f["defaults"],"elapsed_seconds":1.5});
+   let d=sdk_native_failure(&record);assert_eq!(d["kind"],case["kind"]);assert_eq!(d["limits"],f["defaults"]);assert_eq!(d["elapsedSeconds"],1.5);assert!(!d.to_string().contains("Untrusted"));
+  }
+  let err=normalize_transport(InstalledAdapter::AgentsSdkJsonl,&[json!({"type":"start","model":"fixture","cwd":"/fixture"}),json!({"type":"error","error_type":"MaxTurnsExceeded","limits":f["defaults"]})],"fixture").unwrap_err();
+  assert_eq!(serde_json::to_value(err).unwrap()["details"]["nativeFailure"]["kind"],"max-turns");
+  let d=sdk_native_failure(&json!({"error_type":"secret","elapsed_seconds":-1,"limits":{"maxTurns":20,"timeoutSeconds":180,"toolTimeoutSeconds":30,"maxOutputTokens":12000,"extra":"secret"}}));
+  assert_eq!(d,json!({"kind":"execution"}));
+ }
 }

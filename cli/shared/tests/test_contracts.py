@@ -76,6 +76,15 @@ class ContractsTest(unittest.TestCase):
             value = {"schema": "openprose.transport-diagnostic/1", "reason": "invalid-json", **changes}
             self.assertTrue(list(validator.iter_errors(value)))
 
+    def test_native_sdk_limits_and_failures_are_closed(self):
+        fixture=json.loads((SHARED / 'fixtures/adapters/sdk-native-limits.json').read_text())
+        self.assert_valid('native-limits.schema.json',fixture['defaults'])
+        self.assert_valid('native-limits.schema.json',fixture['override']['limits'])
+        for case in fixture['errorCases']:
+            self.assert_valid('native-failure.schema.json',{'kind':case['kind'],'limits':fixture['defaults'],'elapsedSeconds':1.5})
+        for bad in [{'kind':'arbitrary'}, {'kind':'execution','message':'secret'}, {'kind':'timeout','elapsedSeconds':-1}]:
+            self.assertTrue(list(self.validator('native-failure.schema.json').iter_errors(bad)))
+
     def test_every_schema_is_valid_draft_2020_12_and_has_unique_id(self) -> None:
         self.assertGreaterEqual(len(self.schemas), 10)
         ids = []

@@ -44,3 +44,5 @@ Native Claude delegation is available through the opt-in `claude-workspace-tools
 The initial import preserved the predecessor's current dirty `cli/` tree. `provenance/import.json` records imported hashes and predecessor HEAD; `provenance/source-status.txt` records the working-tree state. This is not a claim that the import equals that commit. Private development binaries, runtime compatibility evidence, and language conformance are separate artifacts; no 1.0 or public-release claim follows from transport success.
 
 The optional [native workspace profile](docs/native-profiles.md) exposes Claude’s ordinary workspace tools, including native delegation, with separate explicit directory access and tool permission rules. Existing defaults remain unchanged.
+
+Generic SDK budgets and their separate inner/outer deadlines are documented in [SDK execution budgets](docs/sdk-budgets.md).

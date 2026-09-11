@@ -1,0 +1,54 @@
+{
+  "defaults": {
+    "maxTurns": 20,
+    "timeoutSeconds": 180,
+    "toolTimeoutSeconds": 30,
+    "maxOutputTokens": 12000
+  },
+  "override": {
+    "nativeMaxTurns": "40",
+    "nativeTimeout": "5m",
+    "limits": {
+      "maxTurns": 40,
+      "timeoutSeconds": 300,
+      "toolTimeoutSeconds": 30,
+      "maxOutputTokens": 12000
+    },
+    "argv": [
+      "--max-turns",
+      "40",
+      "--timeout",
+      "300"
+    ]
+  },
+  "invalidTurns": [
+    "0",
+    "-1",
+    "1.5",
+    "NaN",
+    "9007199254740992",
+    "01"
+  ],
+  "invalidTimeouts": [
+    "0s",
+    "-1s",
+    "1.5s",
+    "infinity",
+    "9007199254740992ms",
+    "01s"
+  ],
+  "errorCases": [
+    {
+      "error_type": "MaxTurnsExceeded",
+      "kind": "max-turns"
+    },
+    {
+      "error_type": "TimeoutError",
+      "kind": "timeout"
+    },
+    {
+      "error_type": "Untrusted secret text",
+      "kind": "execution"
+    }
+  ]
+}

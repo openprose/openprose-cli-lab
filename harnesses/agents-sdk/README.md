@@ -33,3 +33,5 @@ No web, subagent, or notification tool is provided in this initial profile. Unsu
 Two local tests exercise actual read/write/exit behavior and process-group timeout cleanup. Initial real-model observations are in `EVIDENCE.md`. No language acceptance tests are embedded in the harness.
 
 Implementation followed the official [Agents SDK migration example](https://developers.openai.com/cookbook/examples/agents_sdk/migrate-from-claude-agent-sdk/readme) and inspected installed SDK signatures. Pinned direct dependencies: OpenAI Agents SDK 0.22.2, OpenAI Python 3.13.0, python-dotenv 1.2.3.
+
+The outer runners expose explicit `--native-max-turns` and `--native-timeout` selections; see [SDK execution budgets](../../docs/sdk-budgets.md). Native start/error records report configured limits. Safe native error types distinguish turn exhaustion and timeout; all other exception classes become `ExecutionError`, without exception bodies.

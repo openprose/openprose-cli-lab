@@ -17,6 +17,7 @@
     "taskDigestSha256"
   ],
   "properties": {
+    "nativeLimits": { "$ref": "native-limits.schema.json" },
     "nativeConfiguration": { "$ref": "native-configuration.schema.json" },
     "schema": { "const": "openprose.runner-invocation/1" },
     "invocationId": {

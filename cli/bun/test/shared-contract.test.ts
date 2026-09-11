@@ -19,6 +19,10 @@ ajv.addKeyword({ keyword: "x-openprose-volatile", schemaType: "boolean", valid: 
 for (const name of [
   "common",
   "adapter-diagnostic",
+  "transport-diagnostic",
+  "native-configuration",
+  "native-limits",
+  "native-failure",
   "runner-error",
   "runner-invocation",
   "runner-result",

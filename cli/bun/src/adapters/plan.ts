@@ -1,3 +1,4 @@
+import {nativeLimitsArgv} from "./sdk-limits";
 import { nativeProfileArgv } from "./native-profile";
 import codexApiSettings from "../../../shared/capabilities/adapters/codex-env-route.v1.json";
 import { failure } from "../core/errors";
@@ -24,6 +25,8 @@ export interface BuildInstalledLaunchPlanInput {
   credentialGroup: string;
   model?: string | null;
   nativeProfile?: string;
+  nativeMaxTurns?: string;
+  nativeTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   permissionMode?: string | null;
@@ -94,7 +97,7 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
     argv.splice(1, 0, "--bare");
   }
   if(input.adapterId === "codex/exec-json" && input.credentialGroup === "openai-api-key") argv.splice(2,0,...codexApiSettings.flatMap(setting=>["-c",setting]));
-  argv.splice(1,0,...nativeProfileArgv(input));
+  argv.splice(1,0,...nativeProfileArgv(input),...nativeLimitsArgv(input));
   if (input.permissionMode != null) {
     if(input.adapterId === "claude/print-stream-json" && ["default","acceptEdits"].includes(input.permissionMode)) argv.splice(1,0,"--permission-mode",input.permissionMode);
     else if(input.adapterId === "codex/exec-json" && ["workspace-write","read-only"].includes(input.permissionMode)) argv.splice(2,0,"--sandbox",input.permissionMode);

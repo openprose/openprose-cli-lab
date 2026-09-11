@@ -305,3 +305,6 @@ Lease cli_recon: native Claude candidate-turn settlement mode, cli/bun adapters/
 | W-DIAG-OUTPUT | coordination_library | `shared/schemas/transport-diagnostic.schema.json`, `shared/schemas/runner-error.schema.json`, `shared/fixtures/transport-diagnostics.json`, `shared/tests/test_contracts.py`, `bun/src/supervision/jsonl.ts`, `bun/src/cli.ts`, `bun/test/supervision-jsonl.test.ts`, `rust/crates/prose-process-supervisor/src/{framing,supervisor,windows_supervision}.rs`, `rust/crates/prose-runner-core/src/runner.rs` | isolated branch codex/output-limit-diagnostics | root-authorized safe framing/lifecycle diagnostic additions only | active |
 
 Lease cli_recon decision021: correlated native-Claude shutdown bookkeeping helper in both adapters, candidate retention plumbing in Rust supervisor, shared fixture/tests/docs. Root approved no language behavior or limit changes; diagnostic branch502c2f8 retained.
+
+Decision022 active lease: cli_recon owns cli/bun/**, cli/shared/**, harnesses/agents-sdk/**, docs/** and root docs; coordination_library owns cli/rust/** in sdk-native-budgets worktree. Sole git owner cli_recon.
+Decision022 lease includes canonical cli/conformance/cases/fixtures/runner-help.txt and shared-schema registrations in Bun tests. Rust worker handoff complete; cli_recon owns integration.

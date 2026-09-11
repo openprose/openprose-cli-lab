@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -60,7 +61,9 @@ async def run(args):
         emit('tool_result', name='execute_shell', result=result)
         return json.dumps(result)
 
-    emit('start', model=args.model, cwd=cwd)
+    limits = {'maxTurns': args.max_turns, 'timeoutSeconds': args.timeout,
+              'toolTimeoutSeconds': args.tool_timeout, 'maxOutputTokens': args.max_output_tokens}
+    emit('start', model=args.model, cwd=cwd, limits=limits)
     agent = Agent(name='Local coding agent', instructions=instructions,
                   model=args.model, tools=[execute_shell],
                   model_settings=ModelSettings(max_tokens=args.max_output_tokens, timeout=args.timeout))
@@ -75,7 +78,7 @@ async def run(args):
         return 0
     except Exception as error:
         # Exception bodies may contain request/credential information; type suffices for public log.
-        emit('error', error_type=type(error).__name__)
+        emit('error', error_type=type(error).__name__ if type(error).__name__ in ('MaxTurnsExceeded', 'TimeoutError') else 'ExecutionError', limits=limits)
         return 1
 
 
@@ -91,7 +94,12 @@ def main():
     parser.add_argument('--tool-timeout', type=float, default=30)
     parser.add_argument('--max-turns', type=int, default=20)
     parser.add_argument('--max-output-tokens', type=int, default=12000)
-    raise SystemExit(asyncio.run(run(parser.parse_args())))
+    args = parser.parse_args()
+    if not 0 < args.max_turns <= 9007199254740991:
+        parser.error('--max-turns must be a positive safe integer')
+    if not math.isfinite(args.timeout) or not 0 < args.timeout <= 9007199254740.991:
+        parser.error('--timeout must be positive and finite within the supported range')
+    raise SystemExit(asyncio.run(run(args)))
 
 if __name__ == '__main__':
     main()

@@ -95,6 +95,8 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       daemonSocketPath: files.daemonSocketPath,
       ...(renderedConfigPath === undefined ? {} : { renderedConfigPath }),
       credentialGroup: options.credentialGroup,
+      ...(options.nativeMaxTurns===undefined?{}:{nativeMaxTurns:options.nativeMaxTurns}),
+      ...(options.nativeTimeout===undefined?{}:{nativeTimeout:options.nativeTimeout}),
       ...(options.nativeProfile === undefined ? {} : {nativeProfile:options.nativeProfile}),
       ...(options.nativeAddDirs === undefined ? {} : {nativeAddDirs:options.nativeAddDirs}),
       ...(options.nativeAllowTools === undefined ? {} : {nativeAllowTools:options.nativeAllowTools}),

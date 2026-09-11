@@ -1,3 +1,4 @@
+import {sdkNativeFailure} from "./sdk-limits";
 import {hasFreshClaudeResult} from "./claude-shutdown";
 import { isDeepStrictEqual } from "node:util";
 import { NativeToolLifecycle, hasNativeTools } from "./native-tool-lifecycle";
@@ -99,7 +100,7 @@ class AgentsSdkProtocol extends InstalledProtocol {
       return this.start();
     }
     if (!this.started) malformed("SDK event before start.");
-    if (record.type === "error") throw failure("HARNESS_FAILED", {reason:"SDK reported execution failure."});
+    if (record.type === "error") throw failure("HARNESS_FAILED", {nativeFailure:sdkNativeFailure(record)});
     if (record.type === "tool_call" || record.type === "tool_result") {
       if (typeof record.name !== "string") malformed("SDK tool identity missing.");
       return null;

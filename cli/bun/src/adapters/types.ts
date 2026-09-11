@@ -160,6 +160,8 @@ export interface InstalledAdapterOptions {
   timeoutMs: number;
   model?: string | null;
   nativeProfile?: string;
+  nativeMaxTurns?: string;
+  nativeTimeout?: string;
   nativeAddDirs?: string[];
   nativeAllowTools?: string[];
   permissionMode?: string | null;
