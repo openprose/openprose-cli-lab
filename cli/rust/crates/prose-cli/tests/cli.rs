@@ -1727,7 +1727,7 @@ fn provider_free_installed_adapters_preserve_bytes_and_settle_the_echo_placehold
             let argv = observation["argv"].as_array().unwrap();
             assert_eq!(argv[argv.len() - 2], "--config");
             assert_eq!(argv[argv.len() - 1], files[1]["path"]);
-            assert!(argv.iter().any(|value| value == "--no-tools"));
+            assert!(!argv.iter().any(|value| value == "--no-tools"));
         }
         if matches!(adapter_id, "prime/rpc" | "omp/rpc") {
             let config = &observation["credentialConfig"];
