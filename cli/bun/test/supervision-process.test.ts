@@ -1,3 +1,4 @@
+import {NativeCapture} from "../src/adapters/native-capture";
 import { afterEach, describe, expect, test } from "bun:test";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -567,3 +568,18 @@ async function requirePidExitAfterSettlement(pid: number, timeoutMs: number): Pr
   }
   throw new Error(`owned descendant ${pid} remained alive after process settlement`);
 }
+
+test("native capture retains a parsed rejected record without synthetic completion",async()=>{
+ const input=await fixture(),path=join(input.root,"native.jsonl");
+ const capture=new NativeCapture(path,["fixture-secret"]);
+ const result=await superviseStructuredProcess({
+ executable:Bun.which("python3")??"python3",argv:["-c",`print('{"type":"unexpected","text":"fixture-secret"}')`],
+ cwd:input.root,environment:{PATH:process.env.PATH},invocationId:input.invocation.invocationId,
+ recursionToken:input.invocation.recursionToken,runNonce:"capture-rejected",startupTimeoutMs:1000,
+ runTimeoutMs:2000,graceMs:50,hardKillAfterMs:500,onNativeRecord:record=>capture.write(record),
+ });
+ capture.close();
+ expect(result.error?.code).toBe("PROTOCOL_MALFORMED");
+ expect(JSON.parse(await readFile(path,"utf8"))).toEqual({type:"unexpected",text:"[REDACTED]"});
+ expect(result.events.some(event=>event.type==="session.completed")).toBeFalse();
+});

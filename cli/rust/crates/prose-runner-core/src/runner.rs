@@ -1167,7 +1167,12 @@ impl std::fmt::Debug for InstalledRunObserver<'_> {
 }
 
 impl RecordObserver for InstalledRunObserver<'_> {
+    fn observe_parsed(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
+        if let Some(capture)=self.capture.as_mut(){capture.write(record)?;}
+        Ok(())
+    }
     fn observe(&mut self, record: &Value) -> Result<(), SupervisorFailure> {
+        #[cfg(windows)]
         if let Some(capture)=self.capture.as_mut(){capture.write(record)?;}
         if self.require_api_source && record["type"]=="system" && record["subtype"]=="init" && record["apiKeySource"]!="ANTHROPIC_API_KEY" {
             self.auth_source_failed=true;
@@ -3111,6 +3116,19 @@ fn map_supervisor_failure(failure: &SupervisorFailure) -> RunnerError {
                 .map_or(Value::Null, |signal| Value::from(signal.clone())),
         )
         .with_detail("terminalEventObserved", failure.terminal_observed);
+    if matches!(failure.kind, FailureKind::ProtocolMalformed | FailureKind::ProtocolTruncated) {
+        // Closed runner-authored reasons only; never echo native data or arbitrary observer errors.
+        let reason=match failure.message.as_str() {
+            "harness emitted a record after its terminal record" => "record_after_terminal",
+            "harness emitted a malformed JSONL record" => "invalid_json",
+            "harness emitted a non-object JSONL record" => "non_object_record",
+            "harness emitted a record without an event type" => "missing_event_type",
+            "harness emitted an out-of-order record before session start" => "record_before_start",
+            "harness emitted a duplicate session-start record" => "duplicate_start",
+            _ => "protocol_admission_rejected",
+        };
+        return error.with_detail("reason",reason).with_detail("admittedRecordCount",failure.records.len());
+    }
     if failure.kind == FailureKind::HarnessFailed
         && failure.message == "unsupported_nonterminal_settlement"
     {
@@ -4710,4 +4728,14 @@ fn native_capture_is_private_new_bounded_and_redacts_known_values(){
  assert!(std::fs::read_to_string(&path).unwrap().contains("[REDACTED]"));
  #[cfg(unix)] {use std::os::unix::fs::PermissionsExt;assert_eq!(std::fs::metadata(path).unwrap().permissions().mode() & 0o777,0o600);}
  capture.bytes=64*1024*1024;assert!(capture.write(&json!({"type":"final"})).is_err());
+}
+
+#[test]
+fn protocol_diagnostics_do_not_echo_native_or_observer_content(){
+ let failure=stream_observer_failure(FailureKind::ProtocolMalformed,"harness emitted a record after its terminal record");
+ let error=map_supervisor_failure(&failure);
+ assert_eq!(error.details.as_ref().unwrap().get("reason"),Some(&json!("record_after_terminal")));
+ assert_eq!(error.details.as_ref().unwrap().get("admittedRecordCount"),Some(&json!(0)));
+ let failure=stream_observer_failure(FailureKind::ProtocolMalformed,"private arbitrary content");
+ assert_eq!(map_supervisor_failure(&failure).details.as_ref().unwrap().get("reason"),Some(&json!("protocol_admission_rejected")));
 }

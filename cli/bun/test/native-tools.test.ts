@@ -41,7 +41,7 @@ test("Prime missing turn marker allows only a settled tool turn and real termina
  const boundary=implicit.findIndex((f,i)=>i>0&&f.type==="message_start"&&implicit[i-1]?.type==="turn_end");
  for(const message of [{role:"user",content:[]},{role:"assistant",content:[{type:"text",text:"unexpected"}]}]) {
   const bad=structuredClone(implicit) as any[];bad[boundary].message=message;const q=primeParser();expect(()=>bad.forEach(f=>q.accept(f))).toThrow();
-  expect(q.diagnostic?.("prime-lifecycle").phase).toBe("tool-await-next-turn");
+  expect(q.diagnostic?.("prime-lifecycle")?.phase).toBe("tool-await-next-turn");
  }
  const incomplete=implicit.filter((_,i)=>i!==boundary-1),q=primeParser();expect(()=>incomplete.forEach(f=>q.accept(f))).toThrow();
  const strict=structuredClone(omp) as any[];const starts=strict.map((v,i)=>v.type==="turn_start"?i:-1).filter(i=>i>=0);strict.splice(starts[1]!,1);

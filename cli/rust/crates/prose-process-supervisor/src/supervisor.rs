@@ -335,10 +335,13 @@ pub struct ProcessOutcome {
 
 /// Receives one structurally admitted harness record at a time.
 ///
-/// Observers never see raw bytes, partial records, stderr, or records rejected
-/// by the generic transport protocol. Adapter-specific callers must still
+/// Observers never see raw bytes, partial records, or stderr. The optional
+/// pre-admission hook receives parsed JSON, including rejected records, on Unix. Adapter-specific callers must still
 /// validate a record before deriving any user-visible projection from it.
 pub trait RecordObserver {
+    /// Evidence-only hook; receiving a value never admits it. Unix transport only.
+    fn observe_parsed(&mut self, _record: &Value) -> Result<(), SupervisorFailure> { Ok(()) }
+
     /// Observes a single admitted record.
     ///
     /// # Errors
@@ -1917,6 +1920,11 @@ fn handle_message(
 ) -> Result<(), SupervisorFailure> {
     match message {
         ReaderMessage::Record(bytes) => {
+            if let Some(observer) = observer.as_deref_mut() {
+                if let Ok(record) = serde_json::from_slice::<Value>(&bytes) {
+                    observer.observe_parsed(&record)?;
+                }
+            }
             state.accept(&bytes, protocol)?;
             if let (Some(observer), Some(record)) = (observer.as_deref_mut(), state.records.last())
             {
@@ -2177,6 +2185,25 @@ mod tests {
             state.accept(start, &protocol).unwrap_err().kind,
             FailureKind::ProtocolMalformed
         );
+    }
+
+    #[test]
+    fn parsed_capture_retains_rejected_record_without_admission() {
+        struct Capture(Vec<Value>);
+        impl RecordObserver for Capture {
+            fn observe_parsed(&mut self, record:&Value)->Result<(),SupervisorFailure>{self.0.push(record.clone());Ok(())}
+            fn observe(&mut self,_:&Value)->Result<(),SupervisorFailure>{Ok(())}
+        }
+        let protocol=JsonlProtocol::installed("ready","done",["message"]);
+        let mut state=ProtocolState::default();
+        let mut capture=Capture(vec![]);
+        let mut stderr=vec![];let mut stdout_eof=false;let mut stderr_eof=false;
+        for bytes in [br#"{"type":"ready"}"#.to_vec(),br#"{"type":"unexpected","text":"fixture-secret"}"#.to_vec()] {
+            let result=handle_message(ReaderMessage::Record(bytes),&protocol,&mut state,&mut stderr,&mut stdout_eof,&mut stderr_eof,&mut Some(&mut capture));
+            if capture.0.len()==2 {assert_eq!(result.unwrap_err().kind,FailureKind::ProtocolMalformed);}
+            else {result.unwrap();}
+        }
+        assert_eq!(capture.0.len(),2);assert_eq!(state.records.len(),1);assert!(state.terminal.is_none());
     }
 
     #[test]

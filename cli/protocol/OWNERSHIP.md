@@ -297,3 +297,5 @@ Documentation scope extension: docs/native-capture.md, clarifying existing captu
 | NATIVE-PROFILE-HELP | cli_recon | `cli/conformance/cases/fixtures/runner-help.txt` | shared native option help | active |
 
 | PRIME-IMPLICIT-TURN | cli_recon | `cli/bun/src/adapters/native-tool-lifecycle.ts`, `cli/bun/src/adapters/protocols.ts`, `cli/bun/src/supervision/types.ts`, `cli/bun/test/native-tools.test.ts`, `cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs`, `cli/shared/fixtures/adapters/tool-lifecycle/prime-implicit-turn.json`, `cli/shared/schemas/adapter-diagnostic.schema.json` | native transport compatibility and diagnostic | active |
+
+Lease cli_recon: parsed native capture before admission, Rust supervisor/core tests and diagnostics, Bun capture parity test, docs/native-capture.md. Parent approved observability only; no admission relaxation.
