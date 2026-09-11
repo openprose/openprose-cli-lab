@@ -441,7 +441,7 @@ impl ProtocolState {
                 ));
             }
             self.started = true;
-        } else if event_type == protocol.start_event {
+        } else if event_type == protocol.start_event && !protocol.allowed_events.contains(event_type) {
             return Err(SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
                 "harness emitted a duplicate session-start record",
@@ -2231,6 +2231,21 @@ mod tests {
                 .unwrap()
                 .contains("OPENPROSE-CANDIDATE-CANARY")
         );
+    }
+
+    #[test]
+    fn explicitly_allowed_start_type_can_carry_later_nonterminal_records() {
+        let protocol = JsonlProtocol::installed("system", "result", ["system", "assistant"]);
+        let mut state = ProtocolState::default();
+        state.accept(br#"{"type":"system","subtype":"init"}"#, &protocol).unwrap();
+        state.accept(br#"{"type":"system","subtype":"thinking_tokens"}"#, &protocol).unwrap();
+        assert!(state.terminal.is_none());
+        state.accept(br#"{"type":"result"}"#, &protocol).unwrap();
+        assert!(state.terminal.is_some());
+        let strict = JsonlProtocol::installed("system", "result", ["assistant"]);
+        let mut state = ProtocolState::default();
+        state.accept(br#"{"type":"system"}"#, &strict).unwrap();
+        assert!(state.accept(br#"{"type":"system"}"#, &strict).is_err());
     }
 
     #[test]

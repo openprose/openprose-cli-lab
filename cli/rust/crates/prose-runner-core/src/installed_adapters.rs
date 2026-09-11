@@ -238,7 +238,7 @@ impl InstalledAdapter {
             )
             .with_failure_events(["turn.failed", "error"]),
             Self::ClaudePrintStreamJson => {
-                JsonlProtocol::installed("system", "result", ["assistant", "user", "stream_event"])
+                JsonlProtocol::installed("system", "result", ["system", "assistant", "user", "stream_event", "tool_progress"])
             }
             Self::PrimeRpc => JsonlProtocol::installed(
                 "response",
@@ -991,7 +991,7 @@ pub fn normalize_transport(
                     Some("assistant") => {
                         assistant_messages.extend(assistant_text_content(record)?);
                     }
-                    Some("user" | "stream_event") => {}
+                    Some("user" | "stream_event" | "tool_progress") => {}
                     Some("system")
                         if record.get("subtype").and_then(Value::as_str)
                             == Some("thinking_tokens") =>
