@@ -319,6 +319,13 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
             }
             "message_start" => {
                 let m = r.get("message").filter(|m| m.is_object()).ok_or_else(bad)?;
+                // Native-only inference of both missing markers; no emitted event or history deletion.
+                if drain && started && turn && open.is_none()
+                    && assistant.as_ref().is_some_and(|a|a["stopReason"]=="toolUse")
+                    && m["role"]=="assistant" && m["content"].as_array().is_some_and(Vec::is_empty)
+                    && !calls.is_empty() && results.len()==calls.len() && calls.values().all(|c|c.2==3) {
+                    last_stop=Some("toolUse".to_owned());turn=false;
+                }
                 // Observed Prime boundary omission: preserve messages and require all prior tools settled.
                 if !omp && started && !turn && open.is_none() && last_stop.as_deref()==Some("toolUse")
                     && m["role"]=="assistant" && m["content"].as_array().is_some_and(Vec::is_empty)
@@ -576,6 +583,19 @@ mod tests {
         let mut bad=r.clone();bad[1]["success"]=json!(false);assert!(run(&bad,true).is_err());
         let mut bad=r.clone();bad.push(json!({"type":"session_action_update","actions":{"queuedCount":0,"steering":[],"followUps":[],"active":{"kind":"turn","phase":"running"}}}));assert!(run(&bad,true).is_err());
         let mut bad=r.clone();bad.push(json!({"type":"turn_start"}));assert!(run(&bad,true).is_err());
+    }
+    #[test]
+    fn prime_missing_both_markers_requires_reported_tools_and_final_settlement() {
+        let f:Value=serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime-turn-transition.json")).unwrap();
+        let mut r=vec![f["stateResponse"].clone(),f["promptResponse"].clone()];r.extend(f["frames"].as_array().unwrap().clone());
+        let run=|r:&[Value],terminal|normalize_mode(r,"fixture-drain",false,terminal,true);
+        assert!(run(&r,true).is_ok());assert!(run(&r[..15],true).is_err());assert!(run(&r[..15],false).is_ok());
+        assert!(normalize(&r[1..],"fixture-drain",false,true).is_err());
+        for index in [7usize,9,14] {let mut bad=r.clone();bad.remove(index+2);assert!(run(&bad,true).is_err());}
+        let mut bad=r.clone();bad[14]["message"]["content"]=json!([{"type":"text","text":"not empty"}]);assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad[11]["message"]["toolCallId"]=json!("other");assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad.insert(12,bad[11].clone());assert!(run(&bad,true).is_err());
+        let mut bad=r.clone();bad.pop();assert!(run(&bad,true).is_err());
     }
     #[test]
     fn prime_usage_projection_is_typed_and_only_history() {

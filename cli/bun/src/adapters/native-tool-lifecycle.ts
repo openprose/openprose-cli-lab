@@ -120,6 +120,14 @@ export class NativeToolLifecycle {
           if(this.lastStop!=="toolUse")bad();
           this.primeDrain.segmentClosed=false;this.primeDrain.resumed=true;this.primeDrain.candidate=false;this.primeDrain.queueEmpty=false;this.history=[];
         }
+        // Native Prime may lose both markers after all observed tool results.
+        // Infer parser state only; preserve history and emit no replacement events.
+        if(this.primeDrain && this.started && this.turn && !this.open
+          && this.assistant?.stopReason==="toolUse" && m.role==="assistant"
+          && Array.isArray(m.content) && m.content.length===0 && this.calls.size>0
+          && this.results.length===this.calls.size && [...this.calls.values()].every(c=>c.state==="reported")) {
+          this.lastStop="toolUse";this.turn=false;
+        }
         // Prime 0.7 has emitted this boundary without its turn_start marker.
         // Only a fully settled tool turn permits this empty assistant start.
         if (!this.omp && this.started && !this.turn && !this.open && this.lastStop === "toolUse"
