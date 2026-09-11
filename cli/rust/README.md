@@ -4,6 +4,25 @@ This standalone Rust 1.87 workspace contains the native `prose` outer runner.
 It is an outer transport runner, not an OpenProse interpreter, and has no
 dependency on the repository's language or kernel packages.
 
+## Output and image selection
+
+`--output-contract native` accepts the actual native harness terminal and
+preserves final prose without requiring a model-authored JSON envelope.
+Semantic status is `not-applicable`: validate program artifacts independently.
+`image-envelope` remains the default and requires the image-declared terminal
+envelope in addition to native completion. `--output human|json|jsonl` controls
+rendering separately. See [native output](../../docs/native-output.md) and
+[private native capture](../../docs/native-capture.md).
+
+A build without image overrides still embeds the nonsemantic `echo-v0` image.
+That is a packaging default, not a limit on the runner: production-shaped
+builds can instead embed a verified language-owned image or minimal entry
+pointer using the documented [image bundle configuration](../shared/image/bundle/README.md).
+The configured image supplies instructions; choosing native output does not
+replace an echo image with a language interpreter. No CLI source changes are
+needed to swap image data. Native completion alone is not a release or
+language-conformance claim.
+
 ## Local verification
 
 ```sh
@@ -22,7 +41,8 @@ cargo build --locked -p prose-cli
 ```
 
 The functional alpha can run installed `prime-agent`, `omp`, `codex`, and
-`claude` executables directly, without a shell or outer PTY. Prime and OMP
+`claude` executables directly, plus the optional `prose-agents-sdk` harness,
+without a shell or outer PTY. Prime and OMP
 require an explicit fully qualified `provider/model` and credential route.
 Their HOME-backed harness caches are available only through the explicit
 `prime-harness-login` and `omp-harness-login` auth profiles; those routes pass
@@ -34,17 +54,19 @@ all profiles report auth readiness as unknown and actual execution is the first
 auth authority. Every actual Prime child also receives the adapter-owned
 `PRIME_AGENT_TELEMETRY=0` opt-out; an ambient conflicting value is overwritten,
 the selected credential route is unchanged, and no other adapter receives it.
-Every actual OMP child receives exact `--no-tools`, exact `--no-lsp`, and a final private
-mode-0600 config overlay that disables retry and the exact OMP 18.0.9 MCP discovery
-providers. The runner withholds the prompt until
-a correlated post-start `get_state` response proves `dumpTools` is empty.
-Interactive UI, control drift, a nonempty tool inventory, and nonterminal
-`agent_end` fail closed; the latter reports
-`unsupported_nonterminal_settlement` rather than being mistaken for success.
-Codex and Claude retain their separately documented behavior.
-Selection never falls back to another harness or credential environment group.
+OMP's current recipe enables its native tools; it no longer passes `--no-tools`
+or requires an empty inventory. It retains `--no-lsp`, disabled extensions,
+skills/rules, and a final private config overlay disabling retry and the
+listed MCP discovery providers. Before prompting, the runner obtains the
+correlated `get_state` tool inventory and validates its names. Native tool
+calls/results are correlated across turns. A nonterminal `agent_end` remains
+an error; a valid terminal is distinct from program fulfillment. Prime also
+supports its native tool lifecycle. No adapter silently switches harnesses or
+credential routes. See the repository [runner guide](../../README.md) for
+native output, SDK support, image selection, and environment profiles.
 Functional-alpha admission is an exact audited allowlist: Prime `0.7.0` or
-`0.8.1`, OMP `18.0.9`, Codex `0.149.0-alpha.4.1`, and Claude `2.1.243`.
+`0.8.1`, OMP `18.0.9`, Codex `0.149.0-alpha.4.1`, Claude `2.1.243`,
+and the optional `prose-agents-sdk` harness `0.1.0` (currently macOS ARM64).
 Nearby patches and prereleases are detected but refused rather than admitted by
 range extrapolation. Machine errors include the detected identity, exact
 allowlist, and repair command; human doctor/run output prints the same copyable
@@ -71,7 +93,7 @@ OpenProse-billed adapter exists, a language run fails with
 `HOSTED_UNAVAILABLE` and exit code 10. It never falls back to a third-party
 harness.
 
-Ordinary builds embed the release-eligible `echo-v0` Skill Runtime Image. It is
+Builds without image overrides embed the release-eligible `echo-v0` Skill Runtime Image. It is
 a functional-alpha placeholder: it asks the selected harness to echo the task
 and produce a structurally verified terminal envelope, so successful runs have
 semantic status `not-applicable`. It does not implement the OpenProse language.

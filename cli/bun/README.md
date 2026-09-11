@@ -6,9 +6,29 @@ Runtime Image, preserves task argument boundaries, selects a harness adapter,
 and emits the shared runner records.
 
 This is the thin, noninteractive CLI wrapper. It never opens or controls a TUI.
-An interactive Prime/OMP/Codex/Claude session runs OpenProse directly through
-the installed `open-prose` skill and does not invoke this binary. Prompts and
-other language-facing Markdown remain owned by that skill/image layer.
+An interactive harness can read the language directory directly, or use an
+explicitly installed skill or entry image; it need not invoke this binary.
+No particular skill installation is required. Prompts and language-facing
+Markdown remain owned by the separate language/image layer.
+
+## Output and image selection
+
+`--output-contract native` accepts the actual native harness terminal and
+preserves final prose without requiring a model-authored JSON envelope.
+Semantic status is `not-applicable`: validate program artifacts independently.
+`image-envelope` remains the default and requires the image-declared terminal
+envelope in addition to native completion. `--output human|json|jsonl` controls
+rendering separately. See [native output](../../docs/native-output.md) and
+[private native capture](../../docs/native-capture.md).
+
+A build without image overrides still embeds the nonsemantic `echo-v0` image.
+That is a packaging default, not a limit on the runner: production-shaped
+builds can instead embed a verified language-owned image or minimal entry
+pointer using the documented [image bundle configuration](../shared/image/bundle/README.md).
+The configured image supplies instructions; choosing native output does not
+replace an echo image with a language interpreter. No CLI source changes are
+needed to swap image data. Native completion alone is not a release or
+language-conformance claim.
 
 ## Local development
 
@@ -35,11 +55,12 @@ it creates a private temporary `sentinel-v1` bundle, enables test seams, writes
 command refuses to overwrite `dist/prose`. `bun run build:release` embeds the
 release-eligible `echo-v0` image with test seams off.
 
-Ordinary builds embed the deliberately nonsemantic `echo-v0` image. They can
-discover and run exactly admitted user-installed Prime, OMP, Codex, and Claude
+Builds without image overrides embed the deliberately nonsemantic `echo-v0` image. They can
+discover and run exactly admitted user-installed Prime, OMP, Codex, Claude, and Agents SDK
 harnesses through direct argument-array subprocesses. The adapters preserve
 the complete image/task boundary, use adapter-specific credential allowlists,
-and recover the image-owned terminal envelope without a shell, outer PTY, or
+and, in the default output-contract mode, recover the image-owned terminal
+envelope without a shell, outer PTY, or
 harness fallback. Codex and Claude can use their installed login state. Prime
 and OMP additionally require a fully qualified `provider/model` plus an
 explicit auth profile. `prime-harness-login` and `omp-harness-login` preserve
@@ -54,15 +75,19 @@ probes; every profile remains unknown until actual execution, with no fallback.
 Every actual Prime child receives the adapter-owned
 `PRIME_AGENT_TELEMETRY=0` opt-out, overriding ambient conflict without changing
 credentials; OMP, Codex, and Claude never receive that control.
-Every actual OMP child receives exact `--no-tools`, exact `--no-lsp`, and a final private
-mode-0600 config overlay that disables retry and the exact OMP 18.0.9 MCP discovery
-providers. Its prompt is withheld until the
-post-start correlated `get_state` response proves `dumpTools` is empty.
-Interactive UI, control drift, a nonempty inventory, and nonterminal
-`agent_end` fail closed; nonterminal settlement reports the fixed
-`unsupported_nonterminal_settlement` reason.
+OMP's current recipe enables its native tools; it no longer passes `--no-tools`
+or requires an empty inventory. It retains `--no-lsp`, disabled extensions,
+skills/rules, and a final private config overlay disabling retry and the
+listed MCP discovery providers. Before prompting, the runner obtains the
+correlated `get_state` tool inventory and validates its names. Native tool
+calls/results are correlated across turns. A nonterminal `agent_end` remains
+an error; a valid terminal is distinct from program fulfillment. Prime also
+supports its native tool lifecycle. No adapter silently switches harnesses or
+credential routes. See the repository [runner guide](../../README.md) for
+native output, SDK support, image selection, and environment profiles.
 Functional-alpha admission is an exact audited allowlist: Prime `0.7.0` or
-`0.8.1`, OMP `18.0.9`, Codex `0.149.0-alpha.4.1`, and Claude `2.1.243`.
+`0.8.1`, OMP `18.0.9`, Codex `0.149.0-alpha.4.1`, Claude `2.1.243`,
+and the optional `prose-agents-sdk` harness `0.1.0` (currently macOS ARM64).
 Nearby patches and prereleases are detected but refused, with the detected
 identity, exact admitted set, and a copyable repair command in machine and
 human doctor/run errors. The CLI build remains on its pinned Bun 1.3.5
@@ -97,7 +122,7 @@ claim. The default `openprose` identity still fails closed with
 
 The deterministic `mock` and `fake-process` transports remain test-only. They
 are admitted only by the explicit `bun run build:test` command, which carries
-the release-ineligible sentinel image and enables test seams. Ordinary
+the release-ineligible sentinel image and enables test seams. Without image overrides, ordinary
 `bun run build` and release-profile builds carry `echo-v0` with test seams off
 and refuse these transports before execution. Internal provider-free controls
 cannot be enabled in a release build and never become a harness, language, or
@@ -121,8 +146,8 @@ successfully on native Windows and that evidence is retained.
 
 ## Packaging boundary
 
-The current build produces `dist/prose`, a local Bun standalone carrying
-`echo-v0`. Functional-alpha packaging creates platform-specific npm packages
+The default build produces `dist/prose`, a local Bun standalone carrying
+`echo-v0`; explicit image arguments select a different verified bundle. Functional-alpha packaging creates platform-specific npm packages
 and a small Node-compatible launcher in `@openprose/prose-cli`. Both products
 embed the same exact prerelease SemVer and source revision through
 `OPENPROSE_BUILD_VERSION` and `OPENPROSE_BUILD_COMMIT`. The launcher selects an

@@ -284,3 +284,7 @@ Lease cli_recon: opt-in native-log configuration, private bounded capture and te
 Lease cli_recon 2026-09-11: Claude native task lifecycle nonterminal telemetry in cli/bun/src/adapters/protocols.ts, cli/bun/test/claude-protocol.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs, cli/shared/fixtures/adapters/claude-task-lifecycle.json, docs/native-task-events.md. Parent explicitly authorizes commits/builds/tests. No language semantics.
 
 Lease extension cli_recon: cli/shared/fixtures/adapters/claude-background-tasks.json; same generic native telemetry repair.
+
+Lease cli_recon documentation audit: cli/rust/README.md and cli/bun/README.md. Root explicitly also assigns repository README.md and linked docs/api-credentials.md and docs/permissions-and-native-notices.md; current behavior only, no source or semantic changes.
+
+Documentation scope extension: docs/native-capture.md, clarifying existing capture limits only.
