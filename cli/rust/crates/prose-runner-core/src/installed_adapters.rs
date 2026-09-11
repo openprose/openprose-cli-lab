@@ -992,6 +992,9 @@ pub fn normalize_transport(
                         assistant_messages.extend(assistant_text_content(record)?);
                     }
                     Some("user" | "stream_event" | "tool_progress") => {}
+                    Some("system") if record.get("subtype").and_then(Value::as_str) == Some("permission_denied") => {
+                        if !["tool_name","tool_use_id","message"].iter().all(|key|record.get(*key).and_then(Value::as_str).is_some()){return Err(malformed());}
+                    }
                     Some("system")
                         if record.get("subtype").and_then(Value::as_str)
                             == Some("thinking_tokens") =>
@@ -6332,6 +6335,18 @@ mod tests {
             let launch = prepare_launch(adapter,root.path().join("claude"),root.path(),&full_image(),FRAMING,TASK.as_bytes(),"fixture",None,group,empty_environment(adapter)).unwrap();
             assert_eq!(launch.argv.iter().any(|arg| arg == "--bare"),group == "anthropic-api-key");
         }
+    }
+
+    #[test]
+    fn claude_permission_denial_remains_nonterminal() {
+        let init=json!({"type":"system","subtype":"init","session_id":"s"});
+        let denial=json!({"type":"system","subtype":"permission_denied","session_id":"s","tool_name":"Bash","tool_use_id":"t","message":"Denied"});
+        let final_record=json!({"type":"result","subtype":"success","is_error":false,"session_id":"s"});
+        let adapter=InstalledAdapter::ClaudePrintStreamJson;
+        assert!(normalize_transport(adapter,&[init.clone(),denial.clone(),final_record.clone()],"unused").is_ok());
+        assert!(normalize_transport(adapter,&[init.clone(),denial.clone()],"unused").is_err());
+        let mut invalid=denial;invalid["session_id"]=json!("other");
+        assert!(normalize_transport(adapter,&[init,invalid,final_record],"unused").is_err());
     }
 
 }

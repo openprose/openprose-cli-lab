@@ -99,6 +99,10 @@ class ClaudeProtocol extends InstalledProtocol {
       return this.start();
     }
     this.requireSession(record);
+    if (record.type === "system" && record.subtype === "permission_denied") {
+      if (typeof record.tool_name !== "string" || typeof record.tool_use_id !== "string" || typeof record.message !== "string") malformed("Claude permission denial is invalid.");
+      return null;
+    }
     if (record.type === "system" && record.subtype === "thinking_tokens") {
       if (!hasExactKeys(record, ["type", "subtype", "estimated_tokens", "estimated_tokens_delta", "uuid", "session_id"])
         || typeof record.uuid !== "string" || record.uuid.length === 0

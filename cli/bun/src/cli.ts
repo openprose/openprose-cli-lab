@@ -1051,6 +1051,7 @@ async function runInstalledInvocation(
       ambient: dependencies.env,
       timeoutMs: parseDurationMs(config.values.timeout),
       model: config.values.model,
+      permissionMode: config.values.permissionMode ?? null,
       wrapperExecutable: process.execPath,
       ...(mode !== "human"
         ? {}
@@ -1550,8 +1551,8 @@ function configurationProvenance(config: EffectiveConfiguration): Array<Record<s
     { key: "cwd", source: source(config.cwdSource.kind), location: config.cwdSource.location, redacted: false },
     ...(Object.keys(config.values) as Array<keyof typeof config.values>).map((key) => ({
       key,
-      source: source(config.sources[key].kind),
-      location: config.sources[key].location,
+      source: source(config.sources[key]?.kind ?? "default"),
+      location: config.sources[key]?.location ?? "built-in",
       redacted: key === "authProfile",
     })),
   ];

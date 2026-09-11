@@ -14,6 +14,7 @@ export interface GlobalFlags {
   cwd?: string;
   model?: string;
   authProfile?: string;
+  permissionMode?: string;
   timeout?: string;
   output?: OutputMode;
   dryRun?: boolean;
@@ -30,6 +31,7 @@ export interface EffectiveValues {
   color: boolean;
   verbose: boolean;
   authProfile: string | null;
+  permissionMode?: string | null;
 }
 
 export interface EffectiveConfiguration {

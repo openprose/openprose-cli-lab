@@ -7,6 +7,7 @@ const valueOptions: Record<string, keyof GlobalFlags> = {
   "--cwd": "cwd",
   "--model": "model",
   "--auth-profile": "authProfile",
+  "--permission-mode": "permissionMode",
   "--timeout": "timeout",
   "--output": "output",
 };
@@ -29,6 +30,7 @@ function setValue(global: GlobalFlags, key: keyof GlobalFlags, value: string, op
   else if (key === "cwd") global.cwd = value;
   else if (key === "model") global.model = value;
   else if (key === "authProfile") global.authProfile = value;
+  else if (key === "permissionMode") global.permissionMode = value;
   else if (key === "timeout") global.timeout = value;
 }
 

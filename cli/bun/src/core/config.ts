@@ -25,6 +25,7 @@ const fileKeyMap: Record<string, ConfigKey> = {
   color: "color",
   verbose: "verbose",
   auth_profile: "authProfile",
+  permission_mode: "permissionMode",
 };
 
 const environmentKeyMap: Record<string, ConfigKey> = {
@@ -36,6 +37,7 @@ const environmentKeyMap: Record<string, ConfigKey> = {
   PROSE_COLOR: "color",
   PROSE_VERBOSE: "verbose",
   PROSE_AUTH_PROFILE: "authProfile",
+  PROSE_PERMISSION_MODE: "permissionMode",
 };
 
 const defaults: EffectiveValues = {
@@ -47,6 +49,7 @@ const defaults: EffectiveValues = {
   color: false,
   verbose: false,
   authProfile: null,
+  permissionMode: null,
 };
 
 const supportedHarnesses = new Set(["openprose", "prime", "omp", "codex", "claude", "mock"]);
@@ -397,10 +400,10 @@ function parseEnvironment(env: Readonly<Record<string, string | undefined>>): Pa
 function parseFlags(flags: GlobalFlags): ParsedValues {
   const values: PartialValues = {};
   const locations: Partial<Record<ConfigKey, string>> = {};
-  for (const key of ["harness", "transport", "model", "authProfile", "timeout", "output", "color", "verbose"] as const) {
+  for (const key of ["harness", "transport", "model", "authProfile", "permissionMode", "timeout", "output", "color", "verbose"] as const) {
     const value = flags[key];
     if (value === undefined) continue;
-    const location = key === "authProfile" ? "--auth-profile" : `--${key}`;
+    const location = key === "authProfile" ? "--auth-profile" : key === "permissionMode" ? "--permission-mode" : `--${key}`;
     assignValidated(values, key, value, location);
     locations[key] = location;
   }
@@ -434,6 +437,10 @@ function assignValidated(values: PartialValues, key: ConfigKey, raw: string | bo
   }
   if (key === "model") values.model = raw;
   else if (key === "authProfile") values.authProfile = raw;
+  else if (key === "permissionMode") {
+    if (raw !== "default" && raw !== "acceptEdits") fail("Permission mode must be default or acceptEdits.");
+    values.permissionMode = raw;
+  }
   else if (key === "transport") values.transport = raw;
 }
 

@@ -234,3 +234,7 @@ describe("runner-global parsing", () => {
     }
   });
 });
+test("permission mode is an explicit runner flag",()=>{
+ const parsed=parseEntrypoint(["--permission-mode","acceptEdits","run","PROGRAM.md"]);
+ expect(parsed.global.permissionMode).toBe("acceptEdits");
+});

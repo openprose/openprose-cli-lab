@@ -18,3 +18,10 @@ test("Claude telemetry requires the active session and bounded valid fields", ()
   const fresh = installedProtocol("claude/print-stream-json", "2.1.243", "fixture");
   expect(() => fresh.accept(telemetry)).toThrow();
 });
+test("permission denial is nonterminal and session-bound",()=>{
+ const p=ready();
+ const denial={type:"system",subtype:"permission_denied",session_id:"fixture-session",tool_name:"Bash",tool_use_id:"tool-1",message:"Denied"};
+ expect(p.accept(denial)).toBeNull();expect(p.terminalEventObserved).toBe(false);
+ expect(()=>ready().accept({...denial,session_id:"other"})).toThrow();
+ expect(p.accept({type:"result",subtype:"success",is_error:false,session_id:"fixture-session"})).not.toBeNull();
+});

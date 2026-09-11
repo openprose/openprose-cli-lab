@@ -349,7 +349,7 @@ export function humanConfiguration(config: EffectiveConfiguration): string {
   for (const key of Object.keys(config.values) as Array<keyof typeof config.values>) {
     const raw = config.values[key];
     const value = raw === null ? "unset" : humanSafeScalar(String(raw));
-    const source = config.sources[key];
+    const source = config.sources[key] ?? {kind:"default",location:"built-in"};
     lines.push(`${key} = ${value} (${humanSafeScalar(source.kind)}: ${humanSafeScalar(source.location)})`);
   }
   return `${lines.join("\n")}\n`;

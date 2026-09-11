@@ -269,3 +269,5 @@ Owner cli_recon; exact paths cli/bun/src/adapters/protocols.ts, cli/bun/test/cla
 Lease extension cli_recon: cli/rust/crates/prose-process-supervisor/src/supervisor.rs; generic framing permits explicitly declared repeated event type, semantic normalizer still rejects duplicate init.
 
 Lease cli_recon API route: cli/shared/capabilities/adapters/oracle.v1.json, cli/bun/src/adapters/{executable,plan}.ts, cli/bun/test/claude-api.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs. Explicit Claude API-key provider route; no language semantics.
+
+Lease cli_recon: permission-mode flag/config/launch plumbing and tests across Rust/Bun, native nonterminal permission telemetry handling. Modes default and acceptEdits only; no implicit bypass.

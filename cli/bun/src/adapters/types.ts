@@ -157,6 +157,7 @@ export interface InstalledAdapterOptions {
   ambient: Readonly<Record<string, string | undefined>>;
   timeoutMs: number;
   model?: string | null;
+  permissionMode?: string | null;
   fixtureInterpreter?: string;
   wrapperExecutable?: string;
   platform?: NodeJS.Platform;

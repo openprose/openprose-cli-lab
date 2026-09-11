@@ -1957,6 +1957,10 @@ fn execute_installed_adapter(
             return forward_error_outcome(error, argv, config, image, mode, clock, ids);
         }
     };
+    if let Some(permission)=&config.permission_mode.value {
+        if adapter != installed_adapters::InstalledAdapter::ClaudePrintStreamJson {return forward_error_outcome(RunnerError::catalog(ErrorCode::ConfigInvalid).with_detail("reason","Explicit permission mode unsupported for this harness"),argv,config,image,mode,clock,ids);}
+        launch.argv.splice(0..0,["--permission-mode".into(),permission.into()]);
+    }
     let rendered_payload_digest =
         matches!(adapter, installed_adapters::InstalledAdapter::CodexExecJson).then(|| {
             sha256_hex(

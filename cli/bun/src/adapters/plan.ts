@@ -21,6 +21,7 @@ export interface BuildInstalledLaunchPlanInput {
   taskPath: string;
   credentialGroup: string;
   model?: string | null;
+  permissionMode?: string | null;
   renderedConfigPath?: string;
   daemonSocketPath?: string;
   platform?: NodeJS.Platform;
@@ -85,6 +86,10 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
   }
   if (input.adapterId === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key") {
     argv.splice(1, 0, "--bare");
+  }
+  if (input.permissionMode != null) {
+    if (input.adapterId !== "claude/print-stream-json" || !["default", "acceptEdits"].includes(input.permissionMode)) throw failure("CONFIG_INVALID", {reason:"Unsupported explicit permission mode for this harness."});
+    argv.splice(1, 0, "--permission-mode", input.permissionMode);
   }
   assertInstalledAdapterArgv(input.adapterId, argv, { platform: input.platform, arch: input.arch });
   let stdinBytes: Uint8Array | null = null;

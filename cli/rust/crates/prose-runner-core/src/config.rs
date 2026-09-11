@@ -175,6 +175,7 @@ pub struct EffectiveConfig {
     pub color: Sourced<bool>,
     pub verbose: Sourced<bool>,
     pub auth_profile: Sourced<Option<String>>,
+    pub permission_mode: Sourced<Option<String>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -445,6 +446,7 @@ impl EffectiveConfig {
                 value: false,
                 source: ConfigSource::default(),
             },
+            permission_mode: Sourced { value:None, source:ConfigSource::default() },
             auth_profile: Sourced {
                 value: None,
                 source: ConfigSource::default(),
@@ -464,6 +466,7 @@ struct FileConfig {
     color: Option<bool>,
     verbose: Option<bool>,
     auth_profile: Option<String>,
+    permission_mode: Option<String>,
 }
 
 struct LoadedFileConfig {
@@ -480,6 +483,7 @@ const FILE_CONFIG_KEYS: &[&str] = &[
     "color",
     "verbose",
     "auth_profile",
+    "permission_mode",
 ];
 
 fn config_line_error(path: &Path, line: usize, reason: impl Into<String>) -> RunnerError {
@@ -903,6 +907,9 @@ fn apply_file(
     if let Some(value) = source_values.verbose {
         target.verbose.replace(value, source.clone());
     }
+    if let Some(value) = source_values.permission_mode {
+        target.permission_mode.replace(Some(validate_permission_mode(value)?), source.clone());
+    }
     if let Some(value) = source_values.auth_profile {
         target.auth_profile.replace(
             Some(nonempty("auth_profile", value).map_err(|_| {
@@ -965,6 +972,9 @@ fn apply_environment(
             ConfigSource::environment("PROSE_VERBOSE"),
         );
     }
+    if let Some(value) = environment.get("PROSE_PERMISSION_MODE") {
+        target.permission_mode.replace(Some(validate_permission_mode(value.clone())?),ConfigSource::environment("PROSE_PERMISSION_MODE"));
+    }
     if let Some(value) = environment.get("PROSE_AUTH_PROFILE") {
         target.auth_profile.replace(
             Some(nonempty("PROSE_AUTH_PROFILE", value.clone())?),
@@ -974,7 +984,12 @@ fn apply_environment(
     Ok(())
 }
 
+fn validate_permission_mode(value:String)->Result<String,RunnerError>{
+    if matches!(value.as_str(),"default"|"acceptEdits") {Ok(value)} else {Err(RunnerError::catalog(crate::error::ErrorCode::ConfigInvalid).with_detail("reason","Permission mode must be default or acceptEdits"))}
+}
+
 fn apply_flags(target: &mut EffectiveConfig, flags: &GlobalFlags) -> Result<(), RunnerError> {
+    if let Some(value)=&flags.permission_mode {target.permission_mode.replace(Some(validate_permission_mode(value.clone())?),ConfigSource::flag("--permission-mode"));}
     if let Some(value) = &flags.harness {
         target.harness.replace(
             validate_harness("--harness", value.clone())?,

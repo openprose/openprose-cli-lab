@@ -94,6 +94,7 @@ export async function runInstalledAdapter(options: InstalledAdapterOptions): Pro
       ...(renderedConfigPath === undefined ? {} : { renderedConfigPath }),
       credentialGroup: options.credentialGroup,
       ...(options.model === undefined ? {} : { model: options.model }),
+      ...(options.permissionMode === undefined ? {} : { permissionMode: options.permissionMode }),
       ...(options.platform === undefined ? {} : { platform: options.platform }),
       ...(options.arch === undefined ? {} : { arch: options.arch }),
     });
