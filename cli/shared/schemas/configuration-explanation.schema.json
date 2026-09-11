@@ -27,6 +27,8 @@
         },
         "color": { "$ref": "#/$defs/sourcedBoolean" },
         "verbose": { "$ref": "#/$defs/sourcedBoolean" },
+        "nativeMaxTurns": { "$ref": "#/$defs/sourcedString" },
+        "nativeTimeout": { "$ref": "#/$defs/sourcedString" },
         "nativeProfile": { "$ref": "#/$defs/sourcedString" },
         "nativeAddDirs": { "allOf": [{ "$ref": "#/$defs/sourced" }, { "properties": { "value": { "type": "array", "items": { "type": "string" } } } }] },
         "nativeAllowTools": { "allOf": [{ "$ref": "#/$defs/sourced" }, { "properties": { "value": { "type": "array", "items": { "type": "string" } } } }] },

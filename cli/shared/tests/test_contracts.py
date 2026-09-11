@@ -78,6 +78,10 @@ class ContractsTest(unittest.TestCase):
 
     def test_native_sdk_limits_and_failures_are_closed(self):
         fixture=json.loads((SHARED / 'fixtures/adapters/sdk-native-limits.json').read_text())
+        config=json.loads((SHARED / 'fixtures/operations/configuration-explanation.json').read_text())
+        config['values']['nativeMaxTurns']={'value':'40','source':{'kind':'flag','location':'--native-max-turns'}}
+        config['values']['nativeTimeout']={'value':'5m','source':{'kind':'flag','location':'--native-timeout'}}
+        self.assert_valid('configuration-explanation.schema.json',config)
         self.assert_valid('native-limits.schema.json',fixture['defaults'])
         self.assert_valid('native-limits.schema.json',fixture['override']['limits'])
         for case in fixture['errorCases']:
