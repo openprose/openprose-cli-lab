@@ -264,6 +264,7 @@ impl InstalledAdapter {
                     "tool_execution_start",
                     "tool_execution_update",
                     "tool_execution_end",
+                    "rlm_child_update",
                 ],
             )
             .with_failure_events(["extension_ui_request"]),
@@ -6591,5 +6592,17 @@ mod sdk_budget_diagnostic_tests {
   assert_eq!(serde_json::to_value(err).unwrap()["details"]["nativeFailure"]["kind"],"max-turns");
   let d=sdk_native_failure(&json!({"error_type":"secret","elapsed_seconds":-1,"limits":{"maxTurns":20,"timeoutSeconds":180,"toolTimeoutSeconds":30,"maxOutputTokens":12000,"extra":"secret"}}));
   assert_eq!(d,json!({"kind":"execution"}));
+ }
+}
+
+#[cfg(test)]
+mod prime_child_outer_tests {
+ use super::*;
+ #[test]
+ fn prime_child_telemetry_reaches_typed_admission() {
+  let protocol=InstalledAdapter::PrimeRpc.protocol();
+  assert!(protocol.allowed_events.contains("rlm_child_update"));
+  assert_ne!(protocol.terminal_event,"rlm_child_update");
+  assert!(!InstalledAdapter::OmpRpc.protocol().allowed_events.contains("rlm_child_update"));
  }
 }

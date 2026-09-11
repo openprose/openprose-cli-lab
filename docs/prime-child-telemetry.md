@@ -7,3 +7,7 @@ The typed record has `type` and `child`. The child requires string id, label and
 Evidence is the installed Prime AgentSession RlmChildAgentSnapshot declaration and emitter, plus a real recorded queued child update rejected by the previous adapter. The original parent failure is retained; a later child session records an aborted attempt. Neither that trace nor this compatibility repair demonstrates successful independent review or verified private-daemon cleanup.
 
 The related `ipython_sent_agent_message` event is not admitted by this change. Its declared payload is toolCallId and message {id, message, deliveryStatus: delivered|queued, receiverRole?: parent|sibling|child, target: {activeSessionId, sessionId, sessionName?}}. The installed late-delivery emitter also updates tool-result history; a future observed case needs correlated history tests, not merely an ignored-event exception.
+
+## Whole-runner qualification correction
+
+The first implementation changed the detailed native parser but omitted Rust's outer event-name filter. A fresh real run therefore rejected the same queued event before typed admission. That failure remains part of the evidence; parser-only replay was insufficient. The correction adds this exact event to the Prime outer filter and tests the compiled commands with the recorded prefix, an explicitly synthetic valid continuation, and invalid ordering/unknown events. An incomplete prefix remains a failure, never historical success.
