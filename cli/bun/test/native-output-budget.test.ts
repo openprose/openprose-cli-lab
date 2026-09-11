@@ -24,7 +24,7 @@ test("native output provenance follows file environment flag precedence",async()
  expect(nativeOutputBytes((await resolveConfiguration({},{...dep,env})).values)).toBe(134217728);
  const c=await resolveConfiguration(parseEntrypoint(["--native-output-bytes=268435456","task"]).global,{...dep,env});
  expect(nativeOutputBytes(c.values)).toBe(268435456);expect(c.sources.nativeOutputBytes?.location).toBe("--native-output-bytes");
- await expect(resolveConfiguration({outputContract:"structured"},{...dep,env})).rejects.toThrow();
+ await expect(resolveConfiguration({outputContract:"image-envelope"},{...dep,env})).rejects.toThrow();
  }finally{await rm(root,{recursive:true,force:true});}
 });
 test("native capture counts serialized UTF8 and redaction independently without partial overflow",async()=>{

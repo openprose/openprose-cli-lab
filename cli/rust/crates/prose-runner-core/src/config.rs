@@ -1214,7 +1214,7 @@ mod tests {
         assert_eq!(native_output_bytes(&resolve_config(&flags,&sys).unwrap()),134217728);
         flags.native_output_bytes=Some("268435456".into());
         let c=resolve_config(&flags,&sys).unwrap();assert_eq!(native_output_bytes(&c),268435456);assert_eq!(c.native_output_bytes.source,ConfigSource::flag("--native-output-bytes"));
-        flags.output_contract=Some("structured".into());assert!(resolve_config(&flags,&sys).is_err());
+        flags.output_contract=Some("image-envelope".into());assert!(resolve_config(&flags,&sys).is_err());
         let mut c=c;c.native_output_bytes.value=None;assert_eq!(native_output_bytes(&c),67108864);assert_eq!(native_output_limits(&c).unwrap()["captureEnabled"],false);
     }
 
