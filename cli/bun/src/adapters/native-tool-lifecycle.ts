@@ -17,6 +17,14 @@ export function nativeArgsMatch(actual: unknown, declared: unknown, omp:boolean)
  return same(actual,declared);
 }
 
+function validPrimeQueue(r: Record<string, any>): boolean {
+ if(Object.keys(r).some(k=>!["type","actions"].includes(k)))return false;
+ const a=r.actions;if(!a||typeof a!=="object"||Array.isArray(a)||Object.keys(a).some(k=>!["queuedCount","steering","followUps","active"].includes(k)))return false;
+ if(!Number.isSafeInteger(a.queuedCount)||a.queuedCount<0||["steering","followUps"].some(k=>!Array.isArray(a[k])||a[k].some((v:unknown)=>typeof v!=="string")))return false;
+ if("active" in a){const x=a.active;if(!x||typeof x!=="object"||Array.isArray(x)||Object.keys(x).some(k=>!["kind","phase","label"].includes(k))||!["turn","session_command"].includes(x.kind)||!["preparing","committing","running"].includes(x.phase)||("label" in x&&typeof x.label!=="string"))return false;}
+ return true;
+}
+
 function validPrimeChildUpdate(r: Record<string, any>): boolean {
  if(Object.keys(r).some(k=>!["type","child"].includes(k)))return false;
  const c=r.child;
@@ -61,6 +69,9 @@ export class NativeToolLifecycle {
     const r = object(value);
     if (this.ended) bad();
     switch (r.type) {
+      case "session_action_update":
+        if(this.omp||!this.started||!validPrimeQueue(r))bad();
+        return null;
       case "rlm_child_update":
         if(this.omp||!this.started||!validPrimeChildUpdate(r))bad();
         return null;

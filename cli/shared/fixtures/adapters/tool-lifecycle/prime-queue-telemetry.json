@@ -1,0 +1,203 @@
+{
+  "valid": [
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 0,
+        "steering": [],
+        "followUps": []
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "turn",
+          "phase": "preparing",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "turn",
+          "phase": "committing",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "turn",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "preparing",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "committing",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": -1,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 1.5,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          1
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": null,
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "turn",
+          "phase": "done"
+        }
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 3,
+        "steering": [
+          "opaque"
+        ],
+        "followUps": [],
+        "active": {
+          "kind": "session_command",
+          "phase": "running",
+          "label": ""
+        },
+        "extra": true
+      }
+    },
+    {
+      "type": "session_action_update",
+      "actions": {
+        "queuedCount": 0,
+        "steering": [],
+        "followUps": []
+      },
+      "extra": true
+    }
+  ]
+}

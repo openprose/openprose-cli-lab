@@ -317,3 +317,5 @@ Decision024 Rust active lease: coordination_library owns only cli/rust/crates/pr
 Decision024 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/prime-child-telemetry.test.ts; cli/shared/fixtures/adapters/tool-lifecycle/prime-child-telemetry.json; docs/prime-child-telemetry.md. Generic native compatibility only.
 
 Decision024 correction lease cli_recon: cli/rust/crates/prose-runner-core/src/installed_adapters.rs outer Prime event filter and focused regression; docs/prime-child-telemetry.md qualification addendum.
+
+Decision025 cli_recon lease: cli/bun/src/adapters/native-tool-lifecycle.ts; cli/bun/test/prime-queue-telemetry.test.ts; cli/rust/crates/prose-runner-core/src/installed_adapters.rs; cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs; cli/shared/fixtures/adapters/tool-lifecycle/prime-queue-telemetry.json; docs/prime-queue-telemetry.md. Generic typed observations only.

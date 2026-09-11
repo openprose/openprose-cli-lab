@@ -21,6 +21,15 @@ pub(super) fn rich(record: &Value) -> bool {
             .is_some_and(|t| !t.is_empty())
 }
 // Child progress is telemetry only: it never settles a parent tool or message.
+fn valid_prime_queue(record: &Value) -> bool {
+ if !has_exact_keys(record,&["type","actions"]) {return false;}
+ let Some(a)=record["actions"].as_object() else{return false;};
+ if a.keys().any(|k| !["queuedCount","steering","followUps","active"].contains(&k.as_str())) || a.get("queuedCount").and_then(Value::as_f64).is_none_or(|n| !n.is_finite()||n<0.0||n.fract()!=0.0||n>9_007_199_254_740_991.0) {return false;}
+ for k in ["steering","followUps"] {if a.get(k).and_then(Value::as_array).is_none_or(|xs|xs.iter().any(|v|!v.is_string())) {return false;}}
+ if let Some(active)=a.get("active") {let Some(x)=active.as_object() else{return false;};if x.keys().any(|k|!["kind","phase","label"].contains(&k.as_str())) || !matches!(x.get("kind").and_then(Value::as_str),Some("turn"|"session_command")) || !matches!(x.get("phase").and_then(Value::as_str),Some("preparing"|"committing"|"running")) || x.get("label").is_some_and(|v|!v.is_string()) {return false;}}
+ true
+}
+
 fn valid_prime_child_update(record: &Value) -> bool {
     if !has_exact_keys(record, &["type", "child"]) {
         return false;
@@ -184,6 +193,10 @@ pub(super) fn normalize(
         }
         if !inventory || (!omp && !ack) || ended {
             return Err(bad());
+        }
+        if kind == "session_action_update" {
+            if omp || !started || !valid_prime_queue(r) {return Err(bad());}
+            continue;
         }
         if kind == "rlm_child_update" {
             if omp || !started || !valid_prime_child_update(r) {
@@ -491,6 +504,45 @@ mod tests {
         }
         for record in fixture["invalid"].as_array().unwrap() {
             assert!(!valid_prime_child_update(record), "{record}");
+            let mut invalid = original.clone();
+            invalid.insert(at, record.clone());
+            assert!(normalize(&invalid, "fixture-tools", false, true).is_err());
+        }
+    }
+
+    #[test]
+    fn prime_queue_telemetry_is_typed_and_cannot_settle_parent() {
+        let fixture: Value = serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime-queue-telemetry.json")).unwrap();
+        let original = frames(false);
+        let at = original.iter().position(|r| r["type"] == "tool_execution_start").unwrap() + 1;
+        let expected = normalize(&original, "fixture-tools", false, true).unwrap();
+        for record in fixture["valid"].as_array().unwrap() {
+            assert!(valid_prime_queue(record));
+            let mut with_child = original.clone();
+            with_child.insert(at, record.clone());
+            let actual = normalize(&with_child, "fixture-tools", false, true).unwrap();
+            assert_eq!(actual, expected);
+            // Child completion cannot replace native parent terminal evidence.
+            with_child.pop();
+            assert!(normalize(&with_child, "fixture-tools", false, false).is_ok());
+            assert!(normalize(&with_child, "fixture-tools", false, true).is_err());
+            // Nor can it supply the still-pending parent tool result.
+            let mut pending = original[..at].to_vec();
+            pending.push(record.clone());
+            assert!(normalize(&pending, "fixture-tools", false, false).is_ok());
+            assert!(normalize(&pending, "fixture-tools", false, true).is_err());
+            for position in [1, original.len()] {
+                let mut outside = original.clone();
+                outside.insert(position, record.clone());
+                assert!(normalize(&outside, "fixture-tools", false, true).is_err());
+            }
+            let mut omp = frames(true);
+            let at = omp.iter().position(|r| r["type"] == "tool_execution_start").unwrap() + 1;
+            omp.insert(at, record.clone());
+            assert!(normalize(&omp, "fixture-tools", true, true).is_err());
+        }
+        for record in fixture["invalid"].as_array().unwrap() {
+            assert!(!valid_prime_queue(record), "{record}");
             let mut invalid = original.clone();
             invalid.insert(at, record.clone());
             assert!(normalize(&invalid, "fixture-tools", false, true).is_err());

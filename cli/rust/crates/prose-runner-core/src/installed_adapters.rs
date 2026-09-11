@@ -265,6 +265,7 @@ impl InstalledAdapter {
                     "tool_execution_update",
                     "tool_execution_end",
                     "rlm_child_update",
+                    "session_action_update",
                 ],
             )
             .with_failure_events(["extension_ui_request"]),
@@ -6602,6 +6603,7 @@ mod prime_child_outer_tests {
  fn prime_child_telemetry_reaches_typed_admission() {
   let protocol=InstalledAdapter::PrimeRpc.protocol();
   assert!(protocol.allowed_events.contains("rlm_child_update"));
+  assert!(protocol.allowed_events.contains("session_action_update"));
   assert_ne!(protocol.terminal_event,"rlm_child_update");
   assert!(!InstalledAdapter::OmpRpc.protocol().allowed_events.contains("rlm_child_update"));
  }
