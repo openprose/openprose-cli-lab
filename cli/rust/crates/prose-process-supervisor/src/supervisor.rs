@@ -451,14 +451,13 @@ impl ProtocolState {
                 "harness emitted a record without an event type",
             )
         })?;
-        if protocol.terminal_is_candidate { self.terminal = None; }
-        if self.terminal.is_some() && !protocol.allowed_after_terminal_events.contains(event_type) {
+        if self.terminal.is_some() && !protocol.terminal_is_candidate && !protocol.allowed_after_terminal_events.contains(event_type) {
             return Err(SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
                 "harness emitted a record after its terminal record",
             ));
         }
-        if self.terminal.is_some() {
+        if self.terminal.is_some() && !protocol.terminal_is_candidate {
             self.records.push(value);
             return Ok(());
         }
@@ -2445,7 +2444,7 @@ mod candidate_terminal_tests {
   let mut protocol=JsonlProtocol::installed("system","result",["system","assistant"]);protocol.terminal_is_candidate=true;
   let mut state=ProtocolState::default();for r in &records{state.accept(&serde_json::to_vec(r).unwrap(),&protocol).unwrap();}
   assert!(state.terminal.is_some());assert_eq!(state.records.len(),3);
-  state.accept(br#"{"type":"assistant"}"#,&protocol).unwrap();assert!(state.terminal.is_none());
+  state.accept(br#"{"type":"assistant"}"#,&protocol).unwrap();assert!(state.terminal.is_some()); // Candidate evidence retained; adapter validates freshness after exit.
   state.accept(&serde_json::to_vec(&records[2]).unwrap(),&protocol).unwrap();assert!(state.terminal.is_some());
   protocol.terminal_is_candidate=false;let mut state=ProtocolState::default();
   for r in &records[..2]{state.accept(&serde_json::to_vec(r).unwrap(),&protocol).unwrap();}

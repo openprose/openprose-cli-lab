@@ -4,6 +4,7 @@
 //! They deliberately contain no `OpenProse` command or program semantics.
 
 mod native_tools;
+mod claude_shutdown;
 
 use crate::image::{sha256_hex, RuntimeImage};
 use crate::{ErrorCode, RunnerError};
@@ -1119,7 +1120,7 @@ pub fn normalize_transport_mode(adapter:InstalledAdapter,records:&[Value],expect
                     _ => return Err(malformed()),
                 }
             }
-            if records.last().and_then(record_type) != Some("result") {
+            if (native_claude && !claude_shutdown::has_fresh_result(records)) || (!native_claude && records.last().and_then(record_type) != Some("result")) {
                 return Err(malformed());
             }
             Ok(TransportNormalization {
@@ -6525,7 +6526,7 @@ mod native_turn_tests {
  #[ignore="set CLAUDE_REPLAY_PATH to a retained native trace"]
  fn recorded_claude_native_turn_replay(){
   let text=std::fs::read_to_string(std::env::var("CLAUDE_REPLAY_PATH").unwrap()).unwrap();let records:Vec<Value>=text.lines().map(|l|serde_json::from_str(l).unwrap()).collect();
-  assert_eq!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture",true).is_ok(),records.last().unwrap()["type"]=="result");
+  assert_eq!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture",true).is_ok(),std::env::var("CLAUDE_REPLAY_EXPECT_COMPLETE").as_deref()==Ok("true") || records.last().unwrap()["type"]=="result");
   if records.last().unwrap()["type"]!="result" { let mut synthetic=records.clone();synthetic.push(json!({"type":"result","subtype":"success","is_error":false,"session_id":records[0]["session_id"]}));assert!(normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,&synthetic,"fixture",true).is_ok()); }
  }
 }
@@ -6548,4 +6549,18 @@ fn native_routing_metadata_mutation_is_typed_and_not_identity(){
  let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
  for initial in [None,Some("/tmp/old")] {for next in [None,Some("/tmp/new")] {let mut first=init.clone();let mut repeated=init.clone();repeated["uuid"]=json!("two");if let Some(v)=initial{first["messaging_socket_path"]=json!(v);}if let Some(v)=next{repeated["messaging_socket_path"]=json!(v);}let records=vec![first,result.clone(),repeated,result.clone()];assert!(run(&records).is_ok());assert!(run(&records[..3]).is_err());}}
  for bad in [json!(null),json!(0),json!({}),json!("")] {let mut invalid=init.clone();invalid["messaging_socket_path"]=bad;assert!(run(&[invalid.clone(),result.clone()]).is_err());assert!(run(&[init.clone(),invalid,result.clone()]).is_err());}
+}
+
+#[cfg(test)]
+#[test]
+fn claude_correlated_shutdown_requires_closed_known_native_tasks(){
+ let records:Vec<Value>=serde_json::from_str(include_str!("../../../../shared/fixtures/adapters/claude-shutdown.json")).unwrap();
+ let run=|r:&[Value]|normalize_transport_mode(InstalledAdapter::ClaudePrintStreamJson,r,"fixture",true);
+ assert!(run(&records).is_ok());assert!(normalize_transport(InstalledAdapter::ClaudePrintStreamJson,&records,"fixture").is_err());
+ let mut variants=Vec::new();
+ for (index,key,value) in [(7,"task_id",json!("other")),(7,"tool_use_id",json!("other")),(7,"session_id",json!("other")),(2,"task_type",json!("agent")),(5,"tasks",json!([{"task_id":"new","description":"new","task_type":"local_bash"}]))]{let mut bad=records.clone();bad[index][key]=value;variants.push(bad);}
+ let mut bad=records.clone();bad.pop();variants.push(bad);
+ for event in [json!({"type":"assistant","session_id":"fixture-session","message":{"role":"assistant","content":[]}}),json!({"type":"tool_progress","session_id":"fixture-session"})]{let mut bad=records.clone();bad.push(event);variants.push(bad);}
+ let mut bad=records.clone();bad[6]["patch"]["end_time"]=json!(-1);variants.push(bad);
+ for bad in variants{assert!(run(&bad).is_err());}
 }

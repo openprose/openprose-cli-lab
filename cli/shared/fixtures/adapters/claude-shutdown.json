@@ -1,0 +1,82 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "assistant",
+    "session_id": "fixture-session",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "bash-1",
+          "name": "Bash",
+          "input": {
+            "command": "opaque"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "type": "system",
+    "subtype": "task_started",
+    "session_id": "fixture-session",
+    "uuid": "start",
+    "task_id": "task-1",
+    "tool_use_id": "bash-1",
+    "description": "opaque",
+    "task_type": "local_bash",
+    "is_backgrounded": true
+  },
+  {
+    "type": "user",
+    "session_id": "fixture-session",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "type": "tool_result",
+          "tool_use_id": "bash-1",
+          "content": "background task launched"
+        }
+      ]
+    }
+  },
+  {
+    "type": "result",
+    "subtype": "success",
+    "is_error": false,
+    "session_id": "fixture-session"
+  },
+  {
+    "type": "system",
+    "subtype": "background_tasks_changed",
+    "session_id": "fixture-session",
+    "uuid": "inventory",
+    "tasks": []
+  },
+  {
+    "type": "system",
+    "subtype": "task_updated",
+    "session_id": "fixture-session",
+    "uuid": "update",
+    "task_id": "task-1",
+    "patch": {
+      "status": "killed",
+      "end_time": 123
+    }
+  },
+  {
+    "type": "system",
+    "subtype": "task_notification",
+    "session_id": "fixture-session",
+    "uuid": "notification",
+    "task_id": "task-1",
+    "tool_use_id": "bash-1",
+    "status": "stopped"
+  }
+]

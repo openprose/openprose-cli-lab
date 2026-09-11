@@ -66,7 +66,7 @@ test("native Claude requires fresh successful candidate and matching session",()
  expect(()=>q.accept({type:"unsupported",session_id:"fixture-session"})).toThrow();
 });
 test.skipIf(!process.env.CLAUDE_REPLAY_PATH)("recorded native Claude stream remains provisional until exit",async()=>{
- const records=(await Bun.file(process.env.CLAUDE_REPLAY_PATH!).text()).trim().split("\n").map(l=>JSON.parse(l));const p=native();records.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);if(records.at(-1).type==="result")expect(p.settleProcess?.(0)?.type).toBe("session.completed");else expect(()=>p.settleProcess?.(0)).toThrow();
+ const records=(await Bun.file(process.env.CLAUDE_REPLAY_PATH!).text()).trim().split("\n").map(l=>JSON.parse(l));const p=native();records.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);if(process.env.CLAUDE_REPLAY_EXPECT_COMPLETE==="true" || records.at(-1).type==="result")expect(p.settleProcess?.(0)?.type).toBe("session.completed");else expect(()=>p.settleProcess?.(0)).toThrow();
 });
 
 test("native repeated init requires exact metadata and invalidates prior result",()=>{
@@ -85,4 +85,22 @@ test("native routing metadata is typed mutable metadata only",()=>{
   p.accept({...turns[0],uuid:"next",...(next?{messaging_socket_path:next}:{})});expect(()=>p.settleProcess?.(0)).toThrow();p.accept(turns[2]);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
  }}
  for(const bad of [null,0,{},""]){const p=native();expect(()=>p.accept({...turns[0],messaging_socket_path:bad})).toThrow();const q=native();q.accept(turns[0]);expect(()=>q.accept({...turns[0],uuid:"next",messaging_socket_path:bad})).toThrow();}
+});
+
+import shutdown from "../../shared/fixtures/adapters/claude-shutdown.json";
+test("native correlated shutdown closes bookkeeping without manufacturing result",()=>{
+ const p=native();shutdown.forEach(r=>p.accept(r));expect(p.terminalEventObserved).toBe(false);expect(p.settleProcess?.(0)?.type).toBe("session.completed");
+ const old=installedProtocol("claude/print-stream-json","2.1.243","fixture");expect(()=>shutdown.forEach(r=>old.accept(r))).toThrow();
+ for(const mutate of [
+  (r:any[])=>r.push({type:"assistant",session_id:"fixture-session",message:{role:"assistant",content:[{type:"text",text:"new work"}]}}),
+  (r:any[])=>r.push({type:"tool_progress",session_id:"fixture-session"}),
+  (r:any[])=>r.at(-1).task_id="other",
+  (r:any[])=>r.at(-1).tool_use_id="other",
+  (r:any[])=>r.at(-1).session_id="other",
+  (r:any[])=>r.pop(),
+  (r:any[])=>r[2].task_type="agent",
+  (r:any[])=>r[5].tasks=[{task_id:"new",description:"new",task_type:"local_bash"}],
+  (r:any[])=>r[6].patch.end_time=-1,
+ ]){const records=structuredClone(shutdown) as any[];mutate(records);const q=native();expect(()=>{records.forEach(r=>q.accept(r));q.settleProcess?.(0);}).toThrow();expect(q.terminalEventObserved).toBe(false);}
+ const q=native();shutdown.forEach(r=>q.accept(r));expect(()=>q.settleProcess?.(1)).toThrow();
 });

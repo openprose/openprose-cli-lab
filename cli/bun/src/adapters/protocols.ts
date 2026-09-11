@@ -1,3 +1,4 @@
+import {hasFreshClaudeResult} from "./claude-shutdown";
 import { isDeepStrictEqual } from "node:util";
 import { NativeToolLifecycle, hasNativeTools } from "./native-tool-lifecycle";
 import { failure } from "../core/errors";
@@ -113,12 +114,12 @@ class AgentsSdkProtocol extends InstalledProtocol {
 }
 
 class ClaudeProtocol extends InstalledProtocol {
-  private candidateFresh=false;
+  private nativeRecords:Record<string,any>[]=[];
   constructor(version:string|null,private readonly nativeMode=false){super(version);}
   settleProcess(exitCode:number|null):RawTransportEvent|null {
     if(!this.nativeMode)return null;
     if(exitCode!==0)throw failure("HARNESS_FAILED",{reason:"Claude process did not exit successfully."});
-    if(!this.candidateFresh)throw failure("PROTOCOL_TRUNCATED",{reason:"Claude has no fresh native result at process settlement."});
+    if(!hasFreshClaudeResult(this.nativeRecords))throw failure("PROTOCOL_TRUNCATED",{reason:"Claude has no fresh native result at process settlement."});
     return this.complete();
   }
   private sessionId: string | null = null;
@@ -127,7 +128,7 @@ class ClaudeProtocol extends InstalledProtocol {
 
   accept(value: unknown): RawTransportEvent | null {
     const record = this.record(value);
-    if(this.nativeMode)this.candidateFresh=false;
+    if(this.nativeMode)this.nativeRecords.push(record);
     if (record.type === "system" && record.subtype === "init") {
       if(this.nativeMode && Object.hasOwn(record,"messaging_socket_path") && (typeof record.messaging_socket_path!=="string" || !record.messaging_socket_path.length))malformed("Claude routing metadata is invalid.");
       if (typeof record.session_id !== "string" || record.session_id.length === 0) malformed("Claude init session identity is invalid.");
@@ -191,7 +192,7 @@ class ClaudeProtocol extends InstalledProtocol {
       if (record.subtype !== "success" || record.is_error !== false) {
         throw failure("HARNESS_FAILED", { reason: "Claude emitted a non-success result." });
       }
-      if(this.nativeMode){this.candidateFresh=true;return null;}
+      if(this.nativeMode)return null;
       return this.complete();
     }
     if (record.type === "user" || record.type === "tool_progress") return null;
