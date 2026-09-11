@@ -1,0 +1,301 @@
+[
+  {
+    "type": "ready",
+    "protocolVersion": 1,
+    "supportedProtocolVersions": [
+      1,
+      2
+    ],
+    "maxFrameBytes": 1048576,
+    "maxReassembledFrameBytes": 67108864
+  },
+  {
+    "type": "extension_ui_request",
+    "id": "157aeb85d58adf6f",
+    "method": "setWidget",
+    "widgetKey": "autoresearch"
+  },
+  {
+    "type": "available_commands_update",
+    "commands": []
+  },
+  {
+    "id": "fixture-tools.omp.state.1",
+    "type": "response",
+    "command": "get_state",
+    "success": true,
+    "data": {
+      "dumpTools": [
+        {
+          "name": "task"
+        }
+      ]
+    }
+  },
+  {
+    "id": "fixture-tools.omp.prompt.1",
+    "type": "response",
+    "command": "prompt",
+    "success": true
+  },
+  {
+    "type": "agent_start"
+  },
+  {
+    "type": "turn_start"
+  },
+  {
+    "type": "message_start",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "opaque request"
+        }
+      ]
+    }
+  },
+  {
+    "type": "message_end",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "type": "text",
+          "text": "opaque request"
+        }
+      ]
+    }
+  },
+  {
+    "type": "message_start",
+    "message": {
+      "role": "assistant",
+      "content": []
+    }
+  },
+  {
+    "type": "message_end",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "call-one",
+          "name": "task",
+          "arguments": {
+            "agent": "reviewer",
+            "task": "opaque"
+          }
+        }
+      ],
+      "stopReason": "toolUse"
+    }
+  },
+  {
+    "type": "tool_execution_start",
+    "toolCallId": "call-one",
+    "toolName": "task",
+    "args": {
+      "agent": "reviewer",
+      "task": "opaque"
+    }
+  },
+  {
+    "type": "tool_execution_end",
+    "toolCallId": "call-one",
+    "toolName": "task",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "admitted"
+        }
+      ],
+      "details": {
+        "async": {
+          "type": "task",
+          "state": "running",
+          "jobId": "job-one"
+        }
+      }
+    },
+    "isError": false
+  },
+  {
+    "type": "tool_execution_update",
+    "toolCallId": "call-one",
+    "toolName": "task",
+    "args": {
+      "agent": "reviewer",
+      "task": "opaque"
+    },
+    "partialResult": {
+      "content": [
+        {
+          "type": "text",
+          "text": "admitted"
+        }
+      ],
+      "details": {
+        "async": {
+          "type": "task",
+          "state": "running",
+          "jobId": "job-one"
+        }
+      }
+    }
+  },
+  {
+    "type": "message_start",
+    "message": {
+      "role": "toolResult",
+      "toolCallId": "call-one",
+      "toolName": "task",
+      "content": [
+        {
+          "type": "text",
+          "text": "admitted"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "type": "message_end",
+    "message": {
+      "role": "toolResult",
+      "toolCallId": "call-one",
+      "toolName": "task",
+      "content": [
+        {
+          "type": "text",
+          "text": "admitted"
+        }
+      ],
+      "isError": false
+    }
+  },
+  {
+    "type": "turn_end",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "toolCall",
+          "id": "call-one",
+          "name": "task",
+          "arguments": {
+            "agent": "reviewer",
+            "task": "opaque"
+          }
+        }
+      ],
+      "stopReason": "toolUse"
+    },
+    "toolResults": [
+      {
+        "role": "toolResult",
+        "toolCallId": "call-one",
+        "toolName": "task",
+        "content": [
+          {
+            "type": "text",
+            "text": "admitted"
+          }
+        ],
+        "isError": false
+      }
+    ]
+  },
+  {
+    "type": "turn_start"
+  },
+  {
+    "type": "message_start",
+    "message": {
+      "role": "assistant",
+      "content": []
+    }
+  },
+  {
+    "type": "message_end",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "done"
+        }
+      ],
+      "stopReason": "stop"
+    }
+  },
+  {
+    "type": "turn_end",
+    "message": {
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "done"
+        }
+      ],
+      "stopReason": "stop"
+    },
+    "toolResults": []
+  },
+  {
+    "type": "agent_end",
+    "isTerminal": true,
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "opaque request"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "toolCall",
+            "id": "call-one",
+            "name": "task",
+            "arguments": {
+              "agent": "reviewer",
+              "task": "opaque"
+            }
+          }
+        ],
+        "stopReason": "toolUse"
+      },
+      {
+        "role": "toolResult",
+        "toolCallId": "call-one",
+        "toolName": "task",
+        "content": [
+          {
+            "type": "text",
+            "text": "admitted"
+          }
+        ],
+        "isError": false
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "type": "text",
+            "text": "done"
+          }
+        ],
+        "stopReason": "stop"
+      }
+    ]
+  }
+]
