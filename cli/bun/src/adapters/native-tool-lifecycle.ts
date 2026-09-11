@@ -34,7 +34,9 @@ export class NativeToolLifecycle {
 
   private sameMessage(a: any,b: any): boolean {
     if (!this.omp) return same(a,b);
-    const x={...a},y={...b};delete x.completedAt;delete y.completedAt;return same(x,y);
+    const x={...a},y={...b};delete x.completedAt;delete y.completedAt;
+    if(x.role==="toolResult" && typeof x.prunedAt==="number" && Number.isFinite(x.prunedAt) && x.prunedAt>=0 && ["[Superseded by a newer read of this file]","[Uneventful result elided]"].some(text=>same(x.content,[{type:"text",text}]))) {delete x.prunedAt;x.content=y.content;}
+    return same(x,y);
   }
   accept(value: unknown): RawTransportEvent | null {
     const r = object(value);

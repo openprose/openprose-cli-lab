@@ -32,6 +32,9 @@ fn same_message(a: &Value, b: &Value, omp: bool) -> bool {
     if let Some(o) = b.as_object_mut() {
         o.remove("completedAt");
     }
+    if a["role"].as_str()==Some("toolResult") && a["prunedAt"].as_f64().is_some_and(|n|n.is_finite()&&n>=0.0) && ["[Superseded by a newer read of this file]","[Uneventful result elided]"].iter().any(|text|a["content"]==serde_json::json!([{"type":"text","text":text}])) {
+      a.as_object_mut().unwrap().remove("prunedAt");a["content"]=b["content"].clone();
+    }
     a == b
 }
 
@@ -435,4 +438,12 @@ fn omp_optional_null_omission_does_not_permit_changed_values(){
  assert!(native_args_match(&serde_json::json!({"op":"init"}),&declared,true));
  assert!(!native_args_match(&serde_json::json!({"op":"erase"}),&declared,true));
  assert!(!native_args_match(&serde_json::json!({"op":"init"}),&declared,false));
+}
+
+#[test]
+fn omp_superseded_terminal_projection_preserves_tool_identity(){
+ let original=serde_json::json!({"role":"toolResult","toolCallId":"t1","toolName":"read","isError":true,"content":[{"type":"text","text":"not found"}]});
+ let mut summary=original.clone();summary["prunedAt"]=serde_json::json!(12);summary["content"]=serde_json::json!([{"type":"text","text":"[Superseded by a newer read of this file]"}]);
+ assert!(same_message(&summary,&original,true));assert!(!same_message(&summary,&original,false));
+ summary["toolCallId"]=serde_json::json!("invented");assert!(!same_message(&summary,&original,true));
 }
