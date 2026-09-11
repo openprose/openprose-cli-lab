@@ -18,8 +18,8 @@ const recipeDigests: Record<InstalledAdapterId, string> = {
   "agents-sdk/jsonl": "1141c7ed0040d8f0783e5f8870f174c1b66a0eb3299d12e4edebfa98c29228e6",
   "codex/exec-json": "41c1fd72796defe256a338f92f5ebf850e6522d2eb265c8746512a40a2a03f82",
   "claude/print-stream-json": "491790b0857f9db771c4cb72ad3f852586d41bb3b8362d2467b0272c212e4afd",
-  "prime/rpc": "d961da049ec9ea1b2d3d1c40fd4569cb41713850130841d88fd566d1e970f9b9",
-  "omp/rpc": "716ac64704d38a2df4fcd16d50be2e04419930a566780109ae6eacfc607c58b5",
+  "prime/rpc": "7a9f69497424e56ca214d6cbcd7946b74dbbc03a61f4c110cde8d28a3ad562e1",
+  "omp/rpc": "8347937e721cfd2a18a25636519a6cce7707ddaf7bdac8e337992e1b918fd35f",
 };
 const oracle = oracleJson as unknown as {
   baseEnvironmentAllowlist: string[];

@@ -275,3 +275,6 @@ Lease cli_recon: permission-mode flag/config/launch plumbing and tests across Ru
 ## Native output mode lease
 cli_recon owns generic native-output configuration, settlement, tests and documentation in both runners; no language semantics.
 Lease cli_recon: SDK registry and transport additions across Rust/Bun/shared schema, harnesses/agents-sdk; existing Prime/OMP methods belong separate worktree worker. No language semantics.
+## Expedition isolated lease — 2026-09-11
+
+Root explicitly delegated branch codex/prime-omp-tools in its own worktree to eval_design. Lease: Prime/OMP sections in bun/src/adapters/protocols.ts; new native-tool lifecycle module; existing Prime/OMP recipes and matching shared fixtures/tests; Prime/OMP sections of rust/crates/prose-runner-core/src/{installed_adapters,runner}.rs; adapter documentation. User authorized Git commits on this branch; no main or push. SDK additions remain cli_recon-owned in a separate worktree.

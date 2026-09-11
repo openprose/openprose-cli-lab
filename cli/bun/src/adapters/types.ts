@@ -87,7 +87,6 @@ export interface InstalledAdapterRecipe {
         stateRequestIdSuffix: string;
         promptRequestIdSuffix: string;
         requiredStateDataArrayField: string;
-        requiredStateDataArrayLength: 0;
       };
     };
   };

@@ -3,6 +3,8 @@
 //! These adapters transport an opaque Skill Runtime Image and task envelope.
 //! They deliberately contain no `OpenProse` command or program semantics.
 
+mod native_tools;
+
 use crate::image::{sha256_hex, RuntimeImage};
 use crate::{ErrorCode, RunnerError};
 use prose_process_supervisor::{
@@ -277,6 +279,9 @@ impl InstalledAdapter {
                     "message_end",
                     "turn_end",
                     "extension_ui_request",
+                    "tool_execution_start",
+                    "tool_execution_update",
+                    "tool_execution_end",
                 ],
             )
             .with_allowed_after_terminal_events(["response", "extension_ui_request"]),
@@ -764,6 +769,10 @@ pub(crate) fn admitted_assistant_messages(
     let Some(record) = records.last() else {
         return Ok(Vec::new());
     };
+    if matches!(adapter, InstalledAdapter::PrimeRpc | InstalledAdapter::OmpRpc) && records.iter().any(native_tools::rich) {
+        return Ok(native_tools::normalize(records,expected_rpc_id,adapter==InstalledAdapter::OmpRpc,false)?.assistant_messages);
+    }
+
     match adapter {
         InstalledAdapter::AgentsSdkJsonl => {
             if record_type(record) != Some("final") { return Ok(Vec::new()); }
@@ -1199,6 +1208,7 @@ fn normalize_prime_rpc(
     records: &[Value],
     expected_rpc_id: &str,
 ) -> Result<TransportNormalization, RunnerError> {
+    if records.iter().any(native_tools::rich) { return native_tools::normalize(records, expected_rpc_id, false, true); }
     let mut lifecycle = PrimeLifecycle::AwaitPromptAck;
     let mut counters = PrimeDiagnosticCounters::default();
     macro_rules! malformed {
@@ -1841,6 +1851,7 @@ fn normalize_omp_rpc(
     records: &[Value],
     expected_rpc_id: &str,
 ) -> Result<TransportNormalization, RunnerError> {
+    if records.iter().any(native_tools::rich) { return native_tools::normalize(records, expected_rpc_id, true, true); }
     let malformed = || RunnerError::catalog(ErrorCode::ProtocolMalformed);
     let failed = || RunnerError::catalog(ErrorCode::HarnessFailed);
     let expected_state_id = omp_rpc_id(expected_rpc_id, "state.1");
@@ -3157,7 +3168,6 @@ pub fn prepare_launch(
                 "--no-rules".into(),
                 "--no-lsp".into(),
                 "--no-title".into(),
-                "--no-tools".into(),
                 "--append-system-prompt".into(),
                 image_path,
             ];
@@ -5853,7 +5863,7 @@ mod tests {
         );
 
         let mut nonempty = omp_lifecycle();
-        nonempty[2] = omp_state_response(&[json!({"name":"hostile-tool"})]);
+        nonempty[2] = omp_state_response(&[json!({"name":""})]);
         nonempty.insert(3, omp_response(true));
         assert_eq!(
             normalize_transport(
@@ -5863,7 +5873,7 @@ mod tests {
             )
             .unwrap_err()
             .code,
-            ErrorCode::HarnessFailed
+            ErrorCode::ProtocolMalformed
         );
 
         for mutated in [

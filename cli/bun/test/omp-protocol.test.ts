@@ -124,7 +124,7 @@ describe("upstream OMP v18 RPC grammar", () => {
     expect(protocol.terminalEventObserved).toBeTrue();
   });
 
-  test("stages prompt delivery only after the correlated empty-tool state proof", () => {
+  test("stages prompt delivery only after the correlated tool inventory", () => {
     for (const invalid of [
       { ...stateResponse, id: `${stateRequestId}-wrong` },
       { ...stateResponse, command: "get_messages" },
@@ -138,11 +138,14 @@ describe("upstream OMP v18 RPC grammar", () => {
     }
     for (const invalid of [
       { id: stateRequestId, type: "response", command: "get_state", success: false, error: "denied" },
-      { ...stateResponse, data: { dumpTools: [{ name: "ambient-tool" }] } },
     ]) {
       const protocol = beforeStateProof();
       expectFailure(() => protocol.accept(invalid), "HARNESS_FAILED");
     }
+    const enabled = beforeStateProof();
+    expect(enabled.accept({...stateResponse,data:{dumpTools:[{name:"read"}]}})).toBeNull();
+    const malformedInventory = beforeStateProof();
+    expectFailure(()=>malformedInventory.accept({...stateResponse,data:{dumpTools:[{}]}}),"PROTOCOL_MALFORMED");
     const reordered = beforeStateProof();
     expectFailure(() => reordered.accept({ type: "agent_start" }), "PROTOCOL_MALFORMED");
     const duplicate = started();

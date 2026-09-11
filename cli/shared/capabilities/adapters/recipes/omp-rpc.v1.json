@@ -42,7 +42,6 @@
       { "literal": "--no-rules" },
       { "literal": "--no-lsp" },
       { "literal": "--no-title" },
-      { "literal": "--no-tools" },
       { "literal": "--append-system-prompt" },
       { "value": "image-path" },
       { "literal": "--config" },
@@ -96,8 +95,7 @@
         "stateRequestType": "get_state",
         "stateRequestIdSuffix": "omp.state.1",
         "promptRequestIdSuffix": "omp.prompt.1",
-        "requiredStateDataArrayField": "dumpTools",
-        "requiredStateDataArrayLength": 0
+        "requiredStateDataArrayField": "dumpTools"
       }
     }
   },
@@ -119,7 +117,7 @@
   },
   "billingOwner": "user-provider",
   "requiredTerminal": {
-    "event": "agent_end with isTerminal true followed by process exit 0 after stdin close",
+    "event": "correlated prompt acknowledgement and validated native text/tool turns, then agent_end with isTerminal true followed by process exit 0 after stdin close",
     "acceptableExitCodes": [0],
     "eofWithoutEvent": "protocol-error"
   },

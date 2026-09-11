@@ -1,3 +1,4 @@
+import { NativeToolLifecycle, hasNativeTools } from "./native-tool-lifecycle";
 import { failure } from "../core/errors";
 import { RunnerFailure } from "../core/types";
 import type {
@@ -170,6 +171,8 @@ class PrimeProtocol extends InstalledProtocol {
   private static readonly MAX_COUNTER = 0xffff_ffff;
   private readonly invocationId: string;
   private acknowledged = false;
+  private native: NativeToolLifecycle | null = null;
+  private bufferedNative: unknown[] = [];
   private lifecycle: PrimeLifecycle = "agent-start";
   private userMessage: Record<string, unknown> | null = null;
   private assistantMessage: Record<string, unknown> | null = null;
@@ -204,7 +207,19 @@ class PrimeProtocol extends InstalledProtocol {
 
   accept(value: unknown): RawTransportEvent | null {
     try {
-      const event = this.acceptRecord(value);
+      if (!primeBoundedJson(value)) malformed("Prime RPC record exceeds the bounded lifecycle contract.");
+      let event: RawTransportEvent | null;
+      if (this.native) {
+        event = this.native.accept(value);
+        this.terminalEventObserved = this.native.ended;
+      } else if (hasNativeTools(value)) {
+        this.native = new NativeToolLifecycle(false);
+        for (const prior of this.bufferedNative) this.native.accept(prior);
+        event = this.native.accept(value);
+      } else {
+        event = this.acceptRecord(value);
+        if ((value as any)?.type !== "response") this.bufferedNative.push(value);
+      }
       this.noteAccepted(value);
       return event;
     } catch (caught) {
@@ -470,6 +485,7 @@ class OmpProtocol extends InstalledProtocol {
   private ready = false;
   private commandsAdvertised = false;
   private toolsProvedEmpty = false;
+  private native: NativeToolLifecycle | null = null;
   private acknowledged = false;
   private agentEnded = false;
   private turnStarted = false;
@@ -539,9 +555,8 @@ class OmpProtocol extends InstalledProtocol {
         ) malformed("OMP get_state response is invalid or uncorrelated.");
         const data = asRecord(record.data, "OMP get_state data is invalid.");
         if (!Array.isArray(data.dumpTools)) malformed("OMP get_state omitted its tool inventory.");
-        if (data.dumpTools.length !== 0) {
-          throw failure("HARNESS_FAILED", { reason: "OMP reported enabled tools; the wrapper did not deliver the prompt." });
-        }
+        if (data.dumpTools.some((tool) => !isRecord(tool) || typeof tool.name !== "string" || tool.name.length === 0)) malformed("OMP tool inventory is invalid.");
+        if (data.dumpTools.length !== 0) this.native = new NativeToolLifecycle(true);
         this.toolsProvedEmpty = true;
         this.pendingStdinBytes = this.promptBytes;
         return null;
@@ -558,6 +573,15 @@ class OmpProtocol extends InstalledProtocol {
     }
     if (!this.toolsProvedEmpty) malformed("OMP emitted lifecycle data before the empty-tool state proof.");
     if (this.agentEnded) malformed("OMP emitted an event after terminal agent_end.");
+    if (this.native) {
+      const event = this.native.accept(record);
+      if (event?.type === "session.started") this.started = true;
+      if (event?.type === "session.completed") {
+        this.agentEnded = true;
+        return this.acknowledged ? this.complete() : null;
+      }
+      return event;
+    }
     if (record.type === "agent_start") {
       if (this.started || !hasExactKeys(record, ["type"])) malformed("OMP agent_start is duplicate or out of order.");
       return this.start();

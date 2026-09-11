@@ -997,6 +997,7 @@ struct OmpStagedController {
     prompt_bytes: Option<Vec<u8>>,
     pending_write: Option<Vec<u8>>,
     project_current_record: bool,
+    tool_inventory: Vec<Value>,
 }
 
 impl OmpStagedController {
@@ -1007,6 +1008,7 @@ impl OmpStagedController {
             prompt_bytes: Some(prompt_bytes),
             pending_write: None,
             project_current_record: false,
+            tool_inventory: Vec::new(),
         }
     }
 
@@ -1104,12 +1106,10 @@ impl OmpStagedController {
                         "OMP tool-state response omitted dumpTools",
                     ));
                 };
-                if !tools.is_empty() {
-                    return Err(stream_observer_failure(
-                        FailureKind::HarnessFailed,
-                        "OMP reported a nonempty tool inventory",
-                    ));
+                if tools.iter().any(|tool| tool.get("name").and_then(Value::as_str).is_none_or(str::is_empty)) {
+                    return Err(stream_observer_failure(FailureKind::ProtocolMalformed,"OMP reported an invalid tool inventory"));
                 }
+                self.tool_inventory = tools.iter().map(|tool|json!({"name":tool["name"]})).collect();
                 self.pending_write = self.prompt_bytes.take();
                 self.state = OmpPreludeState::PromptSent;
                 Ok(())
@@ -1136,7 +1136,7 @@ impl OmpStagedController {
                 "type":"response",
                 "command":"get_state",
                 "success":true,
-                "data":{"dumpTools":[]}
+                "data":{"dumpTools":self.tool_inventory}
             })
         })
     }
@@ -4540,9 +4540,9 @@ mod tests {
             (
                 json!({
                     "id":"fixture.omp.state.1","type":"response","command":"get_state",
-                    "success":true,"data":{"dumpTools":[{"name":"hostile"}],"candidateSecret":"must-not-be-retained"}
+                    "success":true,"data":{"dumpTools":[{"name":""}],"candidateSecret":"must-not-be-retained"}
                 }),
-                FailureKind::HarnessFailed,
+                FailureKind::ProtocolMalformed,
             ),
             (
                 json!({

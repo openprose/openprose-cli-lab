@@ -136,7 +136,7 @@
             },
             "protocolPrelude": {
               "type": "object", "additionalProperties": false,
-              "required": ["barrierEvent", "stateRequestType", "stateRequestIdSuffix", "promptRequestIdSuffix", "requiredStateDataArrayField", "requiredStateDataArrayLength"],
+              "required": ["barrierEvent", "stateRequestType", "stateRequestIdSuffix", "promptRequestIdSuffix", "requiredStateDataArrayField"],
               "properties": {
                 "barrierEvent": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
                 "stateRequestType": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },

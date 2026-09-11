@@ -389,7 +389,7 @@ class AdapterOracleTest(unittest.TestCase):
             "close-after-terminal-event", recipe["launch"]["stdinLifecycle"]
         )
         self.assertEqual("--no-lsp", recipe["launch"]["argv"][7]["literal"])
-        self.assertEqual("--no-tools", recipe["launch"]["argv"][9]["literal"])
+        self.assertNotIn("--no-tools", [item.get("literal") for item in recipe["launch"]["argv"]])
         self.assertEqual(
             {
                 "argvFlag": "--config",
@@ -410,7 +410,6 @@ class AdapterOracleTest(unittest.TestCase):
                 "stateRequestIdSuffix": "omp.state.1",
                 "promptRequestIdSuffix": "omp.prompt.1",
                 "requiredStateDataArrayField": "dumpTools",
-                "requiredStateDataArrayLength": 0,
             },
             recipe["launch"]["controls"]["protocolPrelude"],
         )

@@ -1,0 +1,421 @@
+use super::*;
+use std::collections::BTreeMap;
+
+pub(super) fn rich(record: &Value) -> bool {
+    record
+        .pointer("/message/content")
+        .and_then(Value::as_array)
+        .is_some_and(|items| {
+            items
+                .iter()
+                .any(|b| b["type"] == "toolCall" || b.get("index").is_some())
+        })
+        || record
+            .pointer("/assistantMessageEvent/type")
+            .and_then(Value::as_str)
+            .is_some_and(|s| s.starts_with("toolcall_"))
+        || record_type(record).is_some_and(|s| s.starts_with("tool_execution_"))
+        || record
+            .pointer("/data/dumpTools")
+            .and_then(Value::as_array)
+            .is_some_and(|t| !t.is_empty())
+}
+fn same_message(a: &Value, b: &Value, omp: bool) -> bool {
+    if !omp {
+        return a == b;
+    }
+    let mut a = a.clone();
+    let mut b = b.clone();
+    if let Some(o) = a.as_object_mut() {
+        o.remove("completedAt");
+    }
+    if let Some(o) = b.as_object_mut() {
+        o.remove("completedAt");
+    }
+    a == b
+}
+
+/// Validates only native transport state. Prefix mode projects already-complete
+/// messages without manufacturing terminal records or claiming settlement.
+pub(super) fn normalize(
+    records: &[Value],
+    id: &str,
+    omp: bool,
+    terminal: bool,
+) -> Result<TransportNormalization, RunnerError> {
+    let bad = || RunnerError::catalog(ErrorCode::ProtocolMalformed);
+    let fail = || RunnerError::catalog(ErrorCode::HarnessFailed);
+    let mut ready = !omp;
+    let mut commands = !omp;
+    let mut inventory = !omp;
+    let mut ack = false;
+    let mut started = false;
+    let mut turn = false;
+    let mut user = false;
+    let mut ended = false;
+    let mut open: Option<Value> = None;
+    let mut assistant: Option<Value> = None;
+    let mut last_stop: Option<String> = None;
+    let mut history = Vec::<Value>::new();
+    let mut results = Vec::<Value>::new();
+    let mut texts = Vec::<String>::new();
+    let mut block_types = BTreeMap::<usize, String>::new();
+    let mut calls = BTreeMap::<String, (String, Value, u8, Option<Value>, Option<bool>)>::new();
+    for r in records {
+        if !r.is_object() || !prime_bounded_json(r, 0) {
+            return Err(bad());
+        }
+        let kind = record_type(r).ok_or_else(bad)?;
+        if omp && kind == "extension_ui_request" {
+            match omp_extension_ui_disposition(r) {
+                OmpExtensionUiDisposition::Presentation => continue,
+                OmpExtensionUiDisposition::Blocked => return Err(fail()),
+                _ => return Err(bad()),
+            }
+        }
+        if !ready {
+            if !valid_omp_ready(r) {
+                return Err(bad());
+            }
+            ready = true;
+            continue;
+        }
+        if kind == "available_commands_update" && omp {
+            if commands
+                || started
+                || !has_exact_keys(r, &["type", "commands"])
+                || !r["commands"].is_array()
+            {
+                return Err(bad());
+            }
+            commands = true;
+            continue;
+        }
+        if !commands {
+            return Err(bad());
+        }
+        if kind == "response" {
+            if omp && !inventory {
+                if r["id"] != omp_rpc_id(id, "state.1")
+                    || r["command"] != "get_state"
+                    || !has_exact_keys(r, &["id", "type", "command", "success", "data"])
+                {
+                    return Err(bad());
+                }
+                if r["success"] != true {
+                    return Err(fail());
+                }
+                let tools = r
+                    .pointer("/data/dumpTools")
+                    .and_then(Value::as_array)
+                    .ok_or_else(bad)?;
+                if tools
+                    .iter()
+                    .any(|t| t["name"].as_str().is_none_or(str::is_empty))
+                {
+                    return Err(bad());
+                }
+                inventory = true;
+                continue;
+            }
+            let expected = if omp {
+                omp_rpc_id(id, "prompt.1")
+            } else {
+                id.to_owned()
+            };
+            if ack
+                || r["id"] != expected
+                || r["command"] != "prompt"
+                || !has_exact_keys(r, &["id", "type", "command", "success"])
+            {
+                return Err(bad());
+            }
+            if r["success"] != true {
+                return Err(fail());
+            }
+            ack = true;
+            continue;
+        }
+        if !inventory || (!omp && !ack) || ended {
+            return Err(bad());
+        }
+        match kind {
+            "agent_start" => {
+                if started {
+                    return Err(bad());
+                }
+                started = true;
+            }
+            "turn_start" => {
+                if !started
+                    || turn
+                    || open.is_some()
+                    || last_stop.as_ref().is_some_and(|s| s != "toolUse")
+                {
+                    return Err(bad());
+                }
+                turn = true;
+                assistant = None;
+                calls.clear();
+                results.clear();
+            }
+            "message_start" => {
+                let m = r.get("message").filter(|m| m.is_object()).ok_or_else(bad)?;
+                if !turn || open.is_some() {
+                    return Err(bad());
+                }
+                match m["role"].as_str() {
+                    Some("user") if !user && assistant.is_none() => {}
+                    Some("assistant") if user && assistant.is_none() => {
+                        block_types.clear();
+                    }
+                    Some("toolResult") => {
+                        let call = calls
+                            .get(m["toolCallId"].as_str().ok_or_else(bad)?)
+                            .ok_or_else(bad)?;
+                        if call.2 != 2 || m["toolName"] != call.0 {
+                            return Err(bad());
+                        }
+                    }
+                    _ => return Err(bad()),
+                }
+                open = Some(m.clone());
+            }
+            "message_update" => {
+                if open.as_ref().is_none_or(|m| m["role"] != "assistant")
+                    || r.pointer("/message/role") != Some(&json!("assistant"))
+                {
+                    return Err(bad());
+                }
+                let e = &r["assistantMessageEvent"];
+                let t = e["type"].as_str().ok_or_else(bad)?;
+                if ![
+                    "text_start",
+                    "text_delta",
+                    "text_end",
+                    "thinking_start",
+                    "thinking_delta",
+                    "thinking_end",
+                    "toolcall_start",
+                    "toolcall_delta",
+                    "toolcall_end",
+                ]
+                .contains(&t)
+                    || e["contentIndex"].as_u64().is_none()
+                    || !r["message"]["content"].is_array()
+                    || (t.ends_with("_delta") && !e["delta"].is_string())
+                {
+                    return Err(bad());
+                }
+                let index = e["contentIndex"].as_u64().ok_or_else(bad)? as usize;
+                let expected = if t.starts_with("toolcall_") {
+                    "toolCall"
+                } else {
+                    t.split('_').next().ok_or_else(bad)?
+                };
+                if r["message"]["content"]
+                    .get(index)
+                    .and_then(|b| b["type"].as_str())
+                    != Some(expected)
+                    || block_types.get(&index).is_some_and(|t| t != expected)
+                {
+                    return Err(bad());
+                }
+                block_types.insert(index, expected.into());
+            }
+            "message_end" => {
+                let m = r.get("message").ok_or_else(bad)?;
+                let current = open.as_ref().ok_or_else(bad)?;
+                if m["role"] != current["role"] || !m["content"].is_array() {
+                    return Err(bad());
+                }
+                match m["role"].as_str() {
+                    Some("user") => {
+                        if m != current {
+                            return Err(bad());
+                        }
+                        user = true;
+                    }
+                    Some("assistant") => {
+                        if block_types.iter().any(|(i, t)| {
+                            m["content"].get(*i).and_then(|b| b["type"].as_str())
+                                != Some(t.as_str())
+                        }) {
+                            return Err(bad());
+                        }
+                        let stop = m["stopReason"].as_str().ok_or_else(bad)?;
+                        if !["stop", "toolUse"].contains(&stop) {
+                            return Err(fail());
+                        }
+                        let mut text = String::new();
+                        for b in m["content"].as_array().ok_or_else(bad)? {
+                            match b["type"].as_str() {
+                                Some("text") => text.push_str(b["text"].as_str().ok_or_else(bad)?),
+                                Some("thinking") => {
+                                    if !b["thinking"].is_string() {
+                                        return Err(bad());
+                                    }
+                                }
+                                Some("toolCall") => {
+                                    let key = b["id"]
+                                        .as_str()
+                                        .filter(|s| !s.is_empty())
+                                        .ok_or_else(bad)?;
+                                    let name = b["name"]
+                                        .as_str()
+                                        .filter(|s| !s.is_empty())
+                                        .ok_or_else(bad)?;
+                                    let mut args =
+                                        b["arguments"].as_object().ok_or_else(bad)?.clone();
+                                    if omp
+                                        && b["intent"].is_string()
+                                        && args.get("i") == b.get("intent")
+                                    {
+                                        args.remove("i");
+                                    }
+                                    if calls
+                                        .insert(
+                                            key.into(),
+                                            (name.into(), Value::Object(args), 0, None, None),
+                                        )
+                                        .is_some()
+                                    {
+                                        return Err(bad());
+                                    }
+                                }
+                                _ => return Err(bad()),
+                            }
+                        }
+                        if (stop == "toolUse") != (!calls.is_empty()) {
+                            return Err(bad());
+                        }
+                        texts.push(text);
+                        assistant = Some(m.clone());
+                    }
+                    Some("toolResult") => {
+                        let call = calls
+                            .get_mut(m["toolCallId"].as_str().ok_or_else(bad)?)
+                            .ok_or_else(bad)?;
+                        if m != current
+                            || call.2 != 2
+                            || m["toolName"] != call.0
+                            || !m["isError"].is_boolean()
+                        {
+                            return Err(bad());
+                        }
+                        if call.3.as_ref() != m.get("content") || call.4 != m["isError"].as_bool() {
+                            return Err(bad());
+                        }
+                        call.2 = 3;
+                        results.push(m.clone());
+                    }
+                    _ => return Err(bad()),
+                }
+                history.push(m.clone());
+                open = None;
+            }
+            "tool_execution_start" | "tool_execution_update" | "tool_execution_end" => {
+                if !turn || open.is_some() {
+                    return Err(bad());
+                }
+                let call = calls
+                    .get_mut(r["toolCallId"].as_str().ok_or_else(bad)?)
+                    .ok_or_else(bad)?;
+                if r["toolName"] != call.0 {
+                    return Err(bad());
+                }
+                if kind == "tool_execution_start" {
+                    if call.2 != 0 || r["args"] != call.1 {
+                        return Err(bad());
+                    }
+                    call.2 = 1;
+                } else if kind == "tool_execution_update" {
+                    if call.2 != 1 || r["args"] != call.1 || !r["partialResult"].is_object() {
+                        return Err(bad());
+                    }
+                } else {
+                    if call.2 != 1 || !r["isError"].is_boolean() || !r["result"].is_object() {
+                        return Err(bad());
+                    }
+                    call.3 = r["result"].get("content").cloned();
+                    call.4 = r["isError"].as_bool();
+                    call.2 = 2;
+                }
+            }
+            "turn_end" => {
+                if !turn
+                    || open.is_some()
+                    || assistant
+                        .as_ref()
+                        .is_none_or(|m| !same_message(&r["message"], m, omp))
+                    || r["toolResults"] != json!(results)
+                    || calls.values().any(|c| c.2 != 3)
+                {
+                    return Err(bad());
+                }
+                last_stop = assistant
+                    .as_ref()
+                    .and_then(|m| m["stopReason"].as_str().map(str::to_owned));
+                turn = false;
+            }
+            "agent_end" => {
+                let msgs = r["messages"].as_array().ok_or_else(bad)?;
+                if !started
+                    || turn
+                    || open.is_some()
+                    || last_stop.as_deref() != Some("stop")
+                    || msgs.len() != history.len()
+                    || msgs
+                        .iter()
+                        .zip(&history)
+                        .any(|(a, b)| !same_message(a, b, omp))
+                {
+                    return Err(bad());
+                }
+                if omp && r["isTerminal"] != true {
+                    return Err(fail());
+                }
+                ended = true;
+            }
+            _ => return Err(bad()),
+        }
+    }
+    if terminal && (!ended || !ack) {
+        return Err(bad());
+    }
+    Ok(TransportNormalization {
+        terminal_event: "agent_end",
+        assistant_messages: texts,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn frames(omp: bool) -> Vec<Value> {
+        serde_json::from_str(if omp {
+            include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/omp.json")
+        } else {
+            include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime.json")
+        })
+        .unwrap()
+    }
+    #[test]
+    fn actual_tool_streams_and_corruptions() {
+        for omp in [false, true] {
+            let frames = frames(omp);
+            assert!(normalize(&frames, "fixture-tools", omp, true).is_ok());
+            let end = frames
+                .iter()
+                .position(|r| r["type"] == "agent_end")
+                .unwrap();
+            assert!(normalize(&frames[..end], "fixture-tools", omp, true).is_err());
+            assert!(normalize(&frames[..end], "fixture-tools", omp, false).is_ok());
+            let mut bad = frames.clone();
+            bad.iter_mut()
+                .find(|r| r["type"] == "tool_execution_end")
+                .unwrap()["toolCallId"] = json!("wrong");
+            assert!(normalize(&bad, "fixture-tools", omp, true).is_err());
+        }
+    }
+}

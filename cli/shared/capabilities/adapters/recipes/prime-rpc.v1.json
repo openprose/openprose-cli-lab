@@ -93,7 +93,7 @@
   },
   "billingOwner": "user-provider",
   "requiredTerminal": {
-    "event": "correlated prompt acknowledgement, then one closed no-tool agent/turn/user/assistant/turn_end lifecycle, then terminal agent_end followed by process exit 0 after stdin close",
+    "event": "correlated prompt acknowledgement and validated native text/tool turns, then terminal agent_end followed by process exit 0 after stdin close",
     "acceptableExitCodes": [0],
     "eofWithoutEvent": "protocol-error"
   },
