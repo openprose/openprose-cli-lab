@@ -18,6 +18,22 @@ export function nativeArgsMatch(actual: unknown, declared: unknown, omp:boolean)
  return same(actual,declared);
 }
 
+// Only the two advertised OMP task agent default locations are recognized.
+export function ompTaskDefaults(tools: any[]): {root:boolean;items:boolean} {
+ const tasks=tools.filter(t=>t?.name==="task");
+ const p=tasks.length===1?tasks[0].parameters:null;
+ const field=(v:any)=>v?.type==="string"&&v.default==="task";
+ return {root:p?.type==="object"&&field(p.properties?.agent),items:p?.type==="object"&&p.properties?.tasks?.type==="array"&&p.properties.tasks.items?.type==="object"&&field(p.properties.tasks.items.properties?.agent)};
+}
+export function taskArgsMatch(actual:any,declared:any,omp:boolean,name:string,defaults:{root:boolean;items:boolean}):boolean {
+ if(!omp||name!=="task"||(!defaults.root&&!defaults.items))return nativeArgsMatch(actual,declared,omp);
+ const d=structuredClone(declared);
+ const apply=(a:any,b:any)=>{if(a&&b&&typeof a==="object"&&typeof b==="object"&&!Array.isArray(a)&&!Array.isArray(b)&&!Object.hasOwn(b,"agent")&&a.agent==="task")b.agent="task";};
+ if(defaults.root)apply(actual,d);
+ if(defaults.items&&Array.isArray(actual?.tasks)&&Array.isArray(d?.tasks)&&actual.tasks.length===d.tasks.length)actual.tasks.forEach((a:any,i:number)=>apply(a,d.tasks[i]));
+ return nativeArgsMatch(actual,d,true);
+}
+
 // Source-defined OMP input messages; content is opaque to the runner.
 function validCustom(m: Record<string, any>): boolean {
  const keys=["role","customType","content","display","details","attribution","timestamp"];
@@ -70,7 +86,7 @@ export class NativeToolLifecycle {
   private results: Record<string, any>[] = [];
   private blockTypes = new Map<number,string>();
   private lastStop: string | null = null;
-  constructor(private readonly omp: boolean, readonly primeDrain:PrimeDrain|null=null) {}
+  constructor(private readonly omp: boolean, readonly primeDrain:PrimeDrain|null=null, private readonly taskDefaults={root:false,items:false}) {}
 
   settlePrime(exitCode:number|null):RawTransportEvent|null {
     if(!this.primeDrain)return null;
@@ -93,7 +109,7 @@ export class NativeToolLifecycle {
     if (this.ended) bad();
     if(this.omp && r.type==="tool_execution_update" && this.asyncTasks.has(r.toolCallId)) {
       const task=this.asyncTasks.get(r.toolCallId)!;const a=r.partialResult?.details?.async;
-      if(!this.started||r.toolName!=="task"||!nativeArgsMatch(r.args,task.args,true)||!a||a.type!=="task"||a.jobId!==task.job||!["running","completed","failed"].includes(a.state))bad();
+      if(!this.started||r.toolName!=="task"||!taskArgsMatch(r.args,task.args,true,"task",this.taskDefaults)||!a||a.type!=="task"||a.jobId!==task.job||!["running","completed","failed"].includes(a.state))bad();
       return null;
     }
     if(this.primeDrain?.candidate&&r.type!=="session_action_update")bad();
@@ -192,9 +208,9 @@ export class NativeToolLifecycle {
         const c = this.calls.get(r.toolCallId) ?? bad();
         if (!this.turn || this.open || !c || r.toolName !== c.name) bad();
         if (r.type === "tool_execution_start") {
-          if (c.state !== "declared" || !nativeArgsMatch(r.args,c.args,this.omp)) bad(); c.state = "started";
+          if (c.state !== "declared" || !taskArgsMatch(r.args,c.args,this.omp,c.name,this.taskDefaults)) bad(); c.state = "started";
         } else if (r.type === "tool_execution_update") {
-          if (c.state !== "started" || !nativeArgsMatch(r.args,c.args,this.omp)) bad(); object(r.partialResult);
+          if (c.state !== "started" || !taskArgsMatch(r.args,c.args,this.omp,c.name,this.taskDefaults)) bad(); object(r.partialResult);
         } else {
           if (c.state !== "started" || typeof r.isError !== "boolean") bad(); object(r.result); c.result=r.result; c.isError=r.isError; c.state = "ended";
           const a=r.result.details?.async;

@@ -328,3 +328,6 @@ Decision 028 active lease: cli_recon owns cli/bun/src/adapters/prime-drain.ts, p
 - Decision 028: coordination_library owns cli/rust/** (Prime native drain and provider-free tests); no commits; cli_recon integrates.
 
 Decision 030 lease: cli_recon owns cli/bun/src/adapters/native-tool-lifecycle.ts, cli/rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs, Prime transition tests/shared fixture, docs/prime-turn-transition.md. No config/capture/runner changes; root authorized git operations.
+
+## Decision 032 isolated lease
+Root authorized eval_design on codex/decision-032-omp-task-defaults: bun/src/adapters/{native-tool-lifecycle,protocols}.ts, bun/test/omp-task-defaults.test.ts, rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs, shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json; branch-only commits/builds. No main mutation or live calls.

@@ -1,0 +1,6586 @@
+[
+  {
+    "name": "batch-default",
+    "expected": 0,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first",
+                      "agent": "reviewer"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "changed-agent",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "explicit-null",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": null
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": null
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first",
+                      "agent": null
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "explicit-reviewer",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first",
+                      "agent": "reviewer"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "changed-text",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "changed",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "changed",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "changed-context",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "changed",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "changed",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "changed-name",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "changed",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "changed",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "reordered",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            },
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            },
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "extra-item",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            },
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            },
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "extra-field",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task",
+              "extra": 1
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task",
+              "extra": 1
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "other-tool",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "other",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "other",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "other",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "other",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "other",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "other",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "other",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "other",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "other",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "other",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "absent-schema",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {}
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "conflicting-schema",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "reviewer"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "nested-agent",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "outputSchema": {}
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task",
+              "outputSchema": {
+                "agent": "task"
+              }
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task",
+              "outputSchema": {
+                "agent": "task"
+              }
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "outputSchema": {}
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first",
+                      "outputSchema": {}
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "missing-terminal",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      }
+    ]
+  },
+  {
+    "name": "false-terminal",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": false
+      }
+    ]
+  },
+  {
+    "name": "unmatched-end",
+    "expected": 22,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "task"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "wrong",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "flat-default",
+    "expected": 0,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "agent": {
+                    "type": "string",
+                    "default": "task"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "task": "flat"
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "task": "flat",
+          "agent": "task"
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "task": "flat",
+          "agent": "task"
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "task": "flat"
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "task": "flat"
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  },
+  {
+    "name": "explicit-unchanged",
+    "expected": 0,
+    "records": [
+      {
+        "type": "ready",
+        "protocolVersion": 1,
+        "supportedProtocolVersions": [
+          1,
+          2
+        ],
+        "maxFrameBytes": 1048576,
+        "maxReassembledFrameBytes": 67108864
+      },
+      {
+        "type": "extension_ui_request",
+        "id": "widget",
+        "method": "setWidget",
+        "widgetKey": "autoresearch"
+      },
+      {
+        "type": "available_commands_update",
+        "commands": []
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.state.1",
+        "command": "get_state",
+        "success": true,
+        "data": {
+          "dumpTools": [
+            {
+              "name": "task",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "tasks": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "agent": {
+                          "type": "string",
+                          "default": "task"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "type": "response",
+        "id": "fixture-tools.omp.prompt.1",
+        "command": "prompt",
+        "success": true
+      },
+      {
+        "type": "agent_start"
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "user",
+          "content": [
+            {
+              "type": "text",
+              "text": "opaque fixture"
+            }
+          ]
+        }
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        }
+      },
+      {
+        "type": "tool_execution_start",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        }
+      },
+      {
+        "type": "tool_execution_update",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "args": {
+          "context": "opaque",
+          "tasks": [
+            {
+              "name": "One",
+              "task": "first",
+              "agent": "reviewer"
+            },
+            {
+              "name": "Two",
+              "task": "second",
+              "agent": "task"
+            }
+          ]
+        },
+        "partialResult": {
+          "content": []
+        }
+      },
+      {
+        "type": "tool_execution_end",
+        "toolName": "task",
+        "toolCallId": "t1",
+        "result": {
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ]
+        },
+        "isError": false
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "toolResult",
+          "toolCallId": "t1",
+          "toolName": "task",
+          "content": [
+            {
+              "type": "text",
+              "text": "done"
+            }
+          ],
+          "isError": false
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "toolCall",
+              "id": "t1",
+              "name": "task",
+              "arguments": {
+                "context": "opaque",
+                "tasks": [
+                  {
+                    "name": "One",
+                    "task": "first",
+                    "agent": "reviewer"
+                  },
+                  {
+                    "name": "Two",
+                    "task": "second"
+                  }
+                ]
+              }
+            }
+          ],
+          "stopReason": "toolUse"
+        },
+        "toolResults": [
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          }
+        ]
+      },
+      {
+        "type": "turn_start"
+      },
+      {
+        "type": "message_start",
+        "message": {
+          "role": "assistant",
+          "content": []
+        }
+      },
+      {
+        "type": "message_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        }
+      },
+      {
+        "type": "turn_end",
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "synthetic complete"
+            }
+          ],
+          "stopReason": "stop"
+        },
+        "toolResults": []
+      },
+      {
+        "type": "agent_end",
+        "messages": [
+          {
+            "role": "user",
+            "content": [
+              {
+                "type": "text",
+                "text": "opaque fixture"
+              }
+            ]
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "toolCall",
+                "id": "t1",
+                "name": "task",
+                "arguments": {
+                  "context": "opaque",
+                  "tasks": [
+                    {
+                      "name": "One",
+                      "task": "first",
+                      "agent": "reviewer"
+                    },
+                    {
+                      "name": "Two",
+                      "task": "second"
+                    }
+                  ]
+                }
+              }
+            ],
+            "stopReason": "toolUse"
+          },
+          {
+            "role": "toolResult",
+            "toolCallId": "t1",
+            "toolName": "task",
+            "content": [
+              {
+                "type": "text",
+                "text": "done"
+              }
+            ],
+            "isError": false
+          },
+          {
+            "role": "assistant",
+            "content": [
+              {
+                "type": "text",
+                "text": "synthetic complete"
+              }
+            ],
+            "stopReason": "stop"
+          }
+        ],
+        "isTerminal": true
+      }
+    ]
+  }
+]

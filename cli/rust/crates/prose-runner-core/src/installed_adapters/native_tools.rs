@@ -185,6 +185,7 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
     let mut results = Vec::<Value>::new();
     let mut texts = Vec::<String>::new();
     let mut block_types = BTreeMap::<usize, String>::new();
+    let mut task_defaults = (false,false);
     let mut async_tasks = BTreeMap::<String,(Value,String)>::new();
     let mut calls = BTreeMap::<String, (String, Value, u8, Option<Value>, Option<bool>)>::new();
     for (record_index,r) in records.iter().enumerate() {
@@ -251,6 +252,7 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
                 {
                     return Err(bad());
                 }
+                task_defaults = omp_task_defaults(tools);
                 inventory = true;
                 continue;
             }
@@ -278,7 +280,7 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
         if omp && kind=="tool_execution_update" {
             if let Some((args,job))=r["toolCallId"].as_str().and_then(|id|async_tasks.get(id)) {
                 let a=&r["partialResult"]["details"]["async"];
-                if !started || r["toolName"]!="task" || !native_args_match(&r["args"],args,true) || a["type"]!="task" || a["jobId"].as_str()!=Some(job.as_str()) || !matches!(a["state"].as_str(),Some("running"|"completed"|"failed")) {return Err(bad());}
+                if !started || r["toolName"]!="task" || !task_args_match(&r["args"],args,true,"task",task_defaults) || a["type"]!="task" || a["jobId"].as_str()!=Some(job.as_str()) || !matches!(a["state"].as_str(),Some("running"|"completed"|"failed")) {return Err(bad());}
                 continue;
             }
         }
@@ -498,12 +500,12 @@ pub(super) fn normalize_mode(records: &[Value], id: &str, omp: bool, terminal: b
                     return Err(bad());
                 }
                 if kind == "tool_execution_start" {
-                    if call.2 != 0 || !native_args_match(&r["args"], &call.1, omp) {
+                    if call.2 != 0 || !task_args_match(&r["args"], &call.1, omp,&call.0,task_defaults) {
                         return Err(bad());
                     }
                     call.2 = 1;
                 } else if kind == "tool_execution_update" {
-                    if call.2 != 1 || !native_args_match(&r["args"], &call.1, omp) || !r["partialResult"].is_object() {
+                    if call.2 != 1 || !task_args_match(&r["args"], &call.1, omp,&call.0,task_defaults) || !r["partialResult"].is_object() {
                         return Err(bad());
                     }
                 } else {
@@ -711,6 +713,25 @@ mod tests {
     }
 }
 
+// Recognize only explicitly advertised task agent defaults, never arbitrary schema defaults.
+fn omp_task_defaults(tools:&[Value])->(bool,bool) {
+ let tasks:Vec<_>=tools.iter().filter(|t|t["name"]=="task").collect();
+ if tasks.len()!=1{return (false,false);}
+ let p=&tasks[0]["parameters"];
+ if p["type"]!="object"{return (false,false);}
+ let field=|v:&Value|v["type"]=="string"&&v["default"]=="task";
+ let items=&p["properties"]["tasks"];
+ (field(&p["properties"]["agent"]),items["type"]=="array"&&items["items"]["type"]=="object"&&field(&items["items"]["properties"]["agent"]))
+}
+fn task_args_match(actual:&Value,declared:&Value,omp:bool,name:&str,defaults:(bool,bool))->bool {
+ if !omp||name!="task"||defaults==(false,false){return native_args_match(actual,declared,omp);}
+ let mut d=declared.clone();
+ fn apply(a:&Value,b:&mut Value){if a.is_object()&&a["agent"]=="task" {if let Some(o)=b.as_object_mut(){if !o.contains_key("agent"){o.insert("agent".into(),json!("task"));}}}}
+ if defaults.0{apply(actual,&mut d);}
+ if defaults.1 {if let (Some(a),Some(b))=(actual.get("tasks").and_then(Value::as_array),d.get_mut("tasks").and_then(Value::as_array_mut)){if a.len()==b.len(){for (x,y) in a.iter().zip(b){apply(x,y);}}}}
+ native_args_match(actual,&d,true)
+}
+
 // OMP may omit schema-optional null fields before native execution.
 fn native_args_match(actual:&Value,declared:&Value,omp:bool)->bool {
  if !omp{return actual==declared;}
@@ -792,4 +813,11 @@ mod custom_tests {
  #[test] fn custom_pair_history_and_terminal(){let f=fixture();assert!(normalize(&f,"fixture-tools",true,true).is_ok());assert!(normalize(&f[..f.len()-1],"fixture-tools",true,true).is_err());}
  #[test] fn custom_typed_content(){for c in [json!("opaque"),json!([{"type":"text","text":"opaque","textSignature":"sig"}]),json!([{"type":"image","data":"AA==","mimeType":"image/png","detail":"original","providerFile":{"provider":"openai","id":"x"},"url":"https://example.invalid/x"}])]{let mut f=fixture();f[9]["message"]["content"]=c.clone();f[10]["message"]["content"]=c.clone();f[14]["messages"][1]["content"]=c;assert!(normalize(&f,"fixture-tools",true,true).is_ok());}}
  #[test] fn custom_rejects_invalid_pairs(){for variant in 0..12 {let mut f=fixture();match variant {0=>f[10]["message"]["content"]=json!("changed"),1=>f[14]["messages"][1]["display"]=json!(true),2=>f[9]["message"]["extra"]=json!(true),3=>f[9]["message"]["content"]=json!([{"type":"toolCall","id":"x"}]),4=>f[9]["message"]["attribution"]=json!("system"),5=>f[9]["message"]["timestamp"]=json!(-1),6=>{f.remove(9);},7=>f.insert(10,f[9].clone()),8=>f.insert(11,f[10].clone()),9=>f.insert(6,f[9].clone()),10=>f.push(f[9].clone()),_=>{f.drain(11..14);}}assert!(normalize(&f,"fixture-tools",true,true).is_err(),"variant {variant}");}}
+}
+#[test]
+fn omp_task_default_shared_cases(){
+ let path=std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json");
+ let cases:Value=serde_json::from_slice(&std::fs::read(path).unwrap()).unwrap();
+ for c in cases.as_array().unwrap(){let result=normalize(c["records"].as_array().unwrap(),"fixture-tools",true,true);assert_eq!(result.is_ok(),c["expected"]==0,"{}: {:?}",c["name"],result.err());}
+ assert!(!task_args_match(&json!({"agent":"task"}),&json!({}),false,"task",(true,true)));
 }

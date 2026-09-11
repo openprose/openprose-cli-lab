@@ -2,7 +2,7 @@ import {PrimeDrain} from "./prime-drain";
 import {sdkNativeFailure} from "./sdk-limits";
 import {hasFreshClaudeResult} from "./claude-shutdown";
 import { isDeepStrictEqual } from "node:util";
-import { NativeToolLifecycle, hasNativeTools } from "./native-tool-lifecycle";
+import { NativeToolLifecycle, hasNativeTools, ompTaskDefaults } from "./native-tool-lifecycle";
 import { failure } from "../core/errors";
 import { RunnerFailure } from "../core/types";
 import type {
@@ -634,7 +634,7 @@ class OmpProtocol extends InstalledProtocol {
         const data = asRecord(record.data, "OMP get_state data is invalid.");
         if (!Array.isArray(data.dumpTools)) malformed("OMP get_state omitted its tool inventory.");
         if (data.dumpTools.some((tool) => !isRecord(tool) || typeof tool.name !== "string" || tool.name.length === 0)) malformed("OMP tool inventory is invalid.");
-        if (data.dumpTools.length !== 0) this.native = new NativeToolLifecycle(true);
+        if (data.dumpTools.length !== 0) this.native = new NativeToolLifecycle(true,null,ompTaskDefaults(data.dumpTools));
         this.toolsProvedEmpty = true;
         this.pendingStdinBytes = this.promptBytes;
         return null;
