@@ -902,7 +902,7 @@ describe("CLI behavior", () => {
     const inventory = JSON.parse(io.stdout());
     expect(inventory.schema).toBe("openprose.harness-list/1");
     expect(inventory.harnesses.map((item: { id: string }) => item.id)).toEqual([
-      "openprose", "prime", "omp", "codex", "claude", "mock",
+      "openprose", "prime", "omp", "codex", "claude", "agents-sdk", "mock",
     ]);
     for (const id of ["prime", "omp", "codex", "claude"]) {
       expect(inventory.harnesses.find((item: { id: string }) => item.id === id)).toMatchObject({
@@ -936,6 +936,7 @@ describe("CLI behavior", () => {
       "    runtime repair: npm install --global bun@1.3.14 @oh-my-pi/pi-coding-agent@18.0.9",
       "  codex availability=missing transport=exec-json",
       "  claude availability=missing transport=print-stream-json",
+      "  agents-sdk availability=missing transport=jsonl",
       "",
       "Test-only harnesses:",
       "  mock availability=available transport=deterministic,fake-process version=1.0.0",
