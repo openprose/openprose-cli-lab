@@ -157,6 +157,7 @@ fn observer_failure_terminates_and_settles_the_owned_process() {
         Err(prose_process_supervisor::SupervisorFailure {
             kind: FailureKind::Internal,
             message: "fixture observer failure".to_owned(),
+            transport_diagnostic: None,
             stderr: String::new(),
             process_exit: None,
             process_signal: None,
