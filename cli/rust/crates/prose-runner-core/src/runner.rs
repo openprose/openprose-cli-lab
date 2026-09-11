@@ -2667,7 +2667,7 @@ fn native_configuration(config:&EffectiveConfig,records:Option<&[Value]>)->Optio
         .map(|v|json!({"tools":v.get("tools").cloned().unwrap_or(Value::Null),"apiKeySource":v.get("apiKeySource").cloned().unwrap_or(Value::Null)}));
     Some(json!({"profile":config.native_profile.value,"toolsRequested":["Read","Write","Edit","Glob","Grep","Agent","Bash"],
         "additionalDirectories":config.native_add_dirs.value,"allowedToolRules":config.native_allow_tools.value,
-        "permissionMode":config.permission_mode.value,"authProfile":config.auth_profile.value,
+        "permissionMode":config.permission_mode.value,"authProfile":config.auth_profile.value.as_deref().unwrap_or("claude-subscription"),
         "configOwnership":if config.auth_profile.value.as_deref()==Some("anthropic-api-key"){"runner-private"}else{"native-auth-store"},"observed":observed}))
 }
 fn validate_native_auth(config:&EffectiveConfig,records:&[Value])->Result<(),RunnerError>{
