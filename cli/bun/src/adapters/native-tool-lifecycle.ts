@@ -32,6 +32,10 @@ export class NativeToolLifecycle {
   private lastStop: string | null = null;
   constructor(private readonly omp: boolean) {}
 
+  get phase(): "tool-await-agent-start" | "tool-await-next-turn" | "tool-message-open" | "tool-turn-open" | "tool-await-agent-end" | "complete" {
+    return this.ended ? "complete" : !this.started ? "tool-await-agent-start" : this.open ? "tool-message-open" : this.turn ? "tool-turn-open" : this.lastStop === "toolUse" ? "tool-await-next-turn" : "tool-await-agent-end";
+  }
+
   private sameMessage(a: any,b: any): boolean {
     if (!this.omp) return same(a,b);
     const x={...a},y={...b};delete x.completedAt;delete y.completedAt;
@@ -52,6 +56,13 @@ export class NativeToolLifecycle {
         return null;
       case "message_start": {
         const m = object(r.message);
+        // Prime 0.7 has emitted this boundary without its turn_start marker.
+        // Only a fully settled tool turn permits this empty assistant start.
+        if (!this.omp && this.started && !this.turn && !this.open && this.lastStop === "toolUse"
+          && m.role === "assistant" && Array.isArray(m.content) && m.content.length === 0
+          && this.calls.size > 0 && [...this.calls.values()].every(c=>c.state==="reported")) {
+          this.turn=true; this.assistant=null; this.calls.clear(); this.results=[];
+        }
         if (!this.turn || this.open) bad();
         if (m.role === "user") { if (this.user || this.assistant) bad(); }
         else if (m.role === "assistant") { if (!this.user || this.assistant) bad(); this.blockTypes.clear(); }

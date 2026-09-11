@@ -72,6 +72,12 @@ export interface ProcessSupervisionResult {
 }
 
 export type PrimeParserPhase =
+  | "tool-await-agent-start"
+  | "tool-await-next-turn"
+  | "tool-message-open"
+  | "tool-turn-open"
+  | "tool-await-agent-end"
+
   | "await-prompt-ack"
   | "await-agent-start"
   | "await-turn-start"

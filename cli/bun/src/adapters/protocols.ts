@@ -385,6 +385,7 @@ class PrimeProtocol extends InstalledProtocol {
   }
 
   private parserPhase(): PrimeParserPhase {
+    if (this.native) return this.native.phase;
     if (!this.acknowledged) return "await-prompt-ack";
     const phases: Record<PrimeLifecycle, PrimeParserPhase> = {
       "agent-start": "await-agent-start",

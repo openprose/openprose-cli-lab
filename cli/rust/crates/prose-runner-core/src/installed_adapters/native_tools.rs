@@ -64,7 +64,12 @@ pub(super) fn normalize(
     let mut texts = Vec::<String>::new();
     let mut block_types = BTreeMap::<usize, String>::new();
     let mut calls = BTreeMap::<String, (String, Value, u8, Option<Value>, Option<bool>)>::new();
-    for r in records {
+    for (record_index,r) in records.iter().enumerate() {
+        let phase=if ended {"complete"} else if !started {"tool-await-agent-start"} else if open.is_some() {"tool-message-open"} else if turn {"tool-turn-open"} else if last_stop.as_deref()==Some("toolUse") {"tool-await-next-turn"} else {"tool-await-agent-end"};
+        let bad=|| {
+            let error=RunnerError::catalog(ErrorCode::ProtocolMalformed);
+            if omp {error} else {error.with_detail("adapterDiagnostic",json!({"schema":"openprose.adapter-diagnostic/1","adapterId":"prime/rpc","stage":"prime-lifecycle","phase":phase,"counters":{"acceptedRecords":record_index.min(u32::MAX as usize),"thinkingDeltas":records[..record_index].iter().filter(|v|v.pointer("/assistantMessageEvent/type").and_then(Value::as_str)==Some("thinking_delta")).count().min(u32::MAX as usize),"textDeltas":records[..record_index].iter().filter(|v|v.pointer("/assistantMessageEvent/type").and_then(Value::as_str)==Some("text_delta")).count().min(u32::MAX as usize),"saturated":record_index>u32::MAX as usize}}))}
+        };
         if !r.is_object() || !prime_bounded_json(r, 0) {
             return Err(bad());
         }
@@ -164,6 +169,12 @@ pub(super) fn normalize(
             }
             "message_start" => {
                 let m = r.get("message").filter(|m| m.is_object()).ok_or_else(bad)?;
+                // Observed Prime boundary omission: preserve messages and require all prior tools settled.
+                if !omp && started && !turn && open.is_none() && last_stop.as_deref()==Some("toolUse")
+                    && m["role"]=="assistant" && m["content"].as_array().is_some_and(Vec::is_empty)
+                    && !calls.is_empty() && calls.values().all(|c|c.2==3) {
+                    turn=true;assistant=None;calls.clear();results.clear();
+                }
                 if !turn || open.is_some() {
                     return Err(bad());
                 }
@@ -446,4 +457,32 @@ fn omp_superseded_terminal_projection_preserves_tool_identity(){
  let mut summary=original.clone();summary["prunedAt"]=serde_json::json!(12);summary["content"]=serde_json::json!([{"type":"text","text":"[Superseded by a newer read of this file]"}]);
  assert!(same_message(&summary,&original,true));assert!(!same_message(&summary,&original,false));
  summary["toolCallId"]=serde_json::json!("invented");assert!(!same_message(&summary,&original,true));
+}
+
+#[test]
+fn prime_implicit_boundary_requires_settled_tools_and_native_terminal(){
+ let frames:Vec<Value>=serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/prime-implicit-turn.json")).unwrap();
+ assert!(normalize(&frames,"fixture-tools",false,true).is_ok());
+ assert!(normalize(&frames[..frames.len()-1],"fixture-tools",false,false).is_ok());
+ assert!(normalize(&frames[..frames.len()-1],"fixture-tools",false,true).is_err());
+ let boundary=(1..frames.len()).find(|&i|frames[i]["type"]=="message_start"&&frames[i-1]["type"]=="turn_end").unwrap();
+ for message in [json!({"role":"user","content":[]}),json!({"role":"assistant","content":[{"type":"text","text":"unexpected"}]})] {
+  let mut bad=frames.clone();bad[boundary]["message"]=message;
+  let error=normalize(&bad,"fixture-tools",false,true).unwrap_err();assert_eq!(serde_json::to_value(error).unwrap()["details"]["adapterDiagnostic"]["phase"],"tool-await-next-turn");
+ }
+ let mut pending=frames.clone();pending.remove(boundary-1);assert!(normalize(&pending,"fixture-tools",false,true).is_err());
+ let mut omp:Vec<Value>=serde_json::from_str(include_str!("../../../../../shared/fixtures/adapters/tool-lifecycle/omp.json")).unwrap();
+ let boundary=omp.iter().enumerate().filter(|(_,r)|r["type"]=="turn_start").nth(1).unwrap().0;omp.remove(boundary);assert!(normalize(&omp,"fixture-tools",true,true).is_err());
+}
+
+#[test]
+#[ignore = "Explicit provider-free replay path is supplied by developer"]
+fn prime_recorded_prefix_replay(){
+ let text=std::fs::read_to_string(std::env::var("PRIME_REPLAY_PATH").expect("replay path")).unwrap();
+ let mut frames:Vec<Value>=text.lines().map(|l|serde_json::from_str(l).unwrap()).collect();let id=frames[0]["id"].as_str().unwrap().to_owned();
+ assert!(normalize(&frames,&id,false,false).is_ok());assert!(normalize(&frames,&id,false,true).is_err());
+ let mut message=frames.last().unwrap()["message"].clone();message["content"]=json!([{"type":"text","text":"synthetic continuation"}]);message["stopReason"]=json!("stop");
+ let mut history:Vec<Value>=frames.iter().filter(|r|r["type"]=="message_end").map(|r|r["message"].clone()).collect();history.push(message.clone());
+ frames.push(json!({"type":"message_end","message":message}));frames.push(json!({"type":"turn_end","message":message,"toolResults":[]}));
+ assert!(normalize(&frames,&id,false,true).is_err());frames.push(json!({"type":"agent_end","messages":history}));assert!(normalize(&frames,&id,false,true).is_ok());
 }

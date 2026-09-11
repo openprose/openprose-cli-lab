@@ -12,6 +12,7 @@
     "phase": {
       "enum": [
         "record-boundary",
+        "tool-await-agent-start","tool-await-next-turn","tool-message-open","tool-turn-open","tool-await-agent-end",
         "await-prompt-ack",
         "await-agent-start",
         "await-turn-start",
@@ -52,7 +53,8 @@
         "stage": { "const": "prime-lifecycle" },
         "phase": {
           "enum": [
-            "await-prompt-ack",
+            "tool-await-agent-start","tool-await-next-turn","tool-message-open","tool-turn-open","tool-await-agent-end",
+        "await-prompt-ack",
             "await-agent-start",
             "await-turn-start",
             "await-user-message-start",
