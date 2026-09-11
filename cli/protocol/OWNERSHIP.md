@@ -267,3 +267,5 @@ release admission.
 Owner cli_recon; exact paths cli/bun/src/adapters/protocols.ts, cli/bun/test/claude-protocol.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs, cli/shared/fixtures/adapters/claude-thinking-tokens.json. Scope: telemetry transport compatibility only. Approved by expedition lead; no language semantics.
 
 Lease extension cli_recon: cli/rust/crates/prose-process-supervisor/src/supervisor.rs; generic framing permits explicitly declared repeated event type, semantic normalizer still rejects duplicate init.
+
+Lease cli_recon API route: cli/shared/capabilities/adapters/oracle.v1.json, cli/bun/src/adapters/{executable,plan}.ts, cli/bun/test/claude-api.test.ts, cli/rust/crates/prose-runner-core/src/installed_adapters.rs. Explicit Claude API-key provider route; no language semantics.

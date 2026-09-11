@@ -177,7 +177,7 @@ impl InstalledAdapter {
                 "openai-api-key",
                 "codex-access-token",
             ],
-            Self::ClaudePrintStreamJson => &["claude-subscription"],
+            Self::ClaudePrintStreamJson => &["claude-subscription", "anthropic-api-key"],
             Self::PrimeRpc => &[
                 "prime-harness-login",
                 "anthropic",
@@ -2935,7 +2935,8 @@ fn credential_names(
         (InstalledAdapter::ClaudePrintStreamJson, "claude-subscription")
         | (InstalledAdapter::PrimeRpc, "prime-harness-login")
         | (InstalledAdapter::OmpRpc, "omp-harness-login") => Some(&[]),
-        (InstalledAdapter::PrimeRpc, "anthropic") => Some(&["ANTHROPIC_API_KEY"]),
+        (InstalledAdapter::ClaudePrintStreamJson, "anthropic-api-key")
+        | (InstalledAdapter::PrimeRpc, "anthropic") => Some(&["ANTHROPIC_API_KEY"]),
         (InstalledAdapter::OmpRpc, "anthropic") => {
             Some(&["ANTHROPIC_API_KEY", "ANTHROPIC_OAUTH_TOKEN"])
         }
@@ -3041,6 +3042,7 @@ pub fn prepare_launch(
                 "--append-system-prompt-file".into(),
                 image_path,
             ];
+            if auth_group == "anthropic-api-key" { argv.insert(0, "--bare".into()); }
             append_model(&mut argv, model);
             argv.push(task_json.into());
             (argv, None)
@@ -6318,4 +6320,18 @@ mod tests {
             );
         }
     }
+    #[test]
+    fn claude_api_profile_is_explicit_and_requires_key() {
+        let adapter = InstalledAdapter::ClaudePrintStreamJson;
+        assert_eq!(credential_names(adapter,"anthropic-api-key"),Some(["ANTHROPIC_API_KEY"].as_slice()));
+        assert!(auth_readiness(adapter,"anthropic-api-key",&[]).is_err());
+        assert_eq!(auth_readiness(adapter,"anthropic-api-key",&[("ANTHROPIC_API_KEY".into(),"fixture-key".into())]).unwrap(),"unknown");
+        assert_eq!(credential_names(adapter,"claude-subscription"),Some([].as_slice()));
+        let root = TempDir::new().unwrap();
+        for group in ["anthropic-api-key", "claude-subscription"] {
+            let launch = prepare_launch(adapter,root.path().join("claude"),root.path(),&full_image(),FRAMING,TASK.as_bytes(),"fixture",None,group,empty_environment(adapter)).unwrap();
+            assert_eq!(launch.argv.iter().any(|arg| arg == "--bare"),group == "anthropic-api-key");
+        }
+    }
+
 }

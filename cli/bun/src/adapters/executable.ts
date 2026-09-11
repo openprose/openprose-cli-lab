@@ -275,6 +275,8 @@ export async function probeInstalledAdapterAuth(input: {
         reason: "The selected credential group has no admitted auth-readiness policy.",
       });
     }
+  } else if (input.credentialGroup === "anthropic-api-key") {
+    return "unknown";
   } else if (input.credentialGroup !== "claude-subscription") {
     throw failure("INTERNAL_ERROR", {
       adapterId: input.adapterId,

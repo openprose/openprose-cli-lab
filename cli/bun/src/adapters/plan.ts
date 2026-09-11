@@ -83,6 +83,9 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
     if (token.value === "image-utf8") assertInlineImage(value);
     argv.push(value);
   }
+  if (input.adapterId === "claude/print-stream-json" && input.credentialGroup === "anthropic-api-key") {
+    argv.splice(1, 0, "--bare");
+  }
   assertInstalledAdapterArgv(input.adapterId, argv, { platform: input.platform, arch: input.arch });
   let stdinBytes: Uint8Array | null = null;
   let renderedPayloadSha256: string | null = null;

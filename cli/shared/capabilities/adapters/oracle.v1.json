@@ -368,12 +368,14 @@
         "localObservedVersion": "2.1.243"
       },
       "credentialGroups": {
-        "claude-subscription": []
+        "claude-subscription": [],
+        "anthropic-api-key": ["ANTHROPIC_API_KEY"]
       },
       "credentialRequirements": {
-        "claude-subscription": { "kind": "probe-owned" }
+        "claude-subscription": { "kind": "probe-owned" },
+        "anthropic-api-key": { "kind": "any-nonempty", "alternatives": [["ANTHROPIC_API_KEY"]] }
       },
-      "forcedStrips": [
+      "subscriptionOnlyStrips": [
         "ANTHROPIC_API_KEY",
         "ANTHROPIC_AUTH_TOKEN",
         "ANTHROPIC_BASE_URL",
