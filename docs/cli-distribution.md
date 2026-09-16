@@ -81,8 +81,9 @@ The initial rehearsal stopped because the active Python interpreter lacked the
 pinned contract dependencies. Using the prepared virtual environment proceeded
 through builds and then failed at packaging because root `LICENSE` is absent.
 Rust metadata and npm package generation declare MIT; the kernel repository
-already carries MIT with Copyright (c) 2026 OpenProse. License confirmation and
-the actual file are pending; no placeholder legal text was substituted.
+already carries MIT with Copyright (c) 2026 OpenProse. The user subsequently approved MIT; the standard license text and existing
+2026 OpenProse copyright notice are now included at repository root.
+The packaging rehearsal is being repeated with that correction.
 
 Before public release: finish the npm-name migration and ownership checks,
 restore or replace missing release/promotion authorities, qualify the actual
