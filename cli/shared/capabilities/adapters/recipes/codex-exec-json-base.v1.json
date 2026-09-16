@@ -1,0 +1,146 @@
+{
+  "schema": "openprose.adapter-admission-recipe/1",
+  "recipeVersion": "codex-exec-json-base-v1",
+  "adapterId": "codex/exec-json",
+  "state": "frozen",
+  "runtime": "installed-process",
+  "identity": {
+    "kind": "executable",
+    "executableNames": [
+      "codex"
+    ],
+    "packageIdentity": "@openai/codex"
+  },
+  "support": {
+    "versionRange": "=0.149.0-alpha.4.1",
+    "admittedVersions": [
+      "0.149.0-alpha.4.1"
+    ],
+    "repairCommand": "npm install --global @openai/codex@0.149.0-alpha.4.1",
+    "platforms": [
+      "darwin-arm64",
+      "darwin-x64",
+      "linux-arm64-musl",
+      "linux-x64-musl",
+      "win32-x64"
+    ]
+  },
+  "probe": {
+    "argv": [
+      {
+        "value": "executable"
+      },
+      {
+        "literal": "--version"
+      }
+    ],
+    "timeoutMs": 5000,
+    "versionPattern": "^codex-cli [0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$",
+    "versionStream": "stdout"
+  },
+  "launch": {
+    "argv": [
+      {
+        "value": "executable"
+      },
+      {
+        "literal": "exec"
+      },
+      {
+        "literal": "-c"
+      },
+      {
+        "value": "image-base-config"
+      },
+      {
+        "literal": "--skip-git-repo-check"
+      },
+      {
+        "literal": "--json"
+      },
+      {
+        "literal": "--ephemeral"
+      },
+      {
+        "literal": "--ignore-user-config"
+      },
+      {
+        "literal": "--ignore-rules"
+      },
+      {
+        "literal": "--cd"
+      },
+      {
+        "value": "cwd"
+      },
+      {
+        "literal": "-"
+      }
+    ],
+    "optionalArgv": [
+      {
+        "when": "model-present",
+        "placement": "before-final-argument",
+        "argv": [
+          {
+            "literal": "--model"
+          },
+          {
+            "value": "model"
+          }
+        ]
+      }
+    ],
+    "interactionMode": "non-interactive",
+    "shell": false,
+    "outerPty": false,
+    "stdin": "structured-request",
+    "stdinLifecycle": "close-after-write",
+    "stdoutProtocol": "jsonl",
+    "stderr": "diagnostics-only",
+    "instructionPlacement": {
+      "manifestPlacementId": "model-base",
+      "strictness": "strict",
+      "preservesHarnessBasePrompt": false
+    },
+    "imageDelivery": {
+      "mechanism": "native-config",
+      "field": "model_instructions_file",
+      "encoding": "toml-basic-string"
+    },
+    "taskDelivery": {
+      "mechanism": "stdin",
+      "field": "stdin",
+      "encoding": "json-utf8"
+    }
+  },
+  "isolation": {
+    "guarantee": "unsupported",
+    "ambientDisabled": [],
+    "preserved": [
+      "managed-policy",
+      "selected-permissions",
+      "harness-auth"
+    ]
+  },
+  "cancellation": {
+    "protocol": "signal",
+    "containment": "unsupported",
+    "graceMs": 2000,
+    "hardKillAfterMs": 5000
+  },
+  "auth": {
+    "category": "harness-managed",
+    "readinessProbe": "codex login status",
+    "secretsInArgv": false
+  },
+  "billingOwner": "user-provider",
+  "requiredTerminal": {
+    "event": "turn.completed",
+    "acceptableExitCodes": [
+      0
+    ],
+    "eofWithoutEvent": "protocol-error"
+  },
+  "admissionClaims": []
+}

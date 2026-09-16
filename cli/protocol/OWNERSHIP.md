@@ -332,3 +332,9 @@ Decision 030 lease: cli_recon owns cli/bun/src/adapters/native-tool-lifecycle.ts
 ## Decision 032 isolated lease
 Root authorized eval_design on codex/decision-032-omp-task-defaults: bun/src/adapters/{native-tool-lifecycle,protocols}.ts, bun/test/omp-task-defaults.test.ts, rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs, shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json; branch-only commits/builds. No main mutation or live calls.
 Root expanded decision032 lease to rust/crates/prose-runner-core/src/runner.rs for minimal retained negotiated-default projection. Preserve duplicate inventory entries; final corrected freeze v27, v26 evidence retained.
+
+## IMP-008 isolated comparison lease — September 16, 2026
+
+Codex is the user-assigned IMP-008 task lead in isolated branch `codex/imp-008-cli-hello-world`; no edits to other contributors' worktrees or main. The user approved comparing additional Codex developer instructions with replacement base instructions, preserving exact harness admission and separate opaque task delivery. Root owns this branch's Git/integration operations and this lease record.
+
+Active exact paths: `cli/protocol/OWNERSHIP.md`; `cli/shared/capabilities/adapters/recipes/codex-exec-json-developer.v1.json`; `cli/shared/capabilities/adapters/recipes/codex-exec-json-base.v1.json`; `cli/shared/fixtures/adapters/codex-instruction-placement.json`; `cli/bun/src/core/build.ts`; `cli/bun/src/adapters/types.ts`; `cli/bun/src/adapters/recipes.ts`; `cli/bun/src/adapters/plan.ts`; `cli/bun/scripts/image-bundle.ts`; `cli/bun/test/codex-instruction-placement.test.ts`; `docs/codex-instruction-placement.md`. Build outputs and installed locked dependencies are disposable ignored artifacts. Shared behavior is specified by the new fixture first. Bun is the sole experiment implementation; Rust parity and product-default promotion remain explicitly unimplemented. No kernel semantics or command mapping in the CLI.

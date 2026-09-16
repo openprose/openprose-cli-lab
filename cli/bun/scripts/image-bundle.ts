@@ -19,6 +19,7 @@ type Options = {
   buildVersion: string;
   windowsHostSha256: string;
   windowsHostAdmission: boolean;
+  codexInstructionPlacement: "framed" | "developer" | "base";
 };
 
 const bunRoot = resolve(import.meta.dir, "..");
@@ -31,6 +32,7 @@ function usage(): never {
   console.error(
     "usage: bun scripts/image-bundle.ts <check|build> [--image-dir PATH] [--bundle PATH] "
       + "[--checksum PATH] [--outfile PATH] [--require-release-eligible] [--test-seams] "
+      + "[--codex-instructions framed|developer|base] "
       + "| build-test [--outfile PATH]",
   );
   process.exit(2);
@@ -62,6 +64,7 @@ function options(argv: string[]): Options {
     buildVersion: process.env.OPENPROSE_BUILD_VERSION ?? packageManifest.version,
     windowsHostSha256: process.env.OPENPROSE_WINDOWS_HOST_SHA256 ?? "",
     windowsHostAdmission: process.env.OPENPROSE_WINDOWS_HOST_ADMISSION === "1",
+    codexInstructionPlacement: "framed",
   };
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
@@ -75,6 +78,12 @@ function options(argv: string[]): Options {
     if (argument === "--require-release-eligible") {
       result.requireReleaseEligible = true;
       result.buildProfile = "release";
+      continue;
+    }
+    if (argument === "--codex-instructions") {
+      const value = args[++index];
+      if (value !== "framed" && value !== "developer" && value !== "base") usage();
+      result.codexInstructionPlacement = value;
       continue;
     }
     if (argument === "--test-seams") {
@@ -173,6 +182,7 @@ async function compile(input: Options): Promise<void> {
       OPENPROSE_TEST_SEAMS: String(input.testSeams),
       OPENPROSE_WINDOWS_HOST_SHA256: JSON.stringify(input.windowsHostSha256),
       OPENPROSE_WINDOWS_HOST_ADMISSION: String(input.windowsHostAdmission),
+      OPENPROSE_CODEX_INSTRUCTION_PLACEMENT: JSON.stringify(input.codexInstructionPlacement),
     },
     compile: {
       // bun-types 1.3.5 omits the documented glibc x64 baseline spelling

@@ -12,6 +12,8 @@ export type RecipeValue =
   | "executable"
   | "image-path"
   | "image-utf8"
+  | "image-developer-config"
+  | "image-base-config"
   | "rendered-config-path"
   | "task-json"
   | "task-path"
