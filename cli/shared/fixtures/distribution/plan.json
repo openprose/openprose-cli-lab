@@ -1,0 +1,13 @@
+{
+  "schema": "openprose.cli-distribution/1",
+  "version": "0.15.0-dev.1",
+  "source": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "qualification": {
+    "status": "development",
+    "evidence": "https://github.com/openprose/openprose-expedition/tree/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/example"
+  },
+  "artifacts": [
+    {"name":"bun.tar.gz","sha256":"1111111111111111111111111111111111111111111111111111111111111111","size":100,"implementation":"bun","platform":"darwin-arm64","kind":"standalone"},
+    {"name":"rust.tar.gz","sha256":"2222222222222222222222222222222222222222222222222222222222222222","size":100,"implementation":"rust","platform":"darwin-arm64","kind":"standalone"}
+  ]
+}

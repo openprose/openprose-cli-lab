@@ -332,3 +332,7 @@ Decision 030 lease: cli_recon owns cli/bun/src/adapters/native-tool-lifecycle.ts
 ## Decision 032 isolated lease
 Root authorized eval_design on codex/decision-032-omp-task-defaults: bun/src/adapters/{native-tool-lifecycle,protocols}.ts, bun/test/omp-task-defaults.test.ts, rust/crates/prose-runner-core/src/installed_adapters/native_tools.rs, shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json; branch-only commits/builds. No main mutation or live calls.
 Root expanded decision032 lease to rust/crates/prose-runner-core/src/runner.rs for minimal retained negotiated-default projection. Preserve duplicate inventory entries; final corrected freeze v27, v26 evidence retained.
+
+## IMP-014 isolated worktree
+
+Codex task lead owns Git and integration on `codex/imp-014-cli-distribution`. Exact active paths: `.github/workflows/cli-distribution-check.yml`, `cli/ci/distribution_plan.py`, `cli/ci/test_distribution_plan.py`, `cli/shared/fixtures/distribution/plan.json`, `docs/cli-distribution.md`, and this registry. No IMP-008 runtime or lockfile paths are leased. Public naming remains a user decision; no registry or infrastructure publication is authorized.
