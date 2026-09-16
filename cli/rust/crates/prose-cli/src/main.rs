@@ -296,7 +296,15 @@ fn prepare(
         }
     };
     let mode = prose_runner_core::runner::action_output_mode(&parsed, &config);
-    let image = match embedded_runtime_image() {
+    let published_startup = prose_runner_core::kernel_startup::PUBLISHED_KERNEL_STARTUP
+        && matches!(parsed.action, Action::Forward { .. })
+        && prose_runner_core::installed_adapters::for_harness(&config.harness.value).is_some();
+    let selected_image = if published_startup {
+        prose_runner_core::kernel_startup::published_kernel(cancellation)
+    } else {
+        embedded_runtime_image()
+    };
+    let image = match selected_image {
         Ok(image) => image,
         Err(error) => return error_outcome(error, mode, &clock, &ids),
     };

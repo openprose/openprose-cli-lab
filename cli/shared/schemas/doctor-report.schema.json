@@ -7,6 +7,7 @@
   "required": ["schema", "runner", "build", "ready", "cwd", "selectedHarness", "selectedHarnessVersion", "selectedTransport", "selectedAdapterId", "promptPlacement", "isolation", "authCategory", "selectedAuthReadiness", "billingOwner", "image", "configuration", "harnesses", "problems"],
   "properties": {
     "schema": { "const": "openprose.doctor-report/1" },
+    "imageSource": { "const": "published-on-run", "description": "Kernel is resolved on language execution; image describes only the embedded local diagnostic fixture." },
     "runner": {
       "type": "object",
       "additionalProperties": false,

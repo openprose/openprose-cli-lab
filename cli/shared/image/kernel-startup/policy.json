@@ -1,0 +1,8 @@
+{
+  "entry": "https://pkg.prose.md/kernel.md",
+  "origin": "https://pkg.prose.md",
+  "timeoutMs": 15000,
+  "maxMetadataBytes": 262144,
+  "maxKernelBytes": 32768,
+  "userAgent": "OpenProse/0.1"
+}

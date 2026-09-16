@@ -20,6 +20,7 @@ type Options = {
   windowsHostSha256: string;
   windowsHostAdmission: boolean;
   codexInstructionPlacement: "framed" | "developer" | "base";
+  publishedKernelStartup: boolean;
 };
 
 const bunRoot = resolve(import.meta.dir, "..");
@@ -64,7 +65,8 @@ function options(argv: string[]): Options {
     buildVersion: process.env.OPENPROSE_BUILD_VERSION ?? packageManifest.version,
     windowsHostSha256: process.env.OPENPROSE_WINDOWS_HOST_SHA256 ?? "",
     windowsHostAdmission: process.env.OPENPROSE_WINDOWS_HOST_ADMISSION === "1",
-    codexInstructionPlacement: "framed",
+    codexInstructionPlacement: testOnly || args.includes("--test-seams") ? "framed" : "developer",
+    publishedKernelStartup: !testOnly && !args.some(a => ["--image-dir", "--bundle", "--checksum", "--test-seams"].includes(a)),
   };
   for (let index = 0; index < args.length; index += 1) {
     const argument = args[index]!;
@@ -98,6 +100,10 @@ function options(argv: string[]): Options {
   }
   if (testOnly && result.outfile === resolve(bunRoot, "dist/prose")) {
     console.error("image-bundle: build-test must not overwrite the ordinary dist/prose build");
+    process.exit(2);
+  }
+  if (result.publishedKernelStartup && (result.requireReleaseEligible || result.codexInstructionPlacement !== "developer")) {
+    console.error("image-bundle: published startup requires developer append and is not release-qualified; select an explicit image for other builds");
     process.exit(2);
   }
   if (result.requireReleaseEligible && result.testSeams) {
@@ -183,6 +189,7 @@ async function compile(input: Options): Promise<void> {
       OPENPROSE_WINDOWS_HOST_SHA256: JSON.stringify(input.windowsHostSha256),
       OPENPROSE_WINDOWS_HOST_ADMISSION: String(input.windowsHostAdmission),
       OPENPROSE_CODEX_INSTRUCTION_PLACEMENT: JSON.stringify(input.codexInstructionPlacement),
+      OPENPROSE_KERNEL_STARTUP: String(input.publishedKernelStartup),
     },
     compile: {
       // bun-types 1.3.5 omits the documented glibc x64 baseline spelling

@@ -441,7 +441,7 @@ fn execute_runner_command(
                 .find(|status| status.id == config.harness.value);
             let ready = problem.is_none();
             let exit_code = problem.as_ref().map_or(0, |error| error.exit_code);
-            let report = json!({
+            let mut report = json!({
                 "schema": "openprose.doctor-report/1",
                 "runner": {"name":RUNNER_NAME,"version":RUNNER_VERSION,"commit":RUNNER_COMMIT},
                 "build": {"profile":BUILD_PROFILE,"testSeamsEnabled":TEST_SEAMS_ENABLED},
@@ -466,6 +466,9 @@ fn execute_runner_command(
                 "configuration": config_report(config),
                 "harnesses": statuses
             });
+            if crate::kernel_startup::PUBLISHED_KERNEL_STARTUP && !cfg!(test) {
+                report["imageSource"] = json!("published-on-run");
+            }
             if mode == OutputMode::Human {
                 let readiness = human_readiness_label(ready, auth_readiness, "not ready");
                 let mut output = format!(

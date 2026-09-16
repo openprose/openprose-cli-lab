@@ -29,12 +29,13 @@ test("shared Codex placements preserve task boundaries and exact native configur
       platform: "darwin", arch: "arm64", codexInstructionPlacement: mode,
     });
     const configValue = expected.configValue === "image" ? fixture.image : fixture.imagePath;
-    const configArg = expected.configKey + "=" + JSON.stringify(configValue);
+    const configArg = expected.configKey + "=" + JSON.stringify(configValue).replaceAll("\u007f", "\\u007f");
     expect(plan.argv).toContain(configArg);
     expect(plan.argv.indexOf(configArg)).toBeGreaterThan(plan.argv.indexOf("exec"));
     expect(plan.argv[plan.argv.indexOf(configArg) - 1]).toBe("-c");
     expect(plan.argv).toContain("workspace-write");
     expect(JSON.parse(configArg.slice(configArg.indexOf("=") + 1))).toBe(configValue);
+    expect((Bun.TOML.parse(configArg) as Record<string, unknown>)[expected.configKey]).toBe(configValue);
     expect(new TextDecoder().decode(plan.stdinBytes!)).toBe(taskBytes);
     expect(new TextDecoder().decode(plan.stdinBytes!)).not.toContain(fixture.image);
     expect(plan.renderedPayloadSha256).toBe(await sha256(taskBytes));

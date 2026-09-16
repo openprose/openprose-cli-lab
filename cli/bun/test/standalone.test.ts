@@ -45,6 +45,7 @@ beforeAll(async () => {
     process.execPath,
     "run",
     "build",
+    "--image-dir", resolve(workspace,"../shared/image/echo-v0"),
   ], {
     cwd: workspace,
     stdout: "pipe",

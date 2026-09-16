@@ -52,3 +52,7 @@ export const WINDOWS_HOST_EXPECTED_SHA256 = /^[0-9a-f]{64}$/.test(compiledWindow
 // helper self-report can never turn the Windows path on.
 export const WINDOWS_HOST_ADMISSION_ENABLED =
   typeof OPENPROSE_WINDOWS_HOST_ADMISSION === "boolean" ? OPENPROSE_WINDOWS_HOST_ADMISSION : false;
+
+
+declare const OPENPROSE_KERNEL_STARTUP: boolean | undefined;
+export const PUBLISHED_KERNEL_STARTUP = typeof OPENPROSE_KERNEL_STARTUP === "boolean" ? OPENPROSE_KERNEL_STARTUP : false;

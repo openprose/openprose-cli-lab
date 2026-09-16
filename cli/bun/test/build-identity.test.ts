@@ -27,8 +27,8 @@ describe("standalone build identity and seam exclusion", () => {
     ].join("\n"));
   });
 
-  test("public release build admits the release-eligible functional-alpha placeholder", async () => {
-    const result = await run([process.execPath, "run", "build:release"], bunRoot);
+  test("explicit placeholder release build retains its structural release gate", async () => {
+    const result = await run([process.execPath, "run", "build:release", "--image-dir", resolve(bunRoot,"../shared/image/echo-v0")], bunRoot);
     expect(result.exitCode, result.stderr).toBe(0);
     const executable = join(bunRoot, "dist", process.platform === "win32" ? "prose.exe" : "prose");
     const doctor = await run([executable, "--output=json", "cli", "doctor"], bunRoot);
@@ -37,6 +37,12 @@ describe("standalone build identity and seam exclusion", () => {
       image: { version: "echo-v0", releaseEligible: true },
       build: { profile: "release", testSeamsEnabled: false },
     });
+  });
+
+  test("moving published startup cannot pass the release-image gate", async () => {
+    const result=await run([process.execPath,buildScript,"build","--require-release-eligible"],bunRoot);
+    expect(result.exitCode).toBe(2);
+    expect(result.stderr).toContain("not release-qualified");
   });
 
   test("ordinary build matches Rust's development profile without test seams", async () => {
@@ -362,6 +368,7 @@ async function build(outfile: string, commit: string, version?: string): Promise
     "--outfile",
     outfile,
     "--require-release-eligible",
+    "--image-dir", resolve(bunRoot,"../shared/image/echo-v0"),
   ], bunRoot, {
     OPENPROSE_BUILD_COMMIT: commit,
     ...(version === undefined ? {} : { OPENPROSE_BUILD_VERSION: version }),

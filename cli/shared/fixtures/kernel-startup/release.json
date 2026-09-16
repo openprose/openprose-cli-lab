@@ -1,0 +1,24 @@
+{
+  "responses": {
+    "https://pkg.prose.md/kernel.md": {
+      "status": 302,
+      "location": "https://pkg.prose.md/releases/fixture-1/core/README.md",
+      "text": ""
+    },
+    "https://pkg.prose.md/releases/fixture-1/core/descriptor.json": {
+      "status": 200,
+      "text": "{\"identity\": \"openprose/core\", \"release\": \"fixture-1\", \"exports\": {\"entry\": \"README.md\"}, \"inventory\": \"releases/fixture-1/core/inventory.json\", \"inventory_sha256\": \"084c47dc4dd6084a24640bd9e25a1709bd72f84ec6e402fc23703132f06b7154\", \"source\": {\"commit\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}}"
+    },
+    "https://pkg.prose.md/releases/fixture-1/core/inventory.json": {
+      "status": 200,
+      "text": "{\"README.md\": {\"mode\": \"100644\", \"sha256\": \"3d9beb296067894962d3d2fc37e15ff734e472fe6ab583118a285edbff65c85e\"}}"
+    },
+    "https://pkg.prose.md/releases/fixture-1/core/README.md": {
+      "status": 200,
+      "text": "# Provider-free kernel fixture\n"
+    }
+  },
+  "kernel": "# Provider-free kernel fixture\n",
+  "sha256": "3d9beb296067894962d3d2fc37e15ff734e472fe6ab583118a285edbff65c85e",
+  "release": "fixture-1"
+}

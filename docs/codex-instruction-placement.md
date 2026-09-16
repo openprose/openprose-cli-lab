@@ -1,6 +1,6 @@
 # Codex instruction-placement comparison
 
-Status: experimental Bun build selection for IMP-008. Ordinary builds retain their existing framed-user default. Rust does not implement these alternatives. No strict-wrapper admission or product-default promotion follows from this change.
+Status: the original IMP-008 Bun comparison is retained as historical context. The subsequent [startup parity candidate](kernel-startup.md) makes append the ordinary compiled default in Bun and Rust. Replacement/framed alternatives remain explicit-image Bun experiments. No strict-wrapper admission or release promotion follows from these changes.
 
 The build script accepts `--codex-instructions developer` or `--codex-instructions base` alongside its existing verified image arguments. The selection is compiled into the executable; runtime environment variables do not change it. `framed` is the unchanged default.
 

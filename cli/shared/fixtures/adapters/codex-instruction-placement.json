@@ -1,6 +1,6 @@
 {
   "schema": "openprose.codex-instruction-placement-fixture/1",
-  "image": "Kernel marker: \"quotes\", backslash \\, newline\nUnicode: 雪\n",
+  "image": "Kernel marker: \"quotes\", backslash \\, newline\nUnicode: 雪\nDEL: \n",
   "imagePath": "/tmp/private image 雪.md",
   "task": {
     "argv": [

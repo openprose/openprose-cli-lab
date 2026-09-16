@@ -1,0 +1,52 @@
+{
+  "schema": "openprose.kernel-startup-fixture/1",
+  "default": "published-kernel",
+  "preservesCustomImageBuilds": true,
+  "networkForHelpAndConfig": false,
+  "entry": "https://pkg.prose.md/kernel.md",
+  "instructionChannels": {
+    "codex/exec-json": "developer",
+    "claude/print-stream-json": "system-append",
+    "prime/rpc": "system-append",
+    "omp/rpc": "system-append",
+    "agents-sdk/jsonl": "system-append"
+  },
+  "outputContract": "native",
+  "failurePolicy": "no-echo-or-provider-fallback",
+  "modelCalls": false,
+  "credentialRoutes": {
+    "codex": [
+      "cached-chatgpt-login",
+      "openai-api-key"
+    ],
+    "claude": [
+      "anthropic-api-key"
+    ],
+    "prime": [
+      "anthropic",
+      "openai",
+      "openrouter"
+    ],
+    "omp": [
+      "anthropic",
+      "openai",
+      "openrouter"
+    ],
+    "agents-sdk": [
+      "openai-api-key"
+    ]
+  },
+  "cases": [
+    "verified-release",
+    "redirect-outside-origin",
+    "unsafe-release-path",
+    "missing-redirect",
+    "descriptor-identity-mismatch",
+    "inventory-hash-mismatch",
+    "kernel-hash-mismatch",
+    "invalid-utf8",
+    "oversize",
+    "timeout",
+    "http-failure"
+  ]
+}
