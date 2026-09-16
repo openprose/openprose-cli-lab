@@ -112,4 +112,21 @@ Before public release: finish the npm-name migration and ownership checks,
 restore or replace missing release/promotion authorities, qualify the actual
 IMP-008 artifact set, pass native installation lanes, decide macOS signing and
 notarization, verify dependency notices, and configure publication credentials.
-No model runs, registry changes or global installations occurred in this work.
+No model runs, registry changes or global Prose installations occurred in this work.
+Build/test toolchains were prepared separately in temporary directories.
+
+
+## Current local handoff
+
+[Retained validation](validation/imp-014/README.md) records passing suites,
+corrected failures, exact tool versions and limitations. The complete local
+rehearsal passes on macOS arm64. `rehearse_npm_identity.py PACKAGE --out FRESH`
+then repackages the verified Bun archive under the preferred npm identity,
+installs the exact local tarball pair with scripts and registry access disabled,
+and verifies the launched version. The Actions workflow includes that step.
+No global CLI installation is required.
+
+Implementation branches remain local until GitHub CLI authorization includes
+`workflow`. Run `gh auth refresh -h github.com -s workflow` as the signed-in
+operator, then push `codex/imp-014-cli-distribution` in CLI and distribution and
+open their draft PRs. Push is not deployment or publication authorization.
