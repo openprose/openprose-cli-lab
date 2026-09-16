@@ -335,4 +335,9 @@ Root expanded decision032 lease to rust/crates/prose-runner-core/src/runner.rs f
 
 ## IMP-014 isolated worktree
 
-Codex task lead owns Git and integration on `codex/imp-014-cli-distribution`. Exact active paths: `LICENSE`, `.github/workflows/cli-distribution-check.yml`, `cli/ci/distribution_plan.py`, `cli/ci/test_distribution_plan.py`, `cli/shared/fixtures/distribution/plan.json`, `docs/cli-distribution.md`, and this registry. No IMP-008 runtime or lockfile paths are leased. Public naming remains a user decision; no registry or infrastructure publication is authorized.
+Codex task lead owns Git and integration on `codex/imp-014-cli-distribution`. Exact active paths: `cli/rust/crates/prose-process-supervisor/src/framing.rs`, `cli/rust/crates/prose-process-supervisor/src/supervisor.rs`, `cli/rust/crates/prose-process-supervisor/src/windows_supervision.rs` (truncated-message pattern only), `cli/bun/src/cli.ts` (fake-process diagnostics only), `cli/bun/src/supervision/fake-failure.ts`, `cli/bun/test/fake-failure.test.ts`, `cli/conformance/cases/transport/fake-malformed.json`, `cli/conformance/cases/transport/fake-nonzero.json`, `cli/conformance/cases/transport/fake-truncated.json`, `cli/ci/package_local.py`, `cli/ci/test_npm_identity.py`, `LICENSE`, `.github/workflows/cli-distribution-check.yml`, `cli/ci/distribution_plan.py`, `cli/ci/test_distribution_plan.py`, `cli/shared/fixtures/distribution/plan.json`, `docs/cli-distribution.md`, and this registry. No IMP-008 runtime or lockfile paths are leased. Public naming remains a user decision; no registry or infrastructure publication is authorized.
+
+The diagnostic correction touches `cli/bun/src/cli.ts`, also changed by IMP-008,
+but only the fake-process result details. Supervisor diagnostic and settlement
+changes are in independent files. Check a three-way merge before integration;
+preserve both ownership entries. No IMP-008 worktree was edited.

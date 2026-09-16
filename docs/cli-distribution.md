@@ -4,7 +4,9 @@ This branch is independent of IMP-008 startup changes. It adds a provider-free
 Actions rehearsal for the existing packager and an adapter that exports verified
 package bytes to the distribution repository's reviewed-plan format. It does
 not publish npm, create GitHub releases, deploy the endpoint or change kernel
-startup. Runtime source and dependency locks are unchanged.
+startup. Dependency locks and IMP-008 startup behavior are unchanged. Rehearsal uncovered
+pre-existing fake-transport diagnostic drift and a bounded reader-settlement
+timing problem; the focused fixes and their shared cases are included here.
 
 ## Installation strategy and naming
 
@@ -12,10 +14,14 @@ The user's preferred public npm identity is `@openprose/prose`, subject to
 ownership and registry checks. On September 16, 2026, public `npm view` returned
 not found or inaccessible for that name; this is not proof of availability.
 `@openprose/prose-cli` currently reports latest `0.14.0` without a deprecation
-field for that version. Existing packaging and launcher integrity checks still
-use the latter name. A reviewed, tested migration must update the package,
-platform packages, launcher identity, registry-lineage authority and promotion
-checks together. Do not publish an alternative name or deprecate the old package
+field for that version. Legacy packaging defaults and release authorities still use the latter name.
+The packager now supports `--npm-package-name @openprose/prose` for explicit
+development rehearsals: meta/platform identities, launcher root binding,
+launcher self-digest and generated installation instructions change together.
+The new identity installed offline and preserved child exit status in a
+provider-free test; the actual Bun candidate also launched through that install.
+Non-development publication under the new name remains blocked until registry
+lineage and promotion authority are reviewed. Do not publish an alternative name or deprecate the old package
 without owner approval. Do not overwrite old versions.
 
 Standalone Bun and Rust downloads remain available independently. Proposed
@@ -30,11 +36,11 @@ separate prerelease formula policy is agreed.
 
 ## Local build and installation rehearsal
 
-Install Rust 1.87.0, Bun 1.3.5, Node 24.20.0 and Python 3.11. Install the hashed
+Install Rust 1.87.0, Bun 1.3.5, Node 24.20.0 and Python 3.10.20. Install the hashed
 Python requirements in a private virtual environment, and the frozen Bun lock:
 
 ```sh
-python3 -m venv .venv-distribution
+python3.10 -m venv .venv-distribution
 . .venv-distribution/bin/activate
 python3 -m pip install --require-hashes --only-binary=:all: -r cli/ci/requirements-test.txt
 (cd cli/bun && bun install --frozen-lockfile --ignore-scripts)
@@ -76,14 +82,31 @@ checksums nor a pinned CLI guarantee a pinned kernel; record both selections.
 
 ## Observed blockers and validation
 
-Local export tests pass (four tests); Actions syntax passes actionlint 1.7.12.
+Local export tests pass (four tests), and npm identity tests pass (three tests,
+including an offline installation and failure exit propagation). Actions syntax
+passes actionlint 1.7.12.
 The initial rehearsal stopped because the active Python interpreter lacked the
 pinned contract dependencies. Using the prepared virtual environment proceeded
 through builds and then failed at packaging because root `LICENSE` is absent.
 Rust metadata and npm package generation declare MIT; the kernel repository
 already carries MIT with Copyright (c) 2026 OpenProse. The user subsequently approved MIT; the standard license text and existing
 2026 OpenProse copyright notice are now included at repository root.
-The packaging rehearsal is being repeated with that correction.
+The subsequent rehearsal found a Python 3.9 `Path.write_text` incompatibility;
+Python 3.11 was also incompatible with the retained wheel-hash set. Python
+3.10.20 matches the existing pinned dependency set and is now the workflow pin.
+
+The next complete rehearsal reached cross-product checks and exposed missing
+fake-transport diagnostics in Bun and missing byte counts in Rust. Shared
+cases now require the same closed reasons, admitted-record counts and bounded
+byte counts. Those targeted changes let the three installed surfaces pass all
+144 candidate/case validations in the local one-trial rehearsal. This remains
+development sentinel evidence, not a kernel or release qualification.
+
+The Rust supervisor's existing backpressure test failed twice: sleeping one
+millisecond after empty polls could exhaust its 250 ms drain deadline. Waiting
+for a channel message within the same deadline fixes that behavior without
+extending the production timeout or reducing assertions. Retain the failures
+alongside the corrected test result.
 
 Before public release: finish the npm-name migration and ownership checks,
 restore or replace missing release/promotion authorities, qualify the actual

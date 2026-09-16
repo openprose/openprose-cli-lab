@@ -1781,8 +1781,28 @@ def npm_packages(
     mode: str,
     hello_example: bytes,
     windows_host: bytes | None = None,
+    *,
+    package_name: str = "@openprose/prose-cli",
 ) -> tuple[Path, Path]:
-    launcher = LAUNCHER.read_text("utf-8")
+    if package_name not in {"@openprose/prose-cli", "@openprose/prose"}:
+        raise PackageError("npm identity must be explicitly supported")
+    if package_name != "@openprose/prose-cli" and mode != "development":
+        raise PackageError("new npm identity requires separate release authority; development rehearsal only")
+
+    def identity(value: str) -> str:
+        return value.replace("@openprose/prose-cli", package_name)
+
+    def named_manifest(value: dict[str, Any]) -> dict[str, Any]:
+        # Only names in generated metadata are transformed. Binary/image bytes
+        # and existing release authorities are never rewritten.
+        return json.loads(identity(json.dumps(value)))
+
+    filename_prefix = package_name.removeprefix("@").replace("/", "-")
+    launcher = identity(LAUNCHER.read_text("utf-8"))
+    old_root_check = 'path.basename(metaRoot) !== "prose-cli"'
+    if launcher.count(old_root_check) != 1:
+        raise PackageError("npm launcher package-root binding changed")
+    launcher = launcher.replace(old_root_check, 'path.basename(metaRoot) !== ' + json.dumps(package_name.split('/')[1]))
     cohort = npm_cohort(
         mode=mode,
         version=version,
@@ -1797,15 +1817,15 @@ def npm_packages(
         "__OPENPROSE_COHORT__",
         json.dumps(cohort, sort_keys=True, separators=(",", ":")),
     ).encode()
-    meta = output / f"openprose-prose-cli-{version}.tgz"
-    readme = npm_readme(mode, version, platform_identifier)
+    meta = output / f"{filename_prefix}-{version}.tgz"
+    readme = identity(npm_readme(mode, version, platform_identifier).decode()).replace("openprose-prose-cli", filename_prefix).encode()
     require_exact_runner_self_invocation(readme, "npm README")
     tar_gz(
         meta,
         [
             (
                 "package/package.json",
-                pretty_json(npm_meta_manifest(version, cohort, launcher)),
+                pretty_json(named_manifest(npm_meta_manifest(version, cohort, launcher))),
                 0o644,
             ),
             ("package/bin/prose.js", launcher, 0o755),
@@ -1819,7 +1839,7 @@ def npm_packages(
         "prose.exe" if platform_identifier.startswith("win32-") else "prose"
     )
     platform_package = (
-        output / f"openprose-prose-cli-{platform_identifier}-{version}.tgz"
+        output / f"{filename_prefix}-{platform_identifier}-{version}.tgz"
     )
     tar_gz(
         platform_package,
@@ -1827,7 +1847,7 @@ def npm_packages(
             (
                 "package/package.json",
                 pretty_json(
-                    npm_platform_manifest(
+                    named_manifest(npm_platform_manifest(
                         version,
                         platform_identifier,
                         bun_binary,
@@ -1836,7 +1856,7 @@ def npm_packages(
                         cohort,
                         linux_runtime,
                         windows_host,
-                    )
+                    ))
                 ),
                 0o644,
             ),
@@ -2523,6 +2543,7 @@ def build(
             args.mode,
             hello_example,
             windows_host_bytes,
+            package_name=getattr(args, "npm_package_name", "@openprose/prose-cli"),
         )
         artifacts = [
             artifact_record(
@@ -2741,6 +2762,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument(
         "--mode", choices=("development", "alpha", "release"), required=True
     )
+    result.add_argument("--npm-package-name", choices=("@openprose/prose-cli", "@openprose/prose"), default="@openprose/prose-cli")
     result.add_argument("--version", required=True)
     result.add_argument("--source-revision", required=True)
     result.add_argument("--source-date-epoch", type=int, default=0)

@@ -1,3 +1,4 @@
+import { fakeProtocolFailureDetails } from "./supervision/fake-failure";
 import {nativeOutputLimits} from "./adapters/output-budget";
 import {nativeLimits} from "./adapters/sdk-limits";
 import { nativeConfiguration } from "./adapters/native-profile";
@@ -771,6 +772,7 @@ async function runFakeProcessInvocation(
     dependencies.writeStderr(mode === "human" ? humanSafeMultiline(outcome.stderr) : outcome.stderr);
   }
   let attemptedError = outcome.error === null ? null : failure(outcome.error.code, {
+    ...fakeProtocolFailureDetails(outcome),
     processExit: outcome.exitCode,
     processSignal: outcome.signal,
     terminalEventObserved: outcome.terminalEnvelope !== null,
