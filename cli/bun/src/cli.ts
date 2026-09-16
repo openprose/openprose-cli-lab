@@ -1,4 +1,3 @@
-import { fakeProtocolFailureDetails } from "./supervision/fake-failure";
 import {nativeOutputLimits} from "./adapters/output-budget";
 import {nativeLimits} from "./adapters/sdk-limits";
 import { nativeConfiguration } from "./adapters/native-profile";
@@ -15,6 +14,7 @@ import { uuidV7 } from "./core/ids";
 import { reportedConfigurationKeys, configurationExplanation, formatHumanError, humanAction, humanConfiguration, humanRunnerCommand, humanSafeMultiline, humanSafeScalar, humanVersionRepairDetails, jsonLine } from "./core/output";
 import { HumanAssistantStream } from "./core/human-stream";
 import { parseDurationMs, runFakeProcessTransport } from "./supervision/fake-transport";
+import { fakeProtocolFailureDetails } from "./supervision/fake-failure";
 import { collectSecretValues } from "./supervision/environment";
 import { encodeRuntimeImage } from "./supervision/files";
 import type { FakeProcessOptions, ProcessSupervisionResult, RawTransportEvent } from "./supervision/types";
