@@ -70,7 +70,11 @@ describe("CLI fake-process integration", () => {
       error: { code },
     });
     const details = JSON.parse(io.stdout()).error.details;
-    expect(Object.keys(details).sort()).toEqual(["processExit", "processSignal", "terminalEventObserved"]);
+    expect(Object.keys(details).sort()).toEqual([
+      "processExit", "processSignal", "terminalEventObserved",
+      ...(code === "PROTOCOL_MALFORMED" || code === "PROTOCOL_TRUNCATED"
+        ? ["admittedRecordCount", "reason", "transportDiagnostic"] : []),
+    ].sort());
     if (scenario === "malformed") {
       expect(details).toMatchObject({ processExit: 0, processSignal: null, terminalEventObserved: false });
     }
