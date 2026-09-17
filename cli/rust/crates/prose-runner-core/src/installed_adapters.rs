@@ -620,6 +620,7 @@ pub fn assert_platform_supported(
             },
         )
         .with_detail("hostArchitecture", arch.unwrap_or(host.arch))
+        .with_detail("supportedPlatforms", supported.clone())
         .with_detail("fallbackAttempted", false))
 }
 

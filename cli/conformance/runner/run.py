@@ -1647,7 +1647,8 @@ def expected_for_host(case: dict[str, Any], host_os: str | None = None,
         "action": "Run the exact Repair command reported with this error, then retry.",
         "exitCode": 10, "retryable": False,
         "details": {"adapterId": adapter, "hostPlatform": os_name,
-                    "hostArchitecture": arch, "fallbackAttempted": False},
+                    "hostArchitecture": arch, "supportedPlatforms": oracle["supportedPlatforms"][adapter],
+                    "fallbackAttempted": False},
     }
     expected.update(exitCode=10, startedHarness=False)
     expected.pop("forwardedTask", None)

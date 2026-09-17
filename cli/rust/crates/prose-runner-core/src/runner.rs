@@ -3837,7 +3837,10 @@ fn forward_error_outcome_with_diagnostic(
     } else {
         format!("{}/unavailable", config.harness.value)
     };
-    let descriptor_digest = sha256_hex(adapter_id.as_bytes());
+    let descriptor_digest = installed_adapters::for_harness(&config.harness.value).map_or_else(
+        || sha256_hex(adapter_id.as_bytes()),
+        |adapter| sha256_hex(adapter.recipe_json().as_bytes()),
+    );
     let (owner, auth_category) = match config.harness.value.as_str() {
         "openprose" => ("openprose", "openprose-account"),
         "mock" => ("test-fixture", "none-test-only"),
