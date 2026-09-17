@@ -1,0 +1,37 @@
+{
+  "schema": "openprose.codex-instruction-placement-fixture/1",
+  "image": "Kernel marker: \"quotes\", backslash \\, newline\nUnicode: 雪\nDEL: \n",
+  "imagePath": "/tmp/private image 雪.md",
+  "task": {
+    "argv": [
+      "prose",
+      "run",
+      "hello world.md",
+      "--literal"
+    ]
+  },
+  "placements": [
+    {
+      "mode": "developer",
+      "placementId": "developer",
+      "configKey": "developer_instructions",
+      "configValue": "image",
+      "preservesHarnessBasePrompt": true
+    },
+    {
+      "mode": "base",
+      "placementId": "model-base",
+      "configKey": "model_instructions_file",
+      "configValue": "imagePath",
+      "preservesHarnessBasePrompt": false
+    }
+  ],
+  "invariants": [
+    "task stdin contains only canonical task JSON",
+    "image is not in user stdin",
+    "configuration overrides belong after exec",
+    "same exact harness-version allowlist",
+    "same credential profile and sandbox",
+    "default framed recipe is unchanged"
+  ]
+}

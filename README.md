@@ -4,16 +4,16 @@ Two independent outer runners, Rust and Bun (packaged through npm), connect an o
 
 ## Choose the image and output contract
 
-Unconfigured builds embed `echo-v0`, a deliberately nonsemantic transport fixture. Running that image does not execute the language. To run a language directory, build with a verified image whose entry directs the agent to its kernel and requested program. Image source, bundle, and checksum are build inputs; changing them requires no CLI source edit. See [image bundle configuration](cli/shared/image/bundle/README.md).
+Ordinary compiled Bun and Rust builds resolve and verify the published kernel before launching an installed harness, append it to native instructions, and keep the task separate. See [kernel startup](docs/kernel-startup.md) for integrity checks, limits and provider-readiness qualifications. Explicit verified-image builds remain available for frozen selections and hermetic fixtures; see [image bundle configuration](cli/shared/image/bundle/README.md).
 
 Both runners support:
 
-- `--output-contract image-envelope` (default): native completion plus the image-declared model-authored terminal envelope.
+- `--output-contract image-envelope` (explicit-image build default): native completion plus the image-declared model-authored terminal envelope.
 - `--output-contract native`: actual native completion and final text, without requiring or synthesizing a terminal JSON envelope. Semantic status remains `not-applicable`; evaluate the program's artifacts separately.
 - `--output human|json|jsonl`: rendering, independent of those completion rules.
 - `--native-log /absolute/new/file.jsonl`: optional private, bounded native-event capture for that same run. It does not prove fulfillment; see [capture limits](docs/native-capture.md).
 
-For example, **after building with a language entry image** and supplying the provider credential in the process environment:
+For example, after an ordinary build and supplying the provider credential in the process environment:
 
 ```sh
 /path/to/prose --harness claude --auth-profile anthropic-api-key \

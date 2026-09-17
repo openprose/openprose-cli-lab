@@ -1,3 +1,4 @@
+import { PUBLISHED_KERNEL_STARTUP } from "./build";
 import {nativeOutputLimits,validateNativeOutputBytes} from "../adapters/output-budget";
 import {nativeLimits} from "../adapters/sdk-limits";
 import { access, chmod, lstat, mkdir, readFile, realpath, rename, stat, unlink, writeFile } from "node:fs/promises";
@@ -68,7 +69,7 @@ const defaults: EffectiveValues = {
   color: false,
   verbose: false,
   authProfile: null,
-  outputContract: "image-envelope",
+  outputContract: PUBLISHED_KERNEL_STARTUP ? "native" : "image-envelope",
   permissionMode: null,
 };
 

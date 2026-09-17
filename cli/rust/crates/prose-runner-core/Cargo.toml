@@ -11,6 +11,7 @@ default = []
 test-seams = []
 
 [dependencies]
+ureq = { version = "=2.12.1", default-features = false, features = ["tls"] }
 chrono.workspace = true
 prose-process-supervisor = { path = "../prose-process-supervisor" }
 serde.workspace = true

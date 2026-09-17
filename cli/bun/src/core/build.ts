@@ -6,6 +6,15 @@ declare const OPENPROSE_BUILD_PROFILE: "development" | "release" | undefined;
 declare const OPENPROSE_TEST_SEAMS: boolean | undefined;
 declare const OPENPROSE_WINDOWS_HOST_SHA256: string | undefined;
 declare const OPENPROSE_WINDOWS_HOST_ADMISSION: boolean | undefined;
+declare const OPENPROSE_CODEX_INSTRUCTION_PLACEMENT: string | undefined;
+
+export type CodexInstructionPlacement = "framed" | "developer" | "base";
+// Explicit build selection for the IMP-008 comparison; ambient runtime
+// environment variables cannot change the installed binary's placement.
+export const CODEX_INSTRUCTION_PLACEMENT: CodexInstructionPlacement =
+  typeof OPENPROSE_CODEX_INSTRUCTION_PLACEMENT === "string"
+    ? OPENPROSE_CODEX_INSTRUCTION_PLACEMENT as CodexInstructionPlacement
+    : "framed";
 
 export const RUNNER_BUILD_COMMIT =
   typeof OPENPROSE_BUILD_COMMIT === "string" && OPENPROSE_BUILD_COMMIT.length > 0
@@ -43,3 +52,7 @@ export const WINDOWS_HOST_EXPECTED_SHA256 = /^[0-9a-f]{64}$/.test(compiledWindow
 // helper self-report can never turn the Windows path on.
 export const WINDOWS_HOST_ADMISSION_ENABLED =
   typeof OPENPROSE_WINDOWS_HOST_ADMISSION === "boolean" ? OPENPROSE_WINDOWS_HOST_ADMISSION : false;
+
+
+declare const OPENPROSE_KERNEL_STARTUP: boolean | undefined;
+export const PUBLISHED_KERNEL_STARTUP = typeof OPENPROSE_KERNEL_STARTUP === "boolean" ? OPENPROSE_KERNEL_STARTUP : false;

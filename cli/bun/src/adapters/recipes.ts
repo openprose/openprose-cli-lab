@@ -2,6 +2,10 @@ import sdkJson from "../../../shared/capabilities/adapters/recipes/agents-sdk-js
 import oracleJson from "../../../shared/capabilities/adapters/oracle.v1.json" with { type: "json" };
 import claudeJson from "../../../shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json" with { type: "json" };
 import codexJson from "../../../shared/capabilities/adapters/recipes/codex-exec-json.v1.json" with { type: "json" };
+import codexDeveloperJson from "../../../shared/capabilities/adapters/recipes/codex-exec-json-developer.v1.json" with { type: "json" };
+import codexBaseJson from "../../../shared/capabilities/adapters/recipes/codex-exec-json-base.v1.json" with { type: "json" };
+import { createHash } from "node:crypto";
+import { CODEX_INSTRUCTION_PLACEMENT, type CodexInstructionPlacement } from "../core/build";
 import ompJson from "../../../shared/capabilities/adapters/recipes/omp-rpc.v1.json" with { type: "json" };
 import primeJson from "../../../shared/capabilities/adapters/recipes/prime-rpc.v1.json" with { type: "json" };
 import { failure } from "../core/errors";
@@ -86,10 +90,19 @@ export function adapterOwnedEnvironmentControls(id: InstalledAdapterId): Readonl
   return Object.freeze({ ...(oracle.environmentRules.adapterOwnedControls[id] ?? {}) });
 }
 
-export function installedAdapterDefinition(id: string): InstalledAdapterDefinition {
+export function installedAdapterDefinition(id: string, codexPlacement: CodexInstructionPlacement = CODEX_INSTRUCTION_PLACEMENT): InstalledAdapterDefinition {
   const definition = definitions.get(id as InstalledAdapterId);
   if (definition === undefined) {
     throw failure("TRANSPORT_UNSUPPORTED", { adapterId: id, fallbackAttempted: false });
   }
-  return definition;
+  if (id !== "codex/exec-json" || codexPlacement === "framed") return definition;
+  if (codexPlacement !== "developer" && codexPlacement !== "base") {
+    throw failure("CONFIG_INVALID", { reason: "Unknown compiled Codex instruction placement." });
+  }
+  const recipe = (codexPlacement === "developer" ? codexDeveloperJson : codexBaseJson) as unknown as InstalledAdapterRecipe;
+  return {
+    ...definition,
+    recipe,
+    recipeSha256: createHash("sha256").update(JSON.stringify(recipe, null, 2) + "\n").digest("hex"),
+  };
 }
