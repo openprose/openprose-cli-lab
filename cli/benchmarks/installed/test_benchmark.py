@@ -1406,6 +1406,15 @@ class InstalledPackageBenchmarkTests(unittest.TestCase):
                         )
                     self.assertFalse((root / "escape").exists())
 
+    def test_schema_two_capable_launcher_retains_exact_template_boundary(self) -> None:
+        template = (ROOT / "cli/bun/npm/bin/prose.js").read_bytes()
+        self.assertEqual(hashlib.sha256(template).hexdigest(), BENCHMARK.CANONICAL_LAUNCHER_TEMPLATE_SHA256)
+        cohort = {"schema": "openprose.npm-cohort/1", "version": "0.1.0"}
+        bound = template.replace(b"__OPENPROSE_COHORT__", json.dumps(cohort, sort_keys=True, separators=(",", ":")).encode())
+        BENCHMARK.validate_canonical_launcher(bound, cohort)
+        with self.assertRaises(BENCHMARK.BenchmarkError):
+            BENCHMARK.validate_canonical_launcher(bound + b"\n", cohort)
+
     def test_opaque_archive_suffix_and_noncanonical_launcher_fail_closed(self) -> None:
         mutations = ("gzip-suffix", "tar-suffix", "launcher-byte")
         for mutation in mutations:

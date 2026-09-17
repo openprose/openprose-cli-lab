@@ -25,6 +25,15 @@ const COHORT_KEYS = [
   "sourceRevision",
   "version",
 ];
+const KERNEL_COHORT_KEYS = [
+  "admittedPlatforms", "embeddedDiagnosticImage", "imageSource", "kernelPolicy",
+  "publicationAuthorized", "purpose", "releaseChannel", "releaseEligible",
+  "schema", "semanticStatus", "sourceRevision", "version",
+];
+const DIAGNOSTIC_IMAGE_KEYS = [
+  "formatVersion", "manifestSha256", "purpose", "sha256", "version",
+];
+const KERNEL_POLICY_KEYS = ["entrypoint", "pinning", "resolution", "schema"];
 const IMAGE_KEYS = [
   "formatVersion",
   "manifestSha256",
@@ -59,8 +68,11 @@ function canonicalJson(value) {
 
 function validateCohort(value, label) {
   if (
-    !exactKeys(value, COHORT_KEYS)
-    || !exactKeys(value.image, IMAGE_KEYS)
+    !(COHORT.schema === "openprose.npm-cohort/2"
+      ? exactKeys(value, KERNEL_COHORT_KEYS)
+        && exactKeys(value.embeddedDiagnosticImage, DIAGNOSTIC_IMAGE_KEYS)
+        && exactKeys(value.kernelPolicy, KERNEL_POLICY_KEYS)
+      : exactKeys(value, COHORT_KEYS) && exactKeys(value.image, IMAGE_KEYS))
     || canonicalJson(value) !== canonicalJson(COHORT)
   ) {
     throw new Error(`${label} cohort is unknown, incomplete, or differs from this launcher`);
@@ -335,7 +347,12 @@ function resolveBinary(location, manifest, manifestSha256, packageName, id, meta
   if (
     manifest.openprosePlatform !== id
     || manifest.openproseSourceRevision !== COHORT.sourceRevision
-    || canonicalJson(manifest.openproseImage) !== canonicalJson(COHORT.image)
+    || (COHORT.schema === "openprose.npm-cohort/2"
+      ? manifest.openproseImage !== undefined
+        || canonicalJson(manifest.openproseEmbeddedDiagnosticImage) !== canonicalJson(COHORT.embeddedDiagnosticImage)
+        || canonicalJson(manifest.openproseKernelPolicy) !== canonicalJson(COHORT.kernelPolicy)
+        || manifest.openproseImageSource !== COHORT.imageSource
+      : canonicalJson(manifest.openproseImage) !== canonicalJson(COHORT.image))
     || manifest.openproseBunCompileTarget !== BUN_RUNTIME_BY_PLATFORM[id]?.compileTarget
     || manifest.openproseBunRuntimeVariant !== BUN_RUNTIME_BY_PLATFORM[id]?.runtimeVariant
   ) {

@@ -1507,7 +1507,7 @@ class NpmPublicMetadataTests(unittest.TestCase):
                     manifest["repository"],
                     {
                         "type": "git",
-                        "url": "git+https://github.com/openprose/openprose-cli-lab.git",
+                        "url": "git+https://github.com/openprose/prose-cli.git",
                         "directory": directory,
                     },
                 )
@@ -2965,7 +2965,7 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
             package["repository"],
             {
                 "type": "git",
-                "url": "git+https://github.com/openprose/openprose-cli-lab.git",
+                "url": "git+https://github.com/openprose/prose-cli.git",
                 "directory": "cli/bun/npm",
             },
         )
@@ -2995,7 +2995,7 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
             platform_manifest["repository"],
             {
                 "type": "git",
-                "url": "git+https://github.com/openprose/openprose-cli-lab.git",
+                "url": "git+https://github.com/openprose/prose-cli.git",
                 "directory": "cli/bun",
             },
         )
@@ -4487,7 +4487,8 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
                 for item in component["properties"]
             )
         ]
-        self.assertEqual(len(dependency_components), 76 + 14 + 12)
+        # The Rust kernel HTTPS loader adds 51 locked dependencies (IMP-008).
+        self.assertEqual(len(dependency_components), 127 + 14 + 12)
         self.assertEqual(
             len({component["bom-ref"] for component in dependency_components}),
             len(dependency_components),

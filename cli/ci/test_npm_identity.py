@@ -9,6 +9,7 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+from unittest import mock
 import package_local as package
 
 
@@ -90,7 +91,7 @@ class KernelReleaseCandidateTests(unittest.TestCase):
                     readme = archive.extractfile('package/README.md').read()
                     launcher = archive.extractfile('package/bin/prose.js').read()
                 self.assertEqual(manifest['name'], '@openprose/prose-cli')
-                self.assertEqual(manifest['repository']['url'], 'git+https://github.com/openprose/openprose-cli-lab.git')
+                self.assertEqual(manifest['repository']['url'], 'git+https://github.com/openprose/prose-cli.git')
                 self.assertEqual(manifest['openproseCohort']['admittedPlatforms'], list(package.POSIX_PUBLICATION_PLATFORMS))
                 self.assertEqual(manifest['optionalDependencies'], {'@openprose/prose-cli-' + name: '0.15.0-rc.1' for name in package.POSIX_PUBLICATION_PLATFORMS})
                 self.assertIs(manifest['openproseCohort']['releaseEligible'], False)
@@ -130,6 +131,102 @@ class KernelReleaseCandidateTests(unittest.TestCase):
                                      0, 'c'*40, self.image(), 'not-applicable',
                                      'release', b'hello', publication_platforms='posix-four')
             self.assertEqual(list(root.iterdir()), [])
+
+
+class PublishedKernelCandidateTests(unittest.TestCase):
+    def diagnostic(self):
+        image, digest = package.read_image_manifest(package.DIAGNOSTIC_IMAGE_MANIFEST)
+        return image, package.image_identity(image, digest)
+
+    def test_schema_two_separates_diagnostic_from_runtime_policy(self):
+        _, image = self.diagnostic()
+        hashes = []
+        with tempfile.TemporaryDirectory() as temporary:
+            for platform in package.POSIX_PUBLICATION_PLATFORMS:
+                root = Path(temporary) / platform
+                root.mkdir()
+                runtime = {'minimumGlibc': '2.34', 'requiredGlibcMaximum': {'rust': '2.34', 'bun': '2.34'}, 'executionEvidence': 'ubuntu-22.04-only'} if platform.startswith('linux-') else 'not-applicable'
+                meta, native = package.npm_packages(root, b'fixture', '0.15.0-rc.1', platform,
+                    0, 'c'*40, image, runtime, 'kernel-rc', b'hello', publication_platforms='posix-four')
+                hashes.append(hashlib.sha256(meta.read_bytes()).hexdigest())
+                with tarfile.open(meta) as archive:
+                    manifest = json.load(archive.extractfile('package/package.json'))
+                    readme = archive.extractfile('package/README.md').read()
+                cohort = manifest['openproseCohort']
+                self.assertEqual(cohort['schema'], 'openprose.npm-cohort/2')
+                self.assertEqual(cohort['imageSource'], 'published-on-run')
+                self.assertEqual(cohort['purpose'], 'published-kernel-loader')
+                self.assertEqual(cohort['kernelPolicy'], package.PUBLISHED_KERNEL_POLICY)
+                self.assertNotIn('image', cohort)
+                self.assertNotIn('releaseEligible', cohort['embeddedDiagnosticImage'])
+                self.assertFalse(cohort['releaseEligible'])
+                self.assertFalse(cohort['publicationAuthorized'])
+                self.assertIn(b'unsigned release candidate', readme)
+                self.assertIn(b'latest published kernel', readme)
+                with tarfile.open(native) as archive:
+                    native_manifest = json.load(archive.extractfile('package/package.json'))
+                self.assertNotIn('openproseImage', native_manifest)
+                self.assertEqual(native_manifest['openproseEmbeddedDiagnosticImage'], cohort['embeddedDiagnosticImage'])
+                self.assertEqual(native_manifest['openproseKernelPolicy'], cohort['kernelPolicy'])
+        self.assertEqual(len(set(hashes)), 1)
+
+    def test_kernel_candidate_rejects_changed_fixture_and_missing_platform_policy(self):
+        _, image = self.diagnostic()
+        args = dict(mode='kernel-rc', version='0.15.0-rc.1', source_revision='c'*40, image=image, publication_platforms='posix-four')
+        for changes in ({'publication_platforms': None}, {'version': '0.15.0'},
+                        {'image': dict(image, sha256='0'*64)},
+                        {'image': dict(image, purpose='canonical-language-runtime')}):
+            with self.subTest(changes=changes), self.assertRaises(package.PackageError):
+                package.npm_cohort(**dict(args, **changes))
+
+    def test_doctor_must_prove_published_startup_release_profile_and_no_test_seams(self):
+        image, _ = self.diagnostic()
+        report = {'schema': 'openprose.doctor-report/1',
+                  'image': {'formatVersion': image['imageFormatVersion'], 'version': image['imageVersion'], 'sha256': image['aggregateSha256']['sha256'], 'releaseEligible': image['releaseEligible']},
+                  'runner': {'name': 'bun', 'version': '0.15.0-rc.1', 'commit': 'c'*40},
+                  'build': {'profile': 'release', 'testSeamsEnabled': False},
+                  'imageSource': 'published-on-run'}
+        version = subprocess.CompletedProcess([], 0, b'prose 0.15.0-rc.1 (bun)\n', b'')
+        def check(value):
+            doctor = subprocess.CompletedProcess([], 10, json.dumps(value).encode(), b'')
+            with mock.patch.object(package, 'run_bounded', side_effect=[version, doctor]):
+                return package.verify_product(Path('/fixture'), 'bun', '0.15.0-rc.1', 'c'*40, image, 'kernel-rc', test_seams_enabled=False)
+        self.assertEqual(check(report), report['build'])
+        for changes in ({'imageSource': 'embedded'}, {'build': {'profile': 'development', 'testSeamsEnabled': False}}, {'build': {'profile': 'release', 'testSeamsEnabled': True}}):
+            with self.subTest(changes=changes), self.assertRaises(package.PackageError):
+                check(dict(report, **changes))
+
+    def test_schema_two_launcher_runs_offline_and_rejects_runtime_policy_drift(self):
+        npm = shutil.which('npm')
+        if npm is None or shutil.which('node') is None:
+            self.skipTest('Node and npm required')
+        platform = package.current_platform_id()
+        if platform not in package.POSIX_PUBLICATION_PLATFORMS:
+            self.skipTest('Four POSIX publication platforms only')
+        _, image = self.diagnostic()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            binary = ('#!' + sys.executable + "\nprint('published-on-run doctor fixture')\n").encode()
+            runtime = {'minimumGlibc': '2.34', 'requiredGlibcMaximum': {'rust': '2.34', 'bun': '2.34'}, 'executionEvidence': 'ubuntu-22.04-only'} if platform.startswith('linux-') else 'not-applicable'
+            meta, native = package.npm_packages(root, binary, '0.15.0-rc.1', platform,
+                0, 'c'*40, image, runtime, 'kernel-rc', b'hello', publication_platforms='posix-four')
+            home = root / 'home'; home.mkdir()
+            prefix = root / 'prefix'
+            env = {'PATH': os.environ.get('PATH', ''), 'HOME': str(home), 'npm_config_cache': str(root/'cache'), 'npm_config_userconfig': str(root/'empty-npmrc'), 'npm_config_registry': 'http://127.0.0.1:9'}
+            installed = subprocess.run([npm, 'install', '--global', '--prefix', str(prefix), '--ignore-scripts', '--offline', '--no-audit', '--no-fund', str(meta), str(native)], env=env, capture_output=True, text=True, timeout=60)
+            self.assertEqual(installed.returncode, 0, installed.stderr)
+            launcher = prefix / 'bin/prose'
+            ran = subprocess.run([str(launcher), 'cli', 'doctor'], env=env, capture_output=True, text=True, timeout=15)
+            self.assertEqual(ran.returncode, 0, ran.stderr)
+            self.assertEqual(ran.stdout, 'published-on-run doctor fixture\n')
+            native_manifest_path = prefix/'lib/node_modules/@openprose'/('prose-cli-'+platform)/'package.json'
+            native_manifest = json.loads(native_manifest_path.read_text())
+            native_manifest['openproseKernelPolicy']['resolution'] = 'fixed-image'
+            native_manifest_path.write_text(json.dumps(native_manifest))
+            rejected = subprocess.run([str(launcher), 'cli', 'doctor'], env=env, capture_output=True, text=True, timeout=15)
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertEqual(rejected.stdout, '')
+            self.assertIn('cohort', rejected.stderr)
 
 
 if __name__=='__main__': unittest.main()

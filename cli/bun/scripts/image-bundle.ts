@@ -102,8 +102,8 @@ function options(argv: string[]): Options {
     console.error("image-bundle: build-test must not overwrite the ordinary dist/prose build");
     process.exit(2);
   }
-  if (result.publishedKernelStartup && (result.requireReleaseEligible || result.codexInstructionPlacement !== "developer")) {
-    console.error("image-bundle: published startup requires developer append and is not release-qualified; select an explicit image for other builds");
+  if (result.publishedKernelStartup && result.codexInstructionPlacement !== "developer") {
+    console.error("image-bundle: published startup requires developer append; select an explicit image for other placements");
     process.exit(2);
   }
   if (result.requireReleaseEligible && result.testSeams) {

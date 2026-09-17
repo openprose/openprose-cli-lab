@@ -15,14 +15,14 @@ Configure the existing `@openprose/prose-cli` package with this exact identity:
 | --- | --- |
 | Provider | GitHub Actions |
 | Organization/user | `openprose` |
-| Repository | `openprose-cli-lab` |
+| Repository | `prose-cli` |
 | Workflow filename | `cli-publish.yml` |
 | Environment | `publication` |
 | Allowed action | Direct `npm publish` |
 
 The file is `.github/workflows/cli-publish.yml`; npm receives only its filename.
 Do not authorize the distribution rehearsal workflow. Create the GitHub
-`publication` environment with main-only deployment and an owner reviewer.
+`publication` environment with main-only deployment. This environment is configured; no required reviewer is currently enabled. The owner configured the root package trusted publisher on September 17, 2026. The four platform packages still require first-publication bootstrap and their own trusted publishers.
 The publishing job uses GitHub-hosted runners and `id-token: write`; it does
 not require `NPM_TOKEN`. The repository is public, as required for npm
 provenance. Every generated package must declare this repository URL.
@@ -66,8 +66,12 @@ retained with the public release before claiming complete download verification.
 Do not promote an incomplete release or replace npm's `latest` tag with an RC.
 
 The existing fixed-image full-release preflight is not proof of moving-kernel
-startup. Extending qualification for the normal latest-kernel route remains
-engineering work. Do not satisfy the gate by embedding a fixed kernel, relabeling
+startup. The separate `kernel-rc` build/package path verifies release profile,
+disabled test seams, latest-kernel policy and fresh offline installations on all
+four platforms. `cli-kernel-rc.yml` runs on PRs for validation and manually from
+main for actual candidates. `assemble_kernel_rc.py` verifies the native reports
+and package bytes; without exact-binary live smoke evidence, it emits an
+unqualified development plan that publication refuses. Do not satisfy the gate by embedding a fixed kernel, relabeling
 an echo/sentinel fixture, or fabricating a protected passing report. No qualified
 plan has been committed. Existing alpha workflows and their independent
 requirements are not silently replaced by this new path.

@@ -65,7 +65,6 @@ fn main() {
             value.to_string_lossy()
         ),
     };
-    assert!(!(require_release_image && !test_seams_enabled && [SOURCE_ENV, BUNDLE_ENV, CHECKSUM_ENV].iter().all(|key| env::var_os(key).is_none())), "Published kernel startup is not release-qualified; select an explicit image for release qualification");
     check_bundle(
         &generator,
         &source,

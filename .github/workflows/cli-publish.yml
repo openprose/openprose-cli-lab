@@ -46,7 +46,7 @@ jobs:
           with open(os.environ['GITHUB_ENV'], 'a') as stream:
               stream.write('RELEASE_PLAN=' + str(path) + '\n')
           PY
-          test "$(npm --version)" = '11.15.0'
+          test "$(npm --version)" = '11.19.0'
       - name: Fetch exact draft artifacts without executing them
         env:
           GH_TOKEN: ${{ github.token }}

@@ -39,11 +39,20 @@ describe("standalone build identity and seam exclusion", () => {
     });
   });
 
-  test("moving published startup cannot pass the release-image gate", async () => {
-    const result=await run([process.execPath,buildScript,"build","--require-release-eligible"],bunRoot);
-    expect(result.exitCode).toBe(2);
-    expect(result.stderr).toContain("not release-qualified");
-  });
+  test("release startup retains published kernel resolution and excludes mock execution", async () => {
+    const root = await mkdtemp(join(tmpdir(), "openprose-published-release-"));
+    roots.push(root);
+    const executable = join(root, "prose");
+    const result = await run([process.execPath, buildScript, "build", "--require-release-eligible", "--outfile", executable], bunRoot);
+    expect(result.exitCode, result.stderr).toBe(0);
+    const contract = JSON.parse(await readFile(resolve(bunRoot, "../shared/fixtures/build/published-release.json"), "utf8"));
+    const doctor = await run([executable, "--output=json", "cli", "doctor"], root);
+    expect(JSON.parse(doctor.stdout)).toMatchObject(contract.doctor);
+    const mock = await run([executable, "--harness=mock", "--output=json", "run", "hello"], root);
+    expect(mock.exitCode).toBe(contract.mockRunExitCode);
+    const error = JSON.parse(mock.stdout);
+    expect((error.error ?? error).code).toBe(contract.mockRunErrorCode);
+  }, 30_000);
 
   test("ordinary build matches Rust's development profile without test seams", async () => {
     const result = await run([process.execPath, "run", "build"], bunRoot);

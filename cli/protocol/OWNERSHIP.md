@@ -32,6 +32,26 @@ add `cli/release/plans/README.md`. The lead retains Git/index ownership. Host ad
 explicitly unsigned RC, with Apple signing tracked separately in IMP-015. This supersedes the initial
 publication-authorization and proposed npm-name notes above.
 
+## IMP-014 latest-kernel release qualification extension
+
+The user requires the RC to preserve latest-kernel startup. The `distribution_ci`
+agent owns `cli/shared/fixtures/build/published-release.json`,
+`cli/bun/test/build-identity.test.ts`, `cli/bun/scripts/image-bundle.ts`,
+`cli/rust/crates/prose-cli/build.rs`, `cli/ci/check_published_release.py`, and
+`cli/ci/test_check_published_release.py` for release-profile startup and hermetic
+compiled checks. The `macos_signing` agent additionally owns
+`cli/bun/npm/bin/prose.js` for the explicit kernel-loader cohort contract.
+Existing fixed-image and sentinel gates remain intact; no fixture is reclassified
+as a canonical kernel. Parent owns release workflows, publication validation and
+integration. No agent may publish or spend provider credits through these checks.
+
+The `openrouter_final` agent owns `cli/ci/build_kernel_rc.py`,
+`cli/ci/test_build_kernel_rc.py`, and `.github/workflows/cli-kernel-rc.yml` for
+provider-free native builds, package/install checks and retained artifacts.
+The lead owns `cli/ci/assemble_kernel_rc.py` and
+`cli/ci/test_assemble_kernel_rc.py` for reviewed cohort assembly. Neither build
+nor assembly creates publication authority or starts model calls.
+
 ## Existing path leases
 
 | Task | Owner | Writable paths | Shared-file lease | State |
@@ -377,3 +397,12 @@ Startup parity schema/test coverage also leases `cli/shared/schemas/adapter-admi
 Startup parity compiled-process tests also lease `cli/shared/tests/kernel_startup_process.py`; fake executables are created only in disposable temporary directories.
 Build regression maintenance also leases `cli/bun/test/build-identity.test.ts` and `cli/bun/test/standalone.test.ts`; historical echo checks must select the echo fixture explicitly so ordinary test suites remain provider-free after the startup-default change.
 Local diagnostic clarity also leases `cli/rust/crates/prose-runner-core/src/runner.rs` and `cli/shared/schemas/doctor-report.schema.json` for an optional published-startup source field; doctor must not imply its unfetched embedded diagnostic fixture is the selected runtime kernel.
+
+## IMP-014 review closure
+
+The `macos_signing` agent owns `cli/ci/assemble_kernel_rc.py`,
+`cli/ci/test_assemble_kernel_rc.py`, `cli/ci/kernel_rc_evidence.py`, and
+`cli/ci/test_kernel_rc_evidence.py` to bind native checks to final artifacts.
+The lead retains publication.py, workflows, repository-name updates and Git.
+
+The `openrouter_final` agent additionally owns `cli/benchmarks/installed/benchmark.py` and its existing focused tests for schema-two launcher template parity; no benchmark success or admission criteria may be weakened.
