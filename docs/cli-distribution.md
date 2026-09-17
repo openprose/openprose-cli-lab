@@ -126,7 +126,11 @@ installs the exact local tarball pair with scripts and registry access disabled,
 and verifies the launched version. The Actions workflow includes that step.
 No global CLI installation is required.
 
-Implementation branches remain local until GitHub CLI authorization includes
-`workflow`. Run `gh auth refresh -h github.com -s workflow` as the signed-in
-operator, then push `codex/imp-014-cli-distribution` in CLI and distribution and
-open their draft PRs. Push is not deployment or publication authorization.
+The candidates are now published in CLI PR 2 and distribution PR 1. The first
+remote rehearsal exposed two fresh-runner setup defects: setup-python did not
+provide Python 3.10.20 for macOS ARM, and the offline Rust build lacked downloaded
+Cargo dependencies on the other three platforms. The workflow now obtains the
+same pinned Python through pinned uv and explicitly fetches the locked Cargo
+dependencies before retaining offline build behavior. Remote rerun results remain
+a separate qualification step. The user authorized merge and publication on
+September 16, 2026; actual release artifacts still require the stated gates.
