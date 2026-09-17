@@ -110,8 +110,8 @@ alongside the corrected test result.
 
 Before public release: finish the npm-name migration and ownership checks,
 restore or replace missing release/promotion authorities, qualify the actual
-IMP-008 artifact set, pass native installation lanes, decide macOS signing and
-notarization, verify dependency notices, and configure publication credentials.
+IMP-008 artifact set, pass native installation lanes, complete mandatory artifact signing before any public CLI release, decide
+notarization requirements, verify dependency notices, and configure trusted publication.
 No model runs, registry changes or global Prose installations occurred in this work.
 Build/test toolchains were prepared separately in temporary directories.
 
@@ -134,3 +134,58 @@ same pinned Python through pinned uv and explicitly fetches the locked Cargo
 dependencies before retaining offline build behavior. Remote rerun results remain
 a separate qualification step. The user authorized merge and publication on
 September 16, 2026; actual release artifacts still require the stated gates.
+
+
+## Remote qualification and publication gates (2026-09-17 UTC)
+
+Distribution PR 1 merged at `691dc805`; its endpoint deployment succeeded in
+[run 35168653526](https://github.com/openprose/openprose-distribution/actions/runs/35168653526).
+A read-only check confirmed the existing root redirect still serves the kernel
+catalog. `/cli/channels/stable.json` returns 404 because no qualified CLI release
+has been staged. This is deployment of hosting support, not publication of a CLI.
+
+CLI [run 35168634350](https://github.com/openprose/openprose-cli-lab/actions/runs/35168634350)
+passed on macOS ARM64 but failed elsewhere. The x64 Bun builds failed inside isolated compilation. Commit `2549a78`
+installs the matching pinned baseline runtime during setup to avoid a runtime
+download after network access is disabled. Linux ARM64 compiled and
+packaged, then failed the frozen adapter corpus because Claude and Prime admit
+only macOS ARM64; OMP admits macOS ARM64 and Linux x64. The generic 48-case corpus
+assumes those adapters can start on every POSIX host. Rust and Bun also use
+different native architecture strings in rejected-host diagnostic details.
+
+Do not expand adapter admission or remove a failing platform to green the gate.
+A subsequent change must specify shared host-aware expectations, verify the
+required rejection on unsupported hosts, and distinguish successful native
+packaging from adapter conformance. Until then, CLI PR 2 must remain unmerged if
+its required checks fail. These failures do not invalidate earlier macOS ARM64
+results or qualify the separate IMP-008 revision.
+
+The user requires signing before **any public CLI release**, including release
+candidates. Existing ad-hoc Mach-O sealing is not a release signing identity.
+The publication implementation must select and document the signing authority,
+sign and verify final artifacts before promotion, and bind signatures to the
+same digests carried by release manifests. Apple notarization requirements
+remain a separate decision. No repository Actions secret names or protected
+environments were returned by the CLI repository read-only inspection on this
+date; this is not proof that organization-level signing facilities are absent.
+
+Use npm trusted publishing through GitHub Actions OIDC, not a long-lived npm
+token. The present workflow is `cli-distribution-check.yml`, a read-only
+rehearsal with no npm publish step and no `id-token: write` permission. It is
+**not** a valid publisher mapping. Before configuring `@openprose/prose`, add and
+review the actual protected publication workflow, including its exact filename,
+repository `openprose/openprose-cli-lab`, environment, signing gate, package-name
+migration, immutable artifact verification, and narrowly scoped OIDC permission.
+Then update the npm package's trusted publisher to that exact workflow. Do not
+claim an existing mapping or ownership has been verified from a public 404.
+
+
+[Verification run 35168892048](https://github.com/openprose/openprose-cli-lab/actions/runs/35168892048)
+tested `2549a781498156b7677022ca63d529772c15bf4d`: macOS ARM64 passed; Linux x64
+now built and reached the expected host-admission failures (70 assertions);
+Linux ARM64 reached the same class of failures (101 assertions). macOS Intel
+still reported `image-bundle: Bundle failed`. Therefore installing the baseline
+runtime corrected Linux x64 build preparation but did not resolve macOS Intel.
+The next diagnostic step is to expose the bounded Bun aggregate build error and
+check the isolated compiler runtime/cache behavior. No passing check was
+bypassed, and CLI PR 2 remains open and unmerged.
