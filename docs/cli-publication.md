@@ -50,7 +50,7 @@ Recheck these before changing workflow identity or credential policy.
 ## Publication boundary
 
 The manual workflow consumes a reviewed plan from `cli/release/plans/` on main
-and immutable draft artifacts. It does not build, execute or rewrite downloaded
+and immutable reviewed release artifacts. It does not build, execute or rewrite downloaded
 binaries. The validator binds the version, source, protected preflight, kernel
 qualification and every artifact hash. It checks the complete platform inventory
 before download and again locally. npm and standalone Bun bytes must agree.
@@ -106,3 +106,75 @@ python3 -m unittest discover -s cli/ci -p test_sign_macos.py
 The fixtures are synthetic and must never become publication plans. Native
 installation qualification, a real reviewed plan, registry bootstrap/OIDC,
 public byte verification and receipt retention are separate acceptance steps.
+
+
+## One-time platform package bootstrap
+
+The normal `cli-publish.yml` path uses npm trusted publishing (OIDC). Trust is
+configured separately for each package. npm requires a package to exist before
+trust configuration or staged publishing; trust on `@openprose/prose-cli` does
+not authorize creation of the four platform package names.
+
+For the first qualified release only, an owner may explicitly dispatch
+`bootstrap_platform_packages=true` and supply the temporary environment secret
+`NPM_BOOTSTRAP_TOKEN`. It must be a short-lived npm granular credential with
+permission to create public packages in the OpenProse scope and to publish
+without interactive 2FA in this job. This credential is not a model API key.
+Do not place it in the workspace model `.env` or in repository files.
+
+The publisher first checks the exact versions and package names on the official
+registry. A name-level E404 is required for the bootstrap route; other registry
+errors stop publication. An existing platform package uses OIDC even when the
+bootstrap option is selected. The root package always uses OIDC and cannot be
+bootstrapped by this path. Each absent name is checked again immediately before
+publication; a newly existing name stops the bootstrap attempt without fallback.
+A public lookup cannot establish ownership of an inaccessible private name, so
+the owner must confirm that these four intended names are new and authorized.
+
+The token is removed from the process environment before other commands run.
+Only the selected first-publication subprocess receives a private temporary npm
+configuration file (mode 0600 inside a mode 0700 directory). Normal OIDC
+subprocesses receive an empty, isolated npm configuration. Configuration,
+cache, and authentication files are removed on success or failure. An OIDC
+authentication failure is never retried with the bootstrap token. All routes
+publish the same reviewed tarballs with mandatory provenance from GitHub
+Actions; this path creates no placeholder version and does not disable artifact
+verification, signing policy, or exact-binary live evidence requirements.
+
+After a successful bootstrap, configure each platform package's trusted
+publisher with repository `openprose/prose-cli`, workflow `cli-publish.yml`,
+environment `publication`, and publish permission. Remove the temporary secret
+and revoke its npm credential. Future releases leave the bootstrap input false.
+A partial run can resume: already published exact bytes are verified and skipped;
+existing names with unpublished versions use OIDC. The receipt records the
+credential route for each package without recording credentials.
+
+References checked 2026-09-17: [npm trust](https://docs.npmjs.com/cli/v11/commands/npm-trust/)
+and [staged publishing](https://docs.npmjs.com/staged-publishing/).
+
+## Signing direct downloads while npm is unavailable
+
+The manual workflow defaults to `operation=publish`. An explicitly selected
+`operation=sign-only` applies the same main-workflow identity, public repository,
+qualified artifact inventory, live evidence, and macOS policy gates. It signs
+and verifies every reviewed artifact with Sigstore, without registry lookups or
+npm publication. Bootstrap authorization and credentials are forbidden in this
+mode. Its receipt records `operation: sign-only`, `npmStatus: not-published`, and
+`githubReleasePromoted: false`; it must not be presented as npm success.
+
+After verifying the workflow result, download its receipt and signature bundles,
+verify each bundle against its exact release asset and publisher identity, and
+attach the signature bundles to the draft GitHub release; retain the receipt as workflow and workspace evidence. Only then promote the qualified draft
+and mirror a reviewed subset through distribution. A later normal publication
+run may fetch a draft or an already public unsigned RC marked as a prerelease.
+The tag and source must match the reviewed plan, and the entire original
+inventory must retain its exact sizes and digests. Only recognized detached
+`<original asset>.sigstore.json` bundles, each at most 1 MiB, may be additional
+release assets. They are not downloaded or trusted by this fetch: the publisher
+verifies and signs the original bytes again. Published stable releases and
+unknown additional assets remain forbidden. npm is a separate incomplete channel
+until its actual publication and public integrity checks succeed.
+
+### Empty evidence files
+
+GitHub release uploads reject zero-byte files. The reviewed inventory retains empty build logs with size zero and the SHA-256 of the empty byte string. Fetching reconstructs only those explicitly declared evidence files; it never reconstructs missing nonempty files or executable packages. Native build reports still bind their exact original bytes. Detached signatures cover the reconstructed empty files too.

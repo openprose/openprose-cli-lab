@@ -66,8 +66,9 @@ def load_plan(path):
         require(safe_name(item['name']) and item['name'] not in names, 'Unsafe or duplicate artifact name')
         names.add(item['name'])
         require(re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'Invalid artifact digest')
-        require(type(item['size']) is int and 0 < item['size'] <= MAX_BYTES, 'Invalid artifact size')
+        require(type(item['size']) is int and (0 if item['kind'] == 'evidence' else 1) <= item['size'] <= MAX_BYTES, 'Invalid artifact size')
         require(item['kind'] in ('standalone', 'npm', 'evidence'), 'Invalid artifact kind')
+        require(item['size'] != 0 or item['sha256'] == hashlib.sha256(b'').hexdigest(), 'Empty evidence digest mismatch')
         require(item['platform'] in (*PLATFORMS, 'all'), 'Invalid platform')
         require(item['implementation'] in ('bun', 'rust', 'shared'), 'Invalid implementation')
     require(sum(a['size'] for a in plan['artifacts']) <= 2 * 1024**3, 'Artifact set exceeds budget')
@@ -183,7 +184,8 @@ def verify_local(plan, root):
 
 
 def run(argv):
-    completed = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=180)
+    environment = {k: v for k, v in os.environ.items() if k != 'NPM_BOOTSTRAP_TOKEN'}
+    completed = subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=180, env=environment)
     require(completed.returncode == 0, 'External verification/publication command failed: ' + Path(argv[0]).name)
     return completed.stdout
 
@@ -192,13 +194,21 @@ def fetch(plan, root):
     require(not root.exists(), 'Use a fresh artifact directory')
     ref = json.loads(run(['gh', 'api', 'repos/' + REPOSITORY + '/commits/v' + plan['version']]))
     require(ref['sha'] == plan['source'], 'Release tag does not match reviewed source')
-    release = json.loads(run(['gh', 'release', 'view', 'v' + plan['version'], '--repo', REPOSITORY, '--json', 'isDraft,tagName,assets']))
-    require(release['isDraft'] is True, 'Only unpublished drafts are accepted')
-    expected = {a['name']: a['size'] for a in plan['artifacts']}
+    release = json.loads(run(['gh', 'release', 'view', 'v' + plan['version'], '--repo', REPOSITORY, '--json', 'isDraft,isPrerelease,tagName,assets']))
+    require(release.get('tagName') == 'v' + plan['version'], 'Wrong release tag')
+    require(release['isDraft'] is True or (plan['signing'] == 'unsigned-rc' and '-rc.' in plan['version'] and release.get('isPrerelease') is True), 'Only drafts or published unsigned release candidates are accepted')
+    expected = {a['name']: a['size'] for a in plan['artifacts'] if a['size'] > 0}
     observed = {a['name']: a['size'] for a in release['assets']}
-    require(observed == expected and len(release['assets']) == len(expected), 'Draft inventory differs from reviewed plan')
+    require(len(release['assets']) == len(observed), 'Duplicate release asset names')
+    require(all(observed.get(name) == size for name, size in expected.items()), 'Release inventory differs from reviewed plan')
+    extras = {name: size for name, size in observed.items() if name not in expected}
+    require(all(name in {a['name'] + '.sigstore.json' for a in plan['artifacts']} and type(size) is int and 0 < size <= 1024 * 1024 for name, size in extras.items()), 'Unrecognized release asset or oversized signature bundle')
     root.mkdir(parents=True)
     for item in plan['artifacts']:
+        if item['size'] == 0:
+            require(item['kind'] == 'evidence' and item['sha256'] == hashlib.sha256(b'').hexdigest(), 'Only verified empty evidence can be reconstructed')
+            (root / item['name']).write_bytes(b'')
+            continue
         run(['gh', 'release', 'download', 'v' + plan['version'], '--repo', REPOSITORY, '--pattern', item['name'], '--dir', str(root)])
     verify_local(plan, root)
 
@@ -228,8 +238,78 @@ def npm_integrity(path):
     return 'sha512-' + base64.b64encode(hashlib.sha512(path.read_bytes()).digest()).decode()
 
 
+def npm_environment(directory):
+    # Retain CI OIDC variables for registry auth and mandatory provenance, but
+    # exclude token aliases and every ambient npm configuration override.
+    environment = {k: v for k, v in os.environ.items()
+                   if k not in {'NPM_BOOTSTRAP_TOKEN', 'NPM_TOKEN', 'NODE_AUTH_TOKEN'}
+                   and not k.lower().startswith('npm_config_')}
+    environment.update(HOME=str(directory), NPM_CONFIG_USERCONFIG=str(directory / 'user.npmrc'),
+                       NPM_CONFIG_GLOBALCONFIG=str(directory / 'global.npmrc'),
+                       NPM_CONFIG_CACHE=str(directory / 'cache'))
+    return environment
+
+
+def npm_command(arguments, token=None):
+    with tempfile.TemporaryDirectory(prefix='prose-npm-auth-') as temporary:
+        directory = Path(temporary)
+        directory.chmod(0o700)
+        userconfig = directory / 'user.npmrc'
+        with os.fdopen(os.open(userconfig, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w') as stream:
+            if token is not None:
+                require(isinstance(token, str) and re.fullmatch(r'[A-Za-z0-9_=-]{20,8192}', token), 'Invalid bootstrap credential format')
+                stream.write('//registry.npmjs.org/:_authToken=' + token + '\n')
+        (directory / 'global.npmrc').write_text('')
+        return subprocess.run(['npm', *arguments], cwd=directory, env=npm_environment(directory),
+                              stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=180)
+
+
+def npm_read(arguments):
+    return npm_command(arguments)
+
+
+def registry_package_exists(package):
+    result = npm_read(['view', package, 'name', '--json', '--registry=https://registry.npmjs.org'])
+    try:
+        value = json.loads(result.stdout)
+    except ValueError:
+        raise ValueError('Package-name lookup failed; no bootstrap attempted')
+    if result.returncode:
+        require(isinstance(value, dict) and value.get('error', {}).get('code') == 'E404',
+                'Package-name lookup failed; no bootstrap attempted')
+        return False
+    require(value == package, 'Package-name lookup returned an unexpected identity')
+    return True
+
+
+def publication_routes(existing, names_exist, bootstrap, token):
+    routes = {}
+    for name in PACKAGES:
+        if existing[name] is not None:
+            routes[name] = 'already-published'
+        elif names_exist[name]:
+            routes[name] = 'oidc'
+        else:
+            require(name in PACKAGES[:-1], 'The root package must already exist; bootstrap cannot authorize it')
+            require(bootstrap and token, 'An absent platform package requires explicit bootstrap and NPM_BOOTSTRAP_TOKEN')
+            routes[name] = 'bootstrap-token'
+    return routes
+
+
+def publish_package(name, package, tag, route, token):
+    require(route in {'oidc', 'bootstrap-token'}, 'Invalid registry credential route')
+    if route == 'bootstrap-token':
+        require(name in PACKAGES[:-1] and token, 'Bootstrap is limited to absent platform packages')
+        require(not registry_package_exists(name), 'Package now exists; bootstrap refused without credential fallback')
+    result = npm_command(['publish', str(package.resolve()), '--access=public', '--ignore-scripts',
+                          '--provenance', '--tag=' + tag, '--registry=https://registry.npmjs.org'],
+                         token if route == 'bootstrap-token' else None)
+    # Never retry an authentication error using a different credential route.
+    require(result.returncode == 0, 'npm publication failed on the selected credential route; no fallback attempted')
+
+
 def registry_integrity(package, version):
-    result = subprocess.run(['npm', 'view', package + '@' + version, 'dist.integrity', '--json', '--registry=https://registry.npmjs.org'], stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=60)
+    result = npm_read(['view', package + '@' + version, 'dist.integrity', '--json', '--registry=https://registry.npmjs.org'])
     if result.returncode:
         try:
             error = json.loads(result.stdout)
@@ -240,22 +320,7 @@ def registry_integrity(package, version):
     return json.loads(result.stdout)
 
 
-def publish(plan, root, key, key_id, issuer):
-    require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch', 'Publication requires the main workflow')
-    require(os.environ.get('GITHUB_WORKFLOW_REF') == REPOSITORY + '/.github/workflows/cli-publish.yml@refs/heads/main', 'Wrong publisher workflow')
-    require(not os.environ.get('NODE_AUTH_TOKEN') and not os.environ.get('NPM_TOKEN'), 'Only OIDC publication is allowed')
-    repo = json.loads(run(['gh', 'api', 'repos/' + REPOSITORY]))
-    require(repo.get('visibility') == 'public', 'npm provenance requires public source; owner decision pending')
-    packages, _ = verify_local(plan, root)
-    if plan['signing'] == 'apple-notarized':
-        require(key and key_id and issuer, 'Apple credentials required for signed publication')
-        verify_macos(plan, root, key, key_id, issuer)
-    # Preflight every package before any registry mutation; existing exact bytes
-    # support recovery after a partial publication, never version replacement.
-    existing = {name: registry_integrity(name, plan['version']) for name in PACKAGES}
-    for name, integrity in existing.items():
-        require(integrity is None or integrity == npm_integrity(root / packages[name]), 'Version already exists with different bytes')
-    tag = 'rc' if '-rc.' in plan['version'] else 'dev' if '-dev.' in plan['version'] else 'latest'
+def sign_artifacts(plan, root):
     signatures = root / 'signatures'
     signatures.mkdir(exist_ok=False)
     for item in plan['artifacts']:
@@ -263,20 +328,50 @@ def publish(plan, root, key, key_id, issuer):
         bundle = signatures / (item['name'] + '.sigstore.json')
         run(['cosign', 'sign-blob', '--yes', '--bundle', str(bundle), str(blob)])
         run(['cosign', 'verify-blob', '--bundle', str(bundle), '--certificate-identity', IDENTITY, '--certificate-oidc-issuer', 'https://token.actions.githubusercontent.com', str(blob)])
+
+
+def publish(plan, root, key, key_id, issuer, bootstrap=False, sign_only=False):
+    require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch', 'Publication requires the main workflow')
+    require(os.environ.get('GITHUB_WORKFLOW_REF') == REPOSITORY + '/.github/workflows/cli-publish.yml@refs/heads/main', 'Wrong publisher workflow')
+    require(not os.environ.get('NODE_AUTH_TOKEN') and not os.environ.get('NPM_TOKEN'), 'Only OIDC publication is allowed')
+    bootstrap_token = os.environ.pop('NPM_BOOTSTRAP_TOKEN', '')
+    require(not sign_only or (not bootstrap and not bootstrap_token), 'Sign-only forbids npm bootstrap authorization and credentials')
+    require(bootstrap or not bootstrap_token, 'Bootstrap credential requires explicit bootstrap authorization')
+    require(not bootstrap_token or re.fullmatch(r'[A-Za-z0-9_=-]{20,8192}', bootstrap_token), 'Invalid bootstrap credential format')
+    repo = json.loads(run(['gh', 'api', 'repos/' + REPOSITORY]))
+    require(repo.get('visibility') == 'public', 'npm provenance requires public source; owner decision pending')
+    packages, _ = verify_local(plan, root)
+    if plan['signing'] == 'apple-notarized':
+        require(key and key_id and issuer, 'Apple credentials required for signed publication')
+        verify_macos(plan, root, key, key_id, issuer)
+    if sign_only:
+        sign_artifacts(plan, root)
+        (root / 'publication-receipt.json').write_text(json.dumps({'schema': 'openprose.cli-publication-receipt/1', 'operation': 'sign-only', 'version': plan['version'], 'source': plan['source'], 'npmStatus': 'not-published', 'npm': {}, 'credentialRoutes': {}, 'githubReleasePromoted': False, 'signing': plan['signing']}, indent=2) + '\n')
+        return
+    # Preflight every package before any registry mutation; existing exact bytes
+    # support recovery after a partial publication, never version replacement.
+    existing = {name: registry_integrity(name, plan['version']) for name in PACKAGES}
+    for name, integrity in existing.items():
+        require(integrity is None or integrity == npm_integrity(root / packages[name]), 'Version already exists with different bytes')
+    names_exist = {name: registry_package_exists(name) for name in PACKAGES}
+    routes = publication_routes(existing, names_exist, bootstrap, bootstrap_token)
+    tag = 'rc' if '-rc.' in plan['version'] else 'dev' if '-dev.' in plan['version'] else 'latest'
+    sign_artifacts(plan, root)
     for name in PACKAGES:
         package = root / packages[name]
         require(digest(package) == next(a['sha256'] for a in plan['artifacts'] if a['name'] == package.name), 'Package changed before publication')
         if existing[name] is None:
-            run(['npm', 'publish', str(package), '--access=public', '--ignore-scripts', '--provenance', '--tag=' + tag, '--registry=https://registry.npmjs.org'])
+            publish_package(name, package, tag, routes[name], bootstrap_token if routes[name] == 'bootstrap-token' else None)
         require(registry_integrity(name, plan['version']) == npm_integrity(package), 'Published integrity mismatch; stop and inspect')
-    (root / 'publication-receipt.json').write_text(json.dumps({'schema': 'openprose.cli-publication-receipt/1', 'version': plan['version'], 'source': plan['source'], 'npm': packages, 'tag': tag, 'githubReleasePromoted': False, 'signing': plan['signing']}, indent=2) + '\n')
+    (root / 'publication-receipt.json').write_text(json.dumps({'schema': 'openprose.cli-publication-receipt/1', 'version': plan['version'], 'source': plan['source'], 'npm': packages, 'credentialRoutes': routes, 'tag': tag, 'githubReleasePromoted': False, 'signing': plan['signing']}, indent=2) + '\n')
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=('verify', 'fetch', 'publish'))
+    parser.add_argument('operation', choices=('verify', 'fetch', 'publish', 'sign-only'))
     parser.add_argument('--plan', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
+    parser.add_argument('--bootstrap-platform-packages', action='store_true', help='One-time first publication of absent platform package names only')
     parser.add_argument('--notary-key', type=Path)
     parser.add_argument('--notary-key-id')
     parser.add_argument('--notary-issuer')
@@ -284,8 +379,8 @@ def main():
     plan = load_plan(args.plan)
     if args.operation == 'fetch':
         fetch(plan, args.artifacts)
-    elif args.operation == 'publish':
-        publish(plan, args.artifacts, args.notary_key, args.notary_key_id, args.notary_issuer)
+    elif args.operation in ('publish', 'sign-only'):
+        publish(plan, args.artifacts, args.notary_key, args.notary_key_id, args.notary_issuer, bootstrap=args.bootstrap_platform_packages, sign_only=args.operation == 'sign-only')
     else:
         verify_local(plan, args.artifacts)
     print('Reviewed artifact inventory verified; signing and publication remain separate gates.')
