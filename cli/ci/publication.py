@@ -172,9 +172,10 @@ def verify_local(plan, root):
     for p in PLATFORMS:
         require(binary_hashes[('npm', p)] == binary_hashes[('bun', p)], 'npm and standalone Bun bytes differ')
     if moving:
-        from kernel_rc_evidence import verify_platform_evidence
+        from kernel_rc_evidence import verify_platform_evidence, verify_live_evidence
         for platform, record in preflight['platforms'].items():
             verify_platform_evidence(plan, root, platform, record['report'], binary_hashes)
+        verify_live_evidence(plan, root, binary_hashes)
         for implementation in ('bun', 'rust'):
             observation = preflight['liveSmoke'].get('runners', {}).get(implementation, {})
             require(observation.get('accepted') is True and observation.get('helloExact') is True and observation.get('binarySha256') == binary_hashes[(implementation, 'darwin-arm64')], 'Live smoke does not bind exact release binary')

@@ -57,6 +57,28 @@ class AssemblyTests(unittest.TestCase):
     def record(self, path, implementation, kind, platform):
         return {'path': path.name, 'sha256': p.digest(path), 'byteLength': path.stat().st_size, 'implementation': implementation, 'kind': kind, 'platform': platform}
 
+    def live_report(self):
+        release = 'fixture-rc.1'
+        kernel_bytes = b'# Kernel fixture\n'
+        kernel_sha = hashlib.sha256(kernel_bytes).hexdigest()
+        aggregate = hashlib.sha256(b'payload/kernel.md\0' + str(len(kernel_bytes)).encode() + b'\0' + kernel_bytes + b'\0').hexdigest()
+        inventory = json.dumps({'README.md': {'mode': '100644', 'sha256': kernel_sha}}).encode()
+        descriptor = {'identity': 'openprose/core', 'release': release, 'source': {'commit': 'e'*40}, 'exports': {'entry': 'README.md'}, 'inventory': 'releases/'+release+'/core/inventory.json', 'inventory_sha256': hashlib.sha256(inventory).hexdigest()}
+        live = {'schema': 'openprose.kernel-rc-live-smoke/1', 'sourceSha': self.source, 'version': self.version, 'status': 'pass', 'platform': 'darwin-arm64', 'runners': {}}
+        for runner in ('bun', 'rust'):
+            observation = {'exit_code': 0, 'outer_watchdog_triggered': False, 'accepted': True, 'hello_exact': True, 'changed_original_files': [], 'new_files': ['hello.txt'], 'validation_failures': [], 'after': {'hello.txt': {'type': 'file', 'links': 1, 'sha256': hashlib.sha256(b'Hello World\n').hexdigest()}}}
+            kernel = {'version': 'kernel-'+release, 'sha256': aggregate, 'entrypoint': 'https://pkg.prose.md/kernel.md', 'resolvedUrl': 'https://pkg.prose.md/releases/'+release+'/core/README.md', 'sourceRevision': 'e'*40, 'kernelSha256': kernel_sha}
+            result = {'schema': 'openprose.runner-result/1', 'runner': {'name': runner, 'commit': self.source, 'version': self.version}, 'runnerExitCode': 0, 'terminal': {'classification': 'success', 'transportCompleted': True, 'terminalEventObserved': True}, 'languageImage': {'formatVersion': 'openprose.skill-runtime-image/1', 'version': kernel['version'], 'sha256': aggregate}, 'digests': {'deliveredImageSha256': kernel_sha}}
+            values = {'observation': json.dumps(observation).encode(), 'native': b'{"fixture":true}\n', 'runner': json.dumps({'schema': 'openprose.normalized-event/1', 'type': 'runner.completed', 'payload': {'result': result}}).encode()+b'\n', 'readiness': b'{}', 'selection': b'{}', 'kernel': kernel_bytes, 'inventory': inventory, 'descriptor': json.dumps(descriptor).encode()}
+            records = {}
+            for role, data in values.items():
+                name = runner+'-'+role+'.json'
+                path = self.root/name
+                path.write_bytes(data)
+                records[role] = {'path': name, 'sha256': p.digest(path), 'byteLength': len(data)}
+            live['runners'][runner] = {'accepted': True, 'helloExact': True, 'binarySha256': hashlib.sha256((runner+'darwin-arm64').encode()).hexdigest(), 'kernel': kernel, 'evidence': records}
+        return live
+
     def test_generated_packages_assemble_without_claiming_live_qualification(self):
         plan = a.assemble(self.roots, self.root/'assembly', self.evidence)
         self.assertEqual(plan['qualification']['status'], 'development')
@@ -75,7 +97,7 @@ class AssemblyTests(unittest.TestCase):
             a.assemble([self.roots[0]]*4, self.root/'assembly', self.evidence)
 
     def test_live_evidence_must_bind_exact_both_binary_bytes(self):
-        live = {'schema': 'openprose.kernel-rc-live-smoke/1', 'sourceSha': self.source, 'version': self.version, 'status': 'pass', 'runners': {name: {'accepted': True, 'helloExact': True, 'binarySha256': hashlib.sha256((name+'darwin-arm64').encode()).hexdigest()} for name in ('bun','rust')}}
+        live = self.live_report()
         path = self.root/'live.json'
         path.write_text(json.dumps(live))
         plan = a.assemble(self.roots, self.root/'assembly', self.evidence, path)

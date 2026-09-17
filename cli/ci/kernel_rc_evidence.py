@@ -118,3 +118,114 @@ def verify_platform_evidence(plan, root, platform, report_name, binary_hashes):
     checks = {name: pub.read_json(root / asset_name(platform, 'logs/' + name + '.json', artifact_names)) for name in CHECKS}
     validate_native(report, manifest, checks, binary_hashes, launcher_hash)
     return manifest
+
+
+LIVE_ROLES = {'observation', 'native', 'runner', 'readiness', 'selection', 'kernel', 'descriptor', 'inventory'}
+LIVE_MAX_BYTES = 64 * 1024 * 1024
+
+
+def live_asset_name(runner, role, record):
+    require(runner in ('bun', 'rust') and role in LIVE_ROLES, 'Invalid live evidence role')
+    require(isinstance(record, dict) and set(record) == {'path', 'sha256', 'byteLength'}, 'Invalid live evidence record')
+    path = record['path']
+    require(isinstance(path, str) and re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]{0,180}', path)
+            and '..' not in path, 'Live evidence paths must be flat filenames')
+    require(re.fullmatch(r'[0-9a-f]{64}', record['sha256'])
+            and type(record['byteLength']) is int and 0 < record['byteLength'] <= LIVE_MAX_BYTES,
+            'Invalid live evidence digest or size')
+    return 'live-' + runner + '-' + role + '-' + path
+
+
+def validate_live_smoke(live, source, version, binary_hashes, evidence_paths):
+    """Verify retained runner terminal, observation and immutable kernel bytes.
+
+    This verifies the report's custody and consistency, not provider semantics.
+    Native captures remain opaque evidence whose exact bytes are retained.
+    """
+    import json
+    from urllib.parse import urlsplit
+    import publication as pub
+    require(live.get('schema') == 'openprose.kernel-rc-live-smoke/1'
+            and live.get('sourceSha') == source and live.get('version') == version
+            and live.get('status') == 'pass' and live.get('platform') == 'darwin-arm64'
+            and set(live.get('runners', {})) == {'bun', 'rust'}, 'Invalid exact-source live smoke report')
+    for runner, attempt in live['runners'].items():
+        require(attempt.get('accepted') is True and attempt.get('helloExact') is True
+                and attempt.get('binarySha256') == binary_hashes[(runner, 'darwin-arm64')],
+                'Live smoke binary differs from release bytes')
+        records = attempt.get('evidence', {})
+        require(set(records) == LIVE_ROLES, 'Complete retained live evidence is required')
+        paths = {}
+        for role, record in records.items():
+            live_asset_name(runner, role, record)
+            path = evidence_paths[(runner, role)]
+            require(path.is_file() and not path.is_symlink()
+                    and path.stat().st_size == record['byteLength'] and pub.digest(path) == record['sha256'],
+                    'Live evidence bytes changed: ' + role)
+            paths[role] = path
+        observation = pub.read_json(paths['observation'])
+        require(observation.get('accepted') is True and observation.get('hello_exact') is True
+                and observation.get('exit_code') == 0 and observation.get('outer_watchdog_triggered') is False
+                and observation.get('validation_failures') == [] and observation.get('changed_original_files') == []
+                and observation.get('new_files') == ['hello.txt'], 'Live observation did not accept an unchanged exact Hello World run')
+        after = observation.get('after', {}).get('hello.txt', {})
+        require(after.get('type') == 'file' and after.get('sha256') == hashlib.sha256(b'Hello World\n').hexdigest()
+                and after.get('links') == 1, 'Live observation does not bind the exact Hello World file')
+        raw = paths['runner'].read_text()
+        require(len(raw.splitlines()) <= 100000, 'Runner event count exceeds limit')
+        events = [json.loads(line, object_pairs_hook=pub.object_pairs) for line in raw.splitlines()]
+        require(events and all(e.get('schema') == 'openprose.normalized-event/1' for e in events), 'Invalid retained runner events')
+        terminal_events = [e for e in events if e.get('type') in ('runner.completed', 'runner.failed', 'runner.cancelled')]
+        require(len(terminal_events) == 1 and terminal_events[0] is events[-1]
+                and terminal_events[0].get('type') == 'runner.completed', 'Runner did not have exactly one final completion')
+        result = terminal_events[0].get('payload', {}).get('result', {})
+        require(result.get('schema') == 'openprose.runner-result/1'
+                and result.get('runner') == {'name': runner, 'version': version, 'commit': source}
+                and result.get('runnerExitCode') == 0
+                and result.get('terminal', {}).get('classification') == 'success'
+                and result['terminal'].get('transportCompleted') is True
+                and result['terminal'].get('terminalEventObserved') is True,
+                'Raw runner terminal does not accept this release candidate')
+        kernel = attempt.get('kernel', {})
+        require(set(kernel) == {'version', 'sha256', 'entrypoint', 'resolvedUrl', 'sourceRevision', 'kernelSha256'}
+                and kernel['entrypoint'] == 'https://pkg.prose.md/kernel.md', 'Invalid resolved kernel identity')
+        url = urlsplit(kernel['resolvedUrl'])
+        match = re.fullmatch(r'/releases/([A-Za-z0-9][A-Za-z0-9._-]{0,127})/core/README\.md', url.path)
+        require(url.scheme == 'https' and url.netloc == 'pkg.prose.md' and not url.query and not url.fragment
+                and match is not None, 'Kernel must resolve to the immutable package endpoint')
+        release = match.group(1)
+        descriptor = pub.read_json(paths['descriptor'])
+        require(descriptor.get('identity') == 'openprose/core' and descriptor.get('release') == release
+                and descriptor.get('source', {}).get('commit') == kernel['sourceRevision']
+                and re.fullmatch(r'[0-9a-f]{40}', kernel['sourceRevision'])
+                and descriptor.get('exports', {}).get('entry') == 'README.md'
+                and descriptor.get('inventory') == 'releases/' + release + '/core/inventory.json'
+                and descriptor.get('inventory_sha256') == pub.digest(paths['inventory']),
+                'Kernel descriptor does not bind the resolved release')
+        inventory = pub.read_json(paths['inventory'])
+        content = paths['kernel'].read_bytes()
+        kernel_hash = hashlib.sha256(content).hexdigest()
+        aggregate = hashlib.sha256(b'payload/kernel.md\0' + str(len(content)).encode() + b'\0' + content + b'\0').hexdigest()
+        require(inventory.get('README.md', {}).get('mode') == '100644'
+                and inventory['README.md'].get('sha256') == kernel_hash == kernel['kernelSha256']
+                and kernel['sha256'] == aggregate and kernel['version'] == 'kernel-' + release,
+                'Retained kernel bytes do not match the resolved image')
+        require(result.get('languageImage') == {'formatVersion': 'openprose.skill-runtime-image/1', 'version': kernel['version'], 'sha256': aggregate}
+                and result.get('digests', {}).get('deliveredImageSha256') == kernel_hash,
+                'Runner did not execute the retained published kernel')
+
+
+def verify_live_evidence(plan, root, binary_hashes):
+    """Repeat live custody verification at publication without making API calls."""
+    import publication as pub
+    live = pub.read_json(root / plan['preflight'])['liveSmoke']
+    inventory = {a['name']: a for a in plan['artifacts']}
+    paths = {}
+    for runner, attempt in live.get('runners', {}).items():
+        for role, record in attempt.get('evidence', {}).items():
+            name = live_asset_name(runner, role, record)
+            require(name in inventory and inventory[name]['kind'] == 'evidence'
+                    and inventory[name]['sha256'] == record['sha256'] and inventory[name]['size'] == record['byteLength'],
+                    'Live evidence is not bound to the reviewed plan')
+            paths[(runner, role)] = root / name
+    validate_live_smoke(live, plan['source'], plan['version'], binary_hashes, paths)

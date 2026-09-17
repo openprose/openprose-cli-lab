@@ -15,6 +15,7 @@ def assemble(roots, output, evidence, live_smoke=None):
     inventory = {}
     reports = {}
     manifests = {}
+    all_binary_hashes = {}
     version = source = diagnostic = policy = None
     for root in roots:
         report = pub.read_json(root / 'build-report.json')
@@ -64,6 +65,7 @@ def assemble(roots, output, evidence, live_smoke=None):
                 launcher_hash = hashlib.sha256(members['package/bin/prose.js']).hexdigest()
         checks = {name: pub.read_json(root / ('logs/' + name + '.json')) for name in custody.CHECKS}
         custody.validate_native(report, manifest, checks, native_hashes, launcher_hash)
+        all_binary_hashes.update(native_hashes)
         # Retain every report-bound input, including the five structured native
         # observations. Publication independently repeats these bindings.
         for relative, bound in report['evidence'].items():
@@ -84,13 +86,19 @@ def assemble(roots, output, evidence, live_smoke=None):
     live = pub.read_json(live_smoke) if live_smoke else {'status': 'not-run'}
     preflight = {'schema': 'openprose.kernel-rc-release-evidence/1', 'version': version, 'sourceSha': source, 'status': 'pass' if live_smoke else 'incomplete', 'failures': [] if live_smoke else ['Exact-source live smoke remains required'], 'imageSource': 'published-on-run', 'embeddedDiagnosticImage': diagnostic, 'kernelPolicy': policy, 'platforms': reports, 'liveSmoke': live}
     if live_smoke:
-        pub.require(live.get('schema') == 'openprose.kernel-rc-live-smoke/1' and live.get('sourceSha') == source and live.get('version') == version and live.get('status') == 'pass', 'Live smoke does not qualify this source/version')
-        for implementation in ('bun', 'rust'):
-            observation = live.get('runners', {}).get(implementation, {})
-            pub.require(observation.get('accepted') is True and observation.get('helloExact') is True, 'Both runners require accepted Hello World observations')
-            item = next(a for a in inventory.values() if a[1]['implementation'] == implementation and a[1]['platform'] == 'darwin-arm64' and a[1]['kind'] == 'standalone')
-            binaries = [data for name, data in pub.archive_members(item[0]).items() if name.endswith('/prose')]
-            pub.require(len(binaries) == 1 and hashlib.sha256(binaries[0]).hexdigest() == observation.get('binarySha256'), 'Live smoke binary differs from release bytes')
+        paths = {}
+        for runner, attempt in live.get('runners', {}).items():
+            for role, record in attempt.get('evidence', {}).items():
+                custody.live_asset_name(runner, role, record)
+                paths[(runner, role)] = live_smoke.parent / record['path']
+        custody.validate_live_smoke(live, source, version, all_binary_hashes, paths)
+        for runner, attempt in live['runners'].items():
+            for role, record in attempt['evidence'].items():
+                name = custody.live_asset_name(runner, role, record)
+                pub.require(name not in inventory and pub.safe_name(name), 'Live evidence filename collision')
+                actual = paths[(runner, role)]
+                shutil.copyfile(actual, output / name)
+                inventory[name] = (actual, {'name': name, 'sha256': record['sha256'], 'size': record['byteLength'], 'kind': 'evidence', 'platform': 'darwin-arm64', 'implementation': runner})
     preflight_path = output / 'kernel-rc-release-evidence.json'
     preflight_path.write_text(json.dumps(preflight, indent=2, sort_keys=True) + '\n')
     artifacts = [record for _, record in inventory.values()]
@@ -101,6 +109,7 @@ def assemble(roots, output, evidence, live_smoke=None):
     if live_smoke:
         pub.load_plan(plan_path)
         pub.verify_local(plan, output)
+        custody.verify_live_evidence(plan, output, all_binary_hashes)
     return plan
 
 
