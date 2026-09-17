@@ -66,7 +66,7 @@ def load_plan(path):
         require(safe_name(item['name']) and item['name'] not in names, 'Unsafe or duplicate artifact name')
         names.add(item['name'])
         require(re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'Invalid artifact digest')
-        require(type(item['size']) is int and 0 < item['size'] <= MAX_BYTES, 'Invalid artifact size')
+        require(type(item['size']) is int and (0 if item['kind'] == 'evidence' else 1) <= item['size'] <= MAX_BYTES, 'Invalid artifact size')
         require(item['kind'] in ('standalone', 'npm', 'evidence'), 'Invalid artifact kind')
         require(item['platform'] in (*PLATFORMS, 'all'), 'Invalid platform')
         require(item['implementation'] in ('bun', 'rust', 'shared'), 'Invalid implementation')
@@ -193,11 +193,15 @@ def fetch(plan, root):
     require(not root.exists(), 'Use a fresh artifact directory')
     ref = json.loads(run(['gh', 'api', 'repos/' + REPOSITORY + '/commits/v' + plan['version']]))
     require(ref['sha'] == plan['source'], 'Release tag does not match reviewed source')
-    release = json.loads(run(['gh', 'release', 'view', 'v' + plan['version'], '--repo', REPOSITORY, '--json', 'isDraft,tagName,assets']))
-    require(release['isDraft'] is True, 'Only unpublished drafts are accepted')
+    release = json.loads(run(['gh', 'release', 'view', 'v' + plan['version'], '--repo', REPOSITORY, '--json', 'isDraft,isPrerelease,tagName,assets']))
+    require(release.get('tagName') == 'v' + plan['version'], 'Wrong release tag')
+    require(release['isDraft'] is True or (plan['signing'] == 'unsigned-rc' and '-rc.' in plan['version'] and release.get('isPrerelease') is True), 'Only drafts or published unsigned release candidates are accepted')
     expected = {a['name']: a['size'] for a in plan['artifacts']}
     observed = {a['name']: a['size'] for a in release['assets']}
-    require(observed == expected and len(release['assets']) == len(expected), 'Draft inventory differs from reviewed plan')
+    require(len(release['assets']) == len(observed), 'Duplicate release asset names')
+    require(all(observed.get(name) == size for name, size in expected.items()), 'Release inventory differs from reviewed plan')
+    extras = {name: size for name, size in observed.items() if name not in expected}
+    require(all(name in {original + '.sigstore.json' for original in expected} and type(size) is int and 0 < size <= 1024 * 1024 for name, size in extras.items()), 'Unrecognized release asset or oversized signature bundle')
     root.mkdir(parents=True)
     for item in plan['artifacts']:
         run(['gh', 'release', 'download', 'v' + plan['version'], '--repo', REPOSITORY, '--pattern', item['name'], '--dir', str(root)])
@@ -311,11 +315,22 @@ def registry_integrity(package, version):
     return json.loads(result.stdout)
 
 
-def publish(plan, root, key, key_id, issuer, bootstrap=False):
+def sign_artifacts(plan, root):
+    signatures = root / 'signatures'
+    signatures.mkdir(exist_ok=False)
+    for item in plan['artifacts']:
+        blob = root / item['name']
+        bundle = signatures / (item['name'] + '.sigstore.json')
+        run(['cosign', 'sign-blob', '--yes', '--bundle', str(bundle), str(blob)])
+        run(['cosign', 'verify-blob', '--bundle', str(bundle), '--certificate-identity', IDENTITY, '--certificate-oidc-issuer', 'https://token.actions.githubusercontent.com', str(blob)])
+
+
+def publish(plan, root, key, key_id, issuer, bootstrap=False, sign_only=False):
     require(os.environ.get('GITHUB_REPOSITORY') == REPOSITORY and os.environ.get('GITHUB_REF') == 'refs/heads/main' and os.environ.get('GITHUB_EVENT_NAME') == 'workflow_dispatch', 'Publication requires the main workflow')
     require(os.environ.get('GITHUB_WORKFLOW_REF') == REPOSITORY + '/.github/workflows/cli-publish.yml@refs/heads/main', 'Wrong publisher workflow')
     require(not os.environ.get('NODE_AUTH_TOKEN') and not os.environ.get('NPM_TOKEN'), 'Only OIDC publication is allowed')
     bootstrap_token = os.environ.pop('NPM_BOOTSTRAP_TOKEN', '')
+    require(not sign_only or (not bootstrap and not bootstrap_token), 'Sign-only forbids npm bootstrap authorization and credentials')
     require(bootstrap or not bootstrap_token, 'Bootstrap credential requires explicit bootstrap authorization')
     require(not bootstrap_token or re.fullmatch(r'[A-Za-z0-9_=-]{20,8192}', bootstrap_token), 'Invalid bootstrap credential format')
     repo = json.loads(run(['gh', 'api', 'repos/' + REPOSITORY]))
@@ -324,6 +339,10 @@ def publish(plan, root, key, key_id, issuer, bootstrap=False):
     if plan['signing'] == 'apple-notarized':
         require(key and key_id and issuer, 'Apple credentials required for signed publication')
         verify_macos(plan, root, key, key_id, issuer)
+    if sign_only:
+        sign_artifacts(plan, root)
+        (root / 'publication-receipt.json').write_text(json.dumps({'schema': 'openprose.cli-publication-receipt/1', 'operation': 'sign-only', 'version': plan['version'], 'source': plan['source'], 'npmStatus': 'not-published', 'npm': {}, 'credentialRoutes': {}, 'githubReleasePromoted': False, 'signing': plan['signing']}, indent=2) + '\n')
+        return
     # Preflight every package before any registry mutation; existing exact bytes
     # support recovery after a partial publication, never version replacement.
     existing = {name: registry_integrity(name, plan['version']) for name in PACKAGES}
@@ -332,13 +351,7 @@ def publish(plan, root, key, key_id, issuer, bootstrap=False):
     names_exist = {name: registry_package_exists(name) for name in PACKAGES}
     routes = publication_routes(existing, names_exist, bootstrap, bootstrap_token)
     tag = 'rc' if '-rc.' in plan['version'] else 'dev' if '-dev.' in plan['version'] else 'latest'
-    signatures = root / 'signatures'
-    signatures.mkdir(exist_ok=False)
-    for item in plan['artifacts']:
-        blob = root / item['name']
-        bundle = signatures / (item['name'] + '.sigstore.json')
-        run(['cosign', 'sign-blob', '--yes', '--bundle', str(bundle), str(blob)])
-        run(['cosign', 'verify-blob', '--bundle', str(bundle), '--certificate-identity', IDENTITY, '--certificate-oidc-issuer', 'https://token.actions.githubusercontent.com', str(blob)])
+    sign_artifacts(plan, root)
     for name in PACKAGES:
         package = root / packages[name]
         require(digest(package) == next(a['sha256'] for a in plan['artifacts'] if a['name'] == package.name), 'Package changed before publication')
@@ -350,7 +363,7 @@ def publish(plan, root, key, key_id, issuer, bootstrap=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('operation', choices=('verify', 'fetch', 'publish'))
+    parser.add_argument('operation', choices=('verify', 'fetch', 'publish', 'sign-only'))
     parser.add_argument('--plan', type=Path, required=True)
     parser.add_argument('--artifacts', type=Path, required=True)
     parser.add_argument('--bootstrap-platform-packages', action='store_true', help='One-time first publication of absent platform package names only')
@@ -361,8 +374,8 @@ def main():
     plan = load_plan(args.plan)
     if args.operation == 'fetch':
         fetch(plan, args.artifacts)
-    elif args.operation == 'publish':
-        publish(plan, args.artifacts, args.notary_key, args.notary_key_id, args.notary_issuer, bootstrap=args.bootstrap_platform_packages)
+    elif args.operation in ('publish', 'sign-only'):
+        publish(plan, args.artifacts, args.notary_key, args.notary_key_id, args.notary_issuer, bootstrap=args.bootstrap_platform_packages, sign_only=args.operation == 'sign-only')
     else:
         verify_local(plan, args.artifacts)
     print('Reviewed artifact inventory verified; signing and publication remain separate gates.')

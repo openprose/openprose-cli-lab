@@ -50,7 +50,7 @@ Recheck these before changing workflow identity or credential policy.
 ## Publication boundary
 
 The manual workflow consumes a reviewed plan from `cli/release/plans/` on main
-and immutable draft artifacts. It does not build, execute or rewrite downloaded
+and immutable reviewed release artifacts. It does not build, execute or rewrite downloaded
 binaries. The validator binds the version, source, protected preflight, kernel
 qualification and every artifact hash. It checks the complete platform inventory
 before download and again locally. npm and standalone Bun bytes must agree.
@@ -151,3 +151,26 @@ credential route for each package without recording credentials.
 
 References checked 2026-09-17: [npm trust](https://docs.npmjs.com/cli/v11/commands/npm-trust/)
 and [staged publishing](https://docs.npmjs.com/staged-publishing/).
+
+## Signing direct downloads while npm is unavailable
+
+The manual workflow defaults to `operation=publish`. An explicitly selected
+`operation=sign-only` applies the same main-workflow identity, public repository,
+qualified artifact inventory, live evidence, and macOS policy gates. It signs
+and verifies every reviewed artifact with Sigstore, without registry lookups or
+npm publication. Bootstrap authorization and credentials are forbidden in this
+mode. Its receipt records `operation: sign-only`, `npmStatus: not-published`, and
+`githubReleasePromoted: false`; it must not be presented as npm success.
+
+After verifying the workflow result, download its receipt and signature bundles,
+verify each bundle against its exact release asset and publisher identity, and
+attach the signature bundles to the draft GitHub release; retain the receipt as workflow and workspace evidence. Only then promote the qualified draft
+and mirror a reviewed subset through distribution. A later normal publication
+run may fetch a draft or an already public unsigned RC marked as a prerelease.
+The tag and source must match the reviewed plan, and the entire original
+inventory must retain its exact sizes and digests. Only recognized detached
+`<original asset>.sigstore.json` bundles, each at most 1 MiB, may be additional
+release assets. They are not downloaded or trusted by this fetch: the publisher
+verifies and signs the original bytes again. Published stable releases and
+unknown additional assets remain forbidden. npm is a separate incomplete channel
+until its actual publication and public integrity checks succeed.
