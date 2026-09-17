@@ -1,3 +1,5 @@
+import { PUBLISHED_KERNEL_STARTUP } from "./core/build";
+import { publishedKernel } from "./core/kernel-startup";
 import {nativeOutputLimits} from "./adapters/output-budget";
 import {nativeLimits} from "./adapters/sdk-limits";
 import { nativeConfiguration } from "./adapters/native-profile";
@@ -100,7 +102,9 @@ export async function runCli(args: readonly string[], dependencies: CliDependenc
       return await runOperation(parsed.operation, parsed.value, parsed.global, config, mode, dependencies);
     }
 
-    const image = await verifyRuntimeImage(dependencies.imageBundle ?? embeddedRuntimeImage);
+    const image = PUBLISHED_KERNEL_STARTUP && dependencies.imageBundle === undefined && ["codex", "claude", "prime", "omp", "agents-sdk"].includes(config.values.harness)
+      ? await publishedKernel(undefined, dependencies.cancellationSignal)
+      : await verifyRuntimeImage(dependencies.imageBundle ?? embeddedRuntimeImage);
     const verboseHuman = mode === "human" && config.values.verbose;
     try {
       if (verboseHuman) {
@@ -269,6 +273,7 @@ async function runOperation(
     schema: "openprose.doctor-report/1",
     runner: { name: RUNNER_NAME, version: RUNNER_VERSION, commit: RUNNER_BUILD_COMMIT },
     build: { profile: BUILD_PROFILE, testSeamsEnabled: TEST_SEAMS_ENABLED },
+    ...(PUBLISHED_KERNEL_STARTUP ? { imageSource: "published-on-run" } : {}),
     ready: problem === null,
     cwd: config.cwd,
     selectedHarness: selected.id,
@@ -310,7 +315,7 @@ async function runOperation(
       `transport: ${humanSafeScalar(transport)}`,
       `auth readiness: ${humanSafeScalar(report.selectedAuthReadiness)}`,
       `billing owner: ${humanSafeScalar(selected.billingOwner)}`,
-      `image: ${humanSafeScalar(image.manifest.imageVersion)} (${humanSafeScalar(image.aggregateSha256)})`,
+      PUBLISHED_KERNEL_STARTUP ? "image source: published kernel (resolved on run; not fetched by doctor)" : `image: ${humanSafeScalar(image.manifest.imageVersion)} (${humanSafeScalar(image.aggregateSha256)})`,
       ...(problem === null ? [] : [
         `problem: ${humanSafeScalar(problem.code)} — ${humanSafeScalar(problem.message)}`,
         ...detail,

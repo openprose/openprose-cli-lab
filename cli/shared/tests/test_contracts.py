@@ -64,6 +64,18 @@ class ContractsTest(unittest.TestCase):
         errors = sorted(self.validator(schema_name).iter_errors(instance), key=lambda error: list(error.path))
         self.assertEqual([], [f"{list(error.path)}: {error.message}" for error in errors])
 
+    def test_kernel_startup_instruction_recipes_and_provider_routes(self):
+        fixture = load_json(FIXTURES / "adapters/kernel-startup.json")
+        recipes = SHARED / "capabilities/adapters/recipes"
+        for mode in ("developer", "base"):
+            self.assert_valid("adapter-admission-recipe.schema.json", load_json(recipes / f"codex-exec-json-{mode}.v1.json"))
+        oracle = load_json(SHARED / "capabilities/adapters/oracle.v1.json")
+        admissions = {a["adapterId"].split("/")[0]: a for a in oracle["adapters"]}
+        for harness, routes in fixture["credentialRoutes"].items():
+            for route in routes:
+                self.assertIn(route, admissions[harness]["credentialGroups"])
+        self.assertEqual(fixture["failurePolicy"], "no-echo-or-provider-fallback")
+
     def test_safe_transport_diagnostics(self):
         validator = self.validator("transport-diagnostic.schema.json")
         for fixture in load_json(FIXTURES / "transport-diagnostics.json"):

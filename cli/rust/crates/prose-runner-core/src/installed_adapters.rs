@@ -212,7 +212,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn prompt_placement(self) -> &'static str {
         match self {
-            Self::CodexExecJson => "user-prefix-framed",
+            Self::CodexExecJson => if cfg!(any(test, feature = "test-seams")) { "user-prefix-framed" } else { "developer" },
             Self::AgentsSdkJsonl | Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "system-append",
         }
     }
@@ -220,7 +220,7 @@ impl InstalledAdapter {
     #[must_use]
     pub const fn prompt_strictness(self) -> &'static str {
         match self {
-            Self::CodexExecJson => "degraded",
+            Self::CodexExecJson => if cfg!(any(test, feature = "test-seams")) { "degraded" } else { "strict" },
             Self::AgentsSdkJsonl | Self::ClaudePrintStreamJson | Self::PrimeRpc | Self::OmpRpc => "strict",
         }
     }
@@ -519,9 +519,7 @@ impl InstalledAdapter {
     pub const fn recipe_json(self) -> &'static str {
         match self {
             Self::AgentsSdkJsonl => include_str!("../../../../shared/capabilities/adapters/recipes/agents-sdk-jsonl.v1.json"),
-            Self::CodexExecJson => include_str!(
-                "../../../../shared/capabilities/adapters/recipes/codex-exec-json.v1.json"
-            ),
+            Self::CodexExecJson => if cfg!(any(test, feature = "test-seams")) { include_str!("../../../../shared/capabilities/adapters/recipes/codex-exec-json.v1.json") } else { include_str!("../../../../shared/capabilities/adapters/recipes/codex-exec-json-developer.v1.json") },
             Self::ClaudePrintStreamJson => include_str!(
                 "../../../../shared/capabilities/adapters/recipes/claude-print-stream-json.v1.json"
             ),
@@ -3111,6 +3109,11 @@ pub fn prepare_launch(
                 "--ignore-user-config".into(),
                 "--ignore-rules".into(),
             ];
+            if !cfg!(any(test, feature = "test-seams")) {
+                let text = std::str::from_utf8(image_bytes).map_err(|_| RunnerError::catalog(ErrorCode::ImageInvalid))?;
+                let encoded = serde_json::to_string(text).map_err(|_| RunnerError::catalog(ErrorCode::ImageInvalid))?.replace('\u{7f}', "\\u007f");
+                argv.extend(["-c".into(), format!("developer_instructions={encoded}").into()]);
+            }
             if auth_group == "openai-api-key" {
               let settings:Vec<String>=serde_json::from_str(include_str!("../../../../shared/capabilities/adapters/codex-env-route.v1.json")).expect("Codex API settings");
               for setting in settings {argv.extend(["-c".into(),setting.into()]);}
@@ -3120,11 +3123,7 @@ pub fn prepare_launch(
             argv.push("-".into());
             (
                 argv,
-                Some(render_one_field(
-                    one_field_framing,
-                    image_bytes,
-                    task_bytes,
-                )?),
+                Some(if cfg!(any(test, feature = "test-seams")) { render_one_field(one_field_framing, image_bytes, task_bytes)? } else { task_bytes.to_vec() }),
             )
         }
         InstalledAdapter::AgentsSdkJsonl => {

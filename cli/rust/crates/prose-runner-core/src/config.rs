@@ -456,7 +456,7 @@ impl EffectiveConfig {
                 source: ConfigSource::default(),
             },
             native_log:Sourced {value:None,source:ConfigSource::default()},
-            output_contract: Sourced { value:"image-envelope".into(),source:ConfigSource::default() },
+            output_contract: Sourced { value:if crate::kernel_startup::PUBLISHED_KERNEL_STARTUP && !cfg!(test) { "native" } else { "image-envelope" }.into(),source:ConfigSource::default() },
             native_max_turns: Sourced {value:None,source:ConfigSource::default()},
             native_timeout: Sourced {value:None,source:ConfigSource::default()},
             native_tool_timeout: Sourced {value:None,source:ConfigSource::default()},

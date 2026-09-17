@@ -2,6 +2,7 @@ import {nativeLimitsArgv} from "./sdk-limits";
 import { nativeProfileArgv } from "./native-profile";
 import codexApiSettings from "../../../shared/capabilities/adapters/codex-env-route.v1.json";
 import { failure } from "../core/errors";
+import type { CodexInstructionPlacement } from "../core/build";
 import { canonicalJson, sha256 } from "../core/image";
 import type { RunnerInvocation } from "../core/types";
 import { installedAdapterDefinition } from "./recipes";
@@ -35,11 +36,12 @@ export interface BuildInstalledLaunchPlanInput {
   daemonSocketPath?: string;
   platform?: NodeJS.Platform;
   arch?: NodeJS.Architecture;
+  codexInstructionPlacement?: CodexInstructionPlacement;
 }
 
 export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanInput): Promise<InstalledLaunchPlan> {
   if(input.adapterId === "agents-sdk/jsonl" && !input.model) throw failure("CONFIG_INVALID",{reason:"Agents SDK requires an explicit model"});
-  const definition = installedAdapterDefinition(input.adapterId);
+  const definition = installedAdapterDefinition(input.adapterId, input.codexInstructionPlacement);
   assertInstalledAdapterPlatform(input.adapterId, { platform: input.platform, arch: input.arch });
   if (definition.credentialGroups[input.credentialGroup] === undefined) {
     throw failure("CONFIG_INVALID", {
@@ -63,6 +65,8 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
     executable: input.executable,
     "image-path": input.imagePath,
     "image-utf8": imageText,
+    "image-developer-config": "developer_instructions=" + JSON.stringify(imageText).replaceAll("\u007f", "\\u007f"),
+    "image-base-config": "model_instructions_file=" + JSON.stringify(input.imagePath).replaceAll("\u007f", "\\u007f"),
     "rendered-config-path": input.renderedConfigPath,
     "task-json": taskJson,
     "task-path": input.taskPath,
@@ -108,7 +112,7 @@ export async function buildInstalledLaunchPlan(input: BuildInstalledLaunchPlanIn
   let stdinBytes: Uint8Array | null = null;
   let renderedPayloadSha256: string | null = null;
   if (input.adapterId === "codex/exec-json") {
-    stdinBytes = encoder.encode(framed);
+    stdinBytes = encoder.encode(definition.recipe.launch.imageDelivery.mechanism === "native-config" ? taskJson : framed);
     renderedPayloadSha256 = await sha256(stdinBytes);
   } else if (input.adapterId === "prime/rpc") {
     stdinBytes = rpcPrompt(input.invocation.invocationId, taskJson, true);
