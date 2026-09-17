@@ -1,0 +1,21 @@
+{
+  "schema": "openprose.published-release-contract/1",
+  "doctor": {
+    "imageSource": "published-on-run",
+    "build": {
+      "profile": "release",
+      "testSeamsEnabled": false
+    },
+    "image": {
+      "version": "echo-v0",
+      "releaseEligible": true
+    }
+  },
+  "mock": {
+    "availability": "unavailable",
+    "testOnly": true,
+    "admissionBlock": "test-seams-disabled"
+  },
+  "mockRunExitCode": 10,
+  "mockRunErrorCode": "HARNESS_UNAVAILABLE"
+}

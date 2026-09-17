@@ -4487,7 +4487,8 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
                 for item in component["properties"]
             )
         ]
-        self.assertEqual(len(dependency_components), 76 + 14 + 12)
+        # The Rust kernel HTTPS loader adds 51 locked dependencies (IMP-008).
+        self.assertEqual(len(dependency_components), 127 + 14 + 12)
         self.assertEqual(
             len({component["bom-ref"] for component in dependency_components}),
             len(dependency_components),

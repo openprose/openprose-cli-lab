@@ -32,6 +32,26 @@ add `cli/release/plans/README.md`. The lead retains Git/index ownership. Host ad
 explicitly unsigned RC, with Apple signing tracked separately in IMP-015. This supersedes the initial
 publication-authorization and proposed npm-name notes above.
 
+## IMP-014 latest-kernel release qualification extension
+
+The user requires the RC to preserve latest-kernel startup. The `distribution_ci`
+agent owns `cli/shared/fixtures/build/published-release.json`,
+`cli/bun/test/build-identity.test.ts`, `cli/bun/scripts/image-bundle.ts`,
+`cli/rust/crates/prose-cli/build.rs`, `cli/ci/check_published_release.py`, and
+`cli/ci/test_check_published_release.py` for release-profile startup and hermetic
+compiled checks. The `macos_signing` agent additionally owns
+`cli/bun/npm/bin/prose.js` for the explicit kernel-loader cohort contract.
+Existing fixed-image and sentinel gates remain intact; no fixture is reclassified
+as a canonical kernel. Parent owns release workflows, publication validation and
+integration. No agent may publish or spend provider credits through these checks.
+
+The `openrouter_final` agent owns `cli/ci/build_kernel_rc.py`,
+`cli/ci/test_build_kernel_rc.py`, and `.github/workflows/cli-kernel-rc.yml` for
+provider-free native builds, package/install checks and retained artifacts.
+The lead owns `cli/ci/assemble_kernel_rc.py` and
+`cli/ci/test_assemble_kernel_rc.py` for reviewed cohort assembly. Neither build
+nor assembly creates publication authority or starts model calls.
+
 ## Existing path leases
 
 | Task | Owner | Writable paths | Shared-file lease | State |

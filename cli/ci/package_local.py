@@ -33,6 +33,13 @@ LICENSE = ROOT / "LICENSE"
 HELLO_EXAMPLE = CLI / "conformance" / "live-alpha" / "hello.prose.md"
 HELLO_EXAMPLE_MEMBER = "examples/hello.prose.md"
 SENTINEL_IMAGE_MANIFEST = CLI / "shared" / "image" / "sentinel-v1" / "manifest.json"
+DIAGNOSTIC_IMAGE_MANIFEST = CLI / "shared" / "image" / "echo-v0" / "manifest.json"
+PUBLISHED_KERNEL_POLICY = {
+    "schema": "openprose.published-kernel-policy/1",
+    "resolution": "latest-published-on-run",
+    "entrypoint": "https://pkg.prose.md/kernel.md",
+    "pinning": "per-run",
+}
 FUNCTIONAL_ALPHA_ADAPTER_AUTHORITY = (
     CLI / "shared" / "capabilities" / "adapters" / "functional-alpha.v1.json"
 )
@@ -516,25 +523,47 @@ def npm_cohort(
         "development": "development",
         "alpha": "functional-alpha",
         "release": "release-candidate",
+        "kernel-rc": "kernel-release-candidate",
     }
     if mode not in channels:
         raise PackageError("npm cohort mode is unsupported")
     admitted_platforms = (
         sorted(ALPHA_HARNESS_SUPPORT) if mode == "alpha" else sorted(PLATFORMS)
     )
+    if mode == "kernel-rc" and publication_platforms != "posix-four":
+        raise PackageError("kernel-rc packaging requires --publication-platforms posix-four")
     if publication_platforms is not None:
         if publication_platforms != "posix-four":
             raise PackageError("unsupported publication platform set")
-        if mode != "release" or re.fullmatch(
+        if mode not in {"release", "kernel-rc"} or re.fullmatch(
             r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)",
             version,
         ) is None:
             raise PackageError("posix-four publication packaging requires release mode and an explicit RC version")
         if re.fullmatch(r"[0-9a-f]{40}", source_revision) is None:
             raise PackageError("posix-four publication packaging requires an exact source commit")
-        if image.get("purpose") != "canonical-language-runtime" or image.get("releaseEligible") is not True:
+        if mode == "release" and (image.get("purpose") != "canonical-language-runtime" or image.get("releaseEligible") is not True):
             raise PackageError("posix-four publication packaging requires a release-eligible canonical image")
+        if mode == "kernel-rc":
+            diagnostic, diagnostic_manifest_sha = read_image_manifest(DIAGNOSTIC_IMAGE_MANIFEST)
+            if image != image_identity(diagnostic, diagnostic_manifest_sha):
+                raise PackageError("kernel-rc requires the exact diagnostic echo image identity")
         admitted_platforms = list(POSIX_PUBLICATION_PLATFORMS)
+    if mode == "kernel-rc":
+        return {
+            "schema": "openprose.npm-cohort/2",
+            "version": version,
+            "sourceRevision": source_revision,
+            "releaseChannel": "kernel-release-candidate",
+            "purpose": "published-kernel-loader",
+            "imageSource": "published-on-run",
+            "embeddedDiagnosticImage": {key: value for key, value in image.items() if key != "releaseEligible"},
+            "kernelPolicy": dict(PUBLISHED_KERNEL_POLICY),
+            "admittedPlatforms": admitted_platforms,
+            "semanticStatus": "unverified",
+            "releaseEligible": False,
+            "publicationAuthorized": False,
+        }
     return {
         "schema": NPM_COHORT_SCHEMA,
         "version": version,
@@ -794,6 +823,17 @@ def tar_gz(path: Path, members: Iterable[tuple[str, bytes, int]], epoch: int) ->
 
 
 def package_status(mode: str) -> tuple[str, str]:
+    if mode == "kernel-rc":
+        return (
+            "kernel release candidate",
+            "This unsigned release candidate resolves the latest published kernel at "
+            "https://pkg.prose.md/kernel.md on each run and holds its verified selection "
+            "for that run. The embedded echo-v0 image is diagnostic data, not the "
+            "kernel executed by a real harness. This release is not Developer ID "
+            "signed or notarized; macOS binaries may have ad-hoc signatures. "
+            "Review the release qualification evidence before use; this is not a "
+            "claim of general program or model conformance.",
+        )
     if mode == "alpha":
         return (
             "functional alpha",
@@ -1751,7 +1791,11 @@ def npm_platform_manifest(
         "openproseBinaryByteLength": len(binary),
         "openproseBinarySha256": sha256_bytes(binary),
         "openproseSourceRevision": source_revision,
-        "openproseImage": image,
+        **({
+            "openproseEmbeddedDiagnosticImage": cohort["embeddedDiagnosticImage"],
+            "openproseKernelPolicy": cohort["kernelPolicy"],
+            "openproseImageSource": cohort["imageSource"],
+        } if cohort["schema"] == "openprose.npm-cohort/2" else {"openproseImage": image}),
         "openproseCohort": cohort,
         "openprosePlatform": platform_identifier,
         "openproseBunCompileTarget": BUN_RUNTIME_BY_PLATFORM[platform_identifier][
@@ -2022,6 +2066,8 @@ def verify_product(
             raise PackageError(
                 f"{implementation} embedded image identity does not match --image-manifest"
             )
+        if mode == "kernel-rc" and report.get("imageSource") != "published-on-run":
+            raise PackageError(f"{implementation} kernel-rc must resolve the published kernel on run")
         expected_runner = {
             "name": implementation,
             "version": version,
@@ -2358,6 +2404,9 @@ def build(
         npm_cohort(mode=args.mode, version=args.version,
                    source_revision=args.source_revision, image=image_record,
                    publication_platforms=publication_platforms)
+    if args.mode == "kernel-rc":
+        if image_manifest_sha256 != sha256_file(DIAGNOSTIC_IMAGE_MANIFEST):
+            raise PackageError("kernel-rc requires the exact embedded diagnostic manifest")
     if args.mode == "development":
         if internal_package_purpose == "ordinary-development":
             if (
@@ -2479,6 +2528,7 @@ def build(
         if platform_identifier.startswith("darwin-") and args.mode in {
             "alpha",
             "release",
+            "kernel-rc",
         }:
             verify_darwin_code_signature(rust_snapshot, "rust")
             verify_darwin_code_signature(bun_snapshot, "bun")
@@ -2624,7 +2674,11 @@ def build(
             },
             "bunRuntime": BUN_RUNTIME_BY_PLATFORM[platform_identifier],
             "linuxRuntime": linux_runtime,
-            "image": image_record,
+            **({
+                "embeddedDiagnosticImage": {key: value for key, value in image_record.items() if key != "releaseEligible"},
+                "imageSource": "published-on-run",
+                "kernelPolicy": dict(PUBLISHED_KERNEL_POLICY),
+            } if args.mode == "kernel-rc" else {"image": image_record}),
             "windowsProcessHost": windows_host_record,
             "windowsJobObjectReleaseAdmission": False,
             "toolchains": toolchains,
@@ -2729,7 +2783,11 @@ def build(
                         "platform": platform_identifier,
                         "sourceRevision": args.source_revision,
                         "sourceDateEpoch": args.source_date_epoch,
-                        "image": image_record,
+                        **({
+                            "embeddedDiagnosticImage": release_manifest["embeddedDiagnosticImage"],
+                            "imageSource": "published-on-run",
+                            "kernelPolicy": dict(PUBLISHED_KERNEL_POLICY),
+                        } if args.mode == "kernel-rc" else {"image": image_record}),
                         "buildProfiles": release_manifest["buildProfiles"],
                         "bunRuntime": release_manifest["bunRuntime"],
                         "linuxRuntime": linux_runtime,
@@ -2738,7 +2796,7 @@ def build(
                     },
                     "resolvedDependencies": [
                         {
-                            "uri": "openprose:skill-runtime-image",
+                            "uri": "openprose:embedded-diagnostic-image" if args.mode == "kernel-rc" else "openprose:skill-runtime-image",
                             "digest": {"sha256": image_record["sha256"]},
                         },
                         {
@@ -2795,7 +2853,7 @@ def build(
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument(
-        "--mode", choices=("development", "alpha", "release"), required=True
+        "--mode", choices=("development", "alpha", "release", "kernel-rc"), required=True
     )
     result.add_argument("--publication-platforms", choices=("posix-four",), help="Explicit four-platform canonical kernel RC cohort; does not grant publication authority")
     result.add_argument("--npm-package-name", choices=("@openprose/prose-cli", "@openprose/prose"), default="@openprose/prose-cli")

@@ -1,0 +1,81 @@
+import hashlib
+import io
+import json
+from pathlib import Path
+import tarfile
+import tempfile
+import unittest
+import assemble_kernel_rc as a
+import package_local as package
+import publication as p
+
+
+class AssemblyTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.roots = []
+        self.source = 'a' * 40
+        self.version = '0.15.0-rc.1'
+        image, manifest_sha = package.read_image_manifest(package.CLI / 'shared/image/echo-v0/manifest.json')
+        self.image = package.image_identity(image, manifest_sha)
+        for platform in p.PLATFORMS:
+            root = self.root / platform
+            output = root / 'package'
+            output.mkdir(parents=True)
+            self.roots.append(root)
+            artifacts = []
+            for implementation in ('bun', 'rust'):
+                name = implementation + '-' + platform + '.tgz'
+                data = (implementation + platform).encode()
+                with tarfile.open(output / name, 'w:gz') as archive:
+                    member = tarfile.TarInfo('root/prose')
+                    member.size = len(data)
+                    archive.addfile(member, io.BytesIO(data))
+                artifacts.append(self.record(output / name, implementation, 'standalone-archive', platform))
+            runtime = {'minimumGlibc': '2.34', 'requiredGlibcMaximum': {'rust': '2.34', 'bun': '2.34'}, 'executionEvidence': 'ubuntu-22.04-only'} if platform.startswith('linux-') else 'not-applicable'
+            meta, native = package.npm_packages(output, ('bun' + platform).encode(), self.version, platform, 0, self.source, self.image, runtime, 'kernel-rc', package.HELLO_EXAMPLE.read_bytes(), publication_platforms='posix-four')
+            artifacts += [self.record(meta, 'bun', 'npm-meta', None), self.record(native, 'bun', 'npm-platform', platform)]
+            manifest = {'schema': 'openprose.local-release-manifest/1', 'mode': 'kernel-rc', 'platform': platform, 'version': self.version, 'source': {'revision': self.source}, 'imageSource': 'published-on-run', 'embeddedDiagnosticImage': {k:v for k,v in self.image.items() if k != 'releaseEligible'}, 'kernelPolicy': package.PUBLISHED_KERNEL_POLICY, 'artifacts': artifacts}
+            (output / 'release-manifest.json').write_text(json.dumps(manifest))
+            evidence = {str(f.relative_to(root)): {'sha256': p.digest(f), 'byteLength': f.stat().st_size} for f in output.iterdir()}
+            report = {'schema': 'openprose.kernel-rc-build/1', 'platform': platform, 'version': self.version, 'sourceRevision': self.source, 'imageSource': 'published-on-run', 'testSeamsEnabled': False, 'qualification': 'offline-install-only', 'publicationAuthorized': False, 'modelCalls': 0, 'checks': [{'name': n, 'status': 'passed'} for n in ('built-bun','built-rust','installed-bun','installed-rust','installed-npm')], 'evidence': evidence}
+            (root / 'build-report.json').write_text(json.dumps(report))
+        self.evidence = 'https://github.com/openprose/openprose-expedition/tree/' + 'b'*40 + '/test'
+
+    def record(self, path, implementation, kind, platform):
+        return {'path': path.name, 'sha256': p.digest(path), 'byteLength': path.stat().st_size, 'implementation': implementation, 'kind': kind, 'platform': platform}
+
+    def test_generated_packages_assemble_without_claiming_live_qualification(self):
+        plan = a.assemble(self.roots, self.root/'assembly', self.evidence)
+        self.assertEqual(plan['qualification']['status'], 'development')
+        self.assertEqual(len([x for x in plan['artifacts'] if x['kind'] == 'npm']), 5)
+        with self.assertRaisesRegex(ValueError, 'Kernel qualification'):
+            p.load_plan(self.root/'assembly/publication-plan.json')
+
+    def test_damaged_generated_package_refused(self):
+        next((self.roots[0]/'package').glob('*.tgz')).write_bytes(b'changed')
+        with self.assertRaisesRegex(ValueError, 'evidence bytes changed'):
+            a.assemble(self.roots, self.root/'assembly', self.evidence)
+        self.assertFalse((self.root/'assembly').exists())
+
+    def test_duplicate_platform_refused(self):
+        with self.assertRaisesRegex(ValueError, 'duplicate native'):
+            a.assemble([self.roots[0]]*4, self.root/'assembly', self.evidence)
+
+    def test_live_evidence_must_bind_exact_both_binary_bytes(self):
+        live = {'schema': 'openprose.kernel-rc-live-smoke/1', 'sourceSha': self.source, 'version': self.version, 'status': 'pass', 'runners': {name: {'accepted': True, 'helloExact': True, 'binarySha256': hashlib.sha256((name+'darwin-arm64').encode()).hexdigest()} for name in ('bun','rust')}}
+        path = self.root/'live.json'
+        path.write_text(json.dumps(live))
+        plan = a.assemble(self.roots, self.root/'assembly', self.evidence, path)
+        self.assertEqual(plan['qualification']['status'], 'kernel-smoke-qualified')
+        p.verify_local(plan, self.root/'assembly')
+        live['runners']['rust']['binarySha256'] = '0'*64
+        path.write_text(json.dumps(live))
+        with self.assertRaisesRegex(ValueError, 'differs from release bytes'):
+            a.assemble(self.roots, self.root/'changed-live', self.evidence, path)
+
+
+if __name__ == '__main__':
+    unittest.main()

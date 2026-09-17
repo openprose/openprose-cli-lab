@@ -109,11 +109,27 @@ def verify_local(plan, root):
         p = root / item['name']
         require(p.is_file() and not p.is_symlink() and p.stat().st_size == item['size'] and digest(p) == item['sha256'], 'Artifact bytes differ from reviewed plan: ' + item['name'])
     preflight = read_json(root / plan['preflight'])
-    require(preflight.get('schema') == 'openprose.release-preflight-report/1' and preflight.get('status') == 'pass' and preflight.get('failures') == [], 'Existing protected release preflight must pass')
-    require(preflight.get('sourceSha') == plan['source'] and preflight.get('version') == plan['version'] and preflight.get('protectedAuthority', {}).get('status') == 'pass', 'Preflight does not bind the candidate')
-    image = preflight.get('image', {})
-    require(image.get('releaseEligible') is True and image.get('purpose') == 'canonical-language-runtime' and re.fullmatch(r'[0-9a-f]{64}', image.get('imageSha256', '')) and re.fullmatch(r'[0-9a-f]{64}', image.get('manifestSha256', '')), 'Protected preflight must qualify a canonical image')
-    expected_image = {'formatVersion': 1, 'version': image.get('version'), 'sha256': image['imageSha256'], 'manifestSha256': image['manifestSha256'], 'purpose': image['purpose'], 'releaseEligible': True}
+    moving = preflight.get('schema') == 'openprose.kernel-rc-release-evidence/1'
+    require(preflight.get('status') == 'pass' and preflight.get('failures') == [], 'Release qualification must pass')
+    require(preflight.get('sourceSha') == plan['source'] and preflight.get('version') == plan['version'], 'Preflight does not bind the candidate')
+    if moving:
+        require(preflight.get('imageSource') == 'published-on-run' and set(preflight.get('platforms', {})) == set(PLATFORMS), 'Latest-kernel platform qualification required')
+        expected_image = preflight.get('embeddedDiagnosticImage', {})
+        require(set(expected_image) == {'formatVersion', 'version', 'sha256', 'manifestSha256', 'purpose'} and expected_image['purpose'] == 'functional-alpha-placeholder', 'Invalid diagnostic image binding')
+        require(preflight.get('kernelPolicy') == {'schema': 'openprose.published-kernel-policy/1', 'resolution': 'latest-published-on-run', 'entrypoint': 'https://pkg.prose.md/kernel.md', 'pinning': 'per-run'}, 'Unexpected kernel acquisition policy')
+        require(preflight.get('liveSmoke', {}).get('sourceSha') == plan['source'] and preflight['liveSmoke'].get('status') == 'pass', 'Exact-source live smoke evidence required')
+        for platform, record in preflight['platforms'].items():
+            require(record.get('status') == 'pass' and safe_name(record.get('report')), 'Missing platform evidence')
+            require(any(a['name'] == record['report'] and a['kind'] == 'evidence' for a in plan['artifacts']), 'Platform report is not bound to the plan')
+            build = read_json(root / record['report'])
+            checks = build.get('checks', [])
+            require(build.get('schema') == 'openprose.kernel-rc-build/1' and build.get('sourceRevision') == plan['source'] and build.get('version') == plan['version'] and build.get('platform') == platform and build.get('imageSource') == 'published-on-run' and build.get('testSeamsEnabled') is False, 'Platform evidence identity mismatch')
+            require(len(checks) == 5 and {c.get('name') for c in checks} == {'built-bun','built-rust','installed-bun','installed-rust','installed-npm'} and all(c.get('status') == 'passed' for c in checks), 'Incomplete native install qualification')
+    else:
+        require(preflight.get('schema') == 'openprose.release-preflight-report/1' and preflight.get('protectedAuthority', {}).get('status') == 'pass', 'Existing protected release preflight must pass')
+        image = preflight.get('image', {})
+        require(image.get('releaseEligible') is True and image.get('purpose') == 'canonical-language-runtime' and re.fullmatch(r'[0-9a-f]{64}', image.get('imageSha256', '')) and re.fullmatch(r'[0-9a-f]{64}', image.get('manifestSha256', '')), 'Protected preflight must qualify a canonical image')
+        expected_image = {'formatVersion': 1, 'version': image.get('version'), 'sha256': image['imageSha256'], 'manifestSha256': image['manifestSha256'], 'purpose': image['purpose'], 'releaseEligible': True}
     packages = {}
     binary_hashes = {}
     for item in plan['artifacts']:
@@ -134,19 +150,30 @@ def verify_local(plan, root):
         config = meta.get('publishConfig', {})
         require(set(config) <= {'access', 'provenance'} and config.get('access', 'public') == 'public' and config.get('provenance', True) is True, 'Unsafe npm publish configuration')
         cohort = meta.get('openproseCohort', {})
-        require(cohort.get('schema') == 'openprose.npm-cohort/1' and cohort.get('releaseChannel') == 'release-candidate' and cohort.get('version') == plan['version'] and cohort.get('sourceRevision') == plan['source'] and cohort.get('image') == expected_image and cohort.get('purpose') == 'canonical-language-runtime' and cohort.get('admittedPlatforms') == sorted(PLATFORMS), 'Package cohort does not match the qualified source/image/platform set')
+        require(cohort.get('version') == plan['version'] and cohort.get('sourceRevision') == plan['source'] and cohort.get('admittedPlatforms') == sorted(PLATFORMS), 'Package cohort does not match qualified source/platforms')
+        if moving:
+            require(cohort.get('schema') == 'openprose.npm-cohort/2' and cohort.get('releaseChannel') == 'kernel-release-candidate' and cohort.get('purpose') == 'published-kernel-loader' and cohort.get('imageSource') == 'published-on-run' and cohort.get('embeddedDiagnosticImage') == expected_image and cohort.get('kernelPolicy') == preflight['kernelPolicy'], 'Package does not match latest-kernel qualification')
+        else:
+            require(cohort.get('schema') == 'openprose.npm-cohort/1' and cohort.get('releaseChannel') == 'release-candidate' and cohort.get('image') == expected_image and cohort.get('purpose') == 'canonical-language-runtime', 'Package does not match canonical-image qualification')
         require(cohort.get('releaseEligible') is False and cohort.get('publicationAuthorized') is False, 'Local packaging must not grant publication authority')
         if name == PACKAGES[-1]:
             require(meta.get('optionalDependencies') == {n: plan['version'] for n in PACKAGES[:-1]}, 'Incomplete platform cohort')
         else:
             require(meta.get('openproseSourceRevision') == plan['source'], 'npm source mismatch')
-            require(meta.get('openproseImage') == expected_image, 'Sentinel or unqualified image')
+            if moving:
+                require('openproseImage' not in meta and meta.get('openproseEmbeddedDiagnosticImage') == expected_image and meta.get('openproseKernelPolicy') == preflight['kernelPolicy'] and meta.get('openproseImageSource') == 'published-on-run', 'Wrong kernel-loader package metadata')
+            else:
+                require(meta.get('openproseImage') == expected_image, 'Sentinel or unqualified image')
             require('package/bin/prose' in members, 'Missing npm binary')
             binary_hashes[('npm', name.removeprefix('@openprose/prose-cli-'))] = hashlib.sha256(members['package/bin/prose']).hexdigest()
         packages[name] = item['name']
     require(set(packages) == set(PACKAGES), 'All five npm packages required')
     for p in PLATFORMS:
         require(binary_hashes[('npm', p)] == binary_hashes[('bun', p)], 'npm and standalone Bun bytes differ')
+    if moving:
+        for implementation in ('bun', 'rust'):
+            observation = preflight['liveSmoke'].get('runners', {}).get(implementation, {})
+            require(observation.get('accepted') is True and observation.get('helloExact') is True and observation.get('binarySha256') == binary_hashes[(implementation, 'darwin-arm64')], 'Live smoke does not bind exact release binary')
     return packages, binary_hashes
 
 

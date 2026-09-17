@@ -66,8 +66,12 @@ retained with the public release before claiming complete download verification.
 Do not promote an incomplete release or replace npm's `latest` tag with an RC.
 
 The existing fixed-image full-release preflight is not proof of moving-kernel
-startup. Extending qualification for the normal latest-kernel route remains
-engineering work. Do not satisfy the gate by embedding a fixed kernel, relabeling
+startup. The separate `kernel-rc` build/package path verifies release profile,
+disabled test seams, latest-kernel policy and fresh offline installations on all
+four platforms. `cli-kernel-rc.yml` runs on PRs for validation and manually from
+main for actual candidates. `assemble_kernel_rc.py` verifies the native reports
+and package bytes; without exact-binary live smoke evidence, it emits an
+unqualified development plan that publication refuses. Do not satisfy the gate by embedding a fixed kernel, relabeling
 an echo/sentinel fixture, or fabricating a protected passing report. No qualified
 plan has been committed. Existing alpha workflows and their independent
 requirements are not silently replaced by this new path.
