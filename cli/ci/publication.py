@@ -68,6 +68,7 @@ def load_plan(path):
         require(re.fullmatch(r'[0-9a-f]{64}', item['sha256']), 'Invalid artifact digest')
         require(type(item['size']) is int and (0 if item['kind'] == 'evidence' else 1) <= item['size'] <= MAX_BYTES, 'Invalid artifact size')
         require(item['kind'] in ('standalone', 'npm', 'evidence'), 'Invalid artifact kind')
+        require(item['size'] != 0 or item['sha256'] == hashlib.sha256(b'').hexdigest(), 'Empty evidence digest mismatch')
         require(item['platform'] in (*PLATFORMS, 'all'), 'Invalid platform')
         require(item['implementation'] in ('bun', 'rust', 'shared'), 'Invalid implementation')
     require(sum(a['size'] for a in plan['artifacts']) <= 2 * 1024**3, 'Artifact set exceeds budget')
@@ -196,14 +197,18 @@ def fetch(plan, root):
     release = json.loads(run(['gh', 'release', 'view', 'v' + plan['version'], '--repo', REPOSITORY, '--json', 'isDraft,isPrerelease,tagName,assets']))
     require(release.get('tagName') == 'v' + plan['version'], 'Wrong release tag')
     require(release['isDraft'] is True or (plan['signing'] == 'unsigned-rc' and '-rc.' in plan['version'] and release.get('isPrerelease') is True), 'Only drafts or published unsigned release candidates are accepted')
-    expected = {a['name']: a['size'] for a in plan['artifacts']}
+    expected = {a['name']: a['size'] for a in plan['artifacts'] if a['size'] > 0}
     observed = {a['name']: a['size'] for a in release['assets']}
     require(len(release['assets']) == len(observed), 'Duplicate release asset names')
     require(all(observed.get(name) == size for name, size in expected.items()), 'Release inventory differs from reviewed plan')
     extras = {name: size for name, size in observed.items() if name not in expected}
-    require(all(name in {original + '.sigstore.json' for original in expected} and type(size) is int and 0 < size <= 1024 * 1024 for name, size in extras.items()), 'Unrecognized release asset or oversized signature bundle')
+    require(all(name in {a['name'] + '.sigstore.json' for a in plan['artifacts']} and type(size) is int and 0 < size <= 1024 * 1024 for name, size in extras.items()), 'Unrecognized release asset or oversized signature bundle')
     root.mkdir(parents=True)
     for item in plan['artifacts']:
+        if item['size'] == 0:
+            require(item['kind'] == 'evidence' and item['sha256'] == hashlib.sha256(b'').hexdigest(), 'Only verified empty evidence can be reconstructed')
+            (root / item['name']).write_bytes(b'')
+            continue
         run(['gh', 'release', 'download', 'v' + plan['version'], '--repo', REPOSITORY, '--pattern', item['name'], '--dir', str(root)])
     verify_local(plan, root)
 

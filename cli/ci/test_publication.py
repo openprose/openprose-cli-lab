@@ -222,6 +222,27 @@ class PublicationTests(unittest.TestCase):
             self.assertEqual(run.call_count, len(assets) + 2)
             verify.assert_called_once()
 
+    def test_fetch_reconstructs_only_exact_empty_evidence(self):
+        self.add('empty-build.log', b'')
+        release = {'isDraft': True, 'isPrerelease': True, 'tagName': 'v' + self.plan['version'],
+                   'assets': [{'name': a['name'], 'size': a['size']} for a in self.plan['artifacts'] if a['size']]}
+        calls = []
+        def fake(argv):
+            calls.append(argv)
+            if argv[1] == 'api': return json.dumps({'sha': self.plan['source']})
+            if argv[2] == 'view': return json.dumps(release)
+            name = argv[argv.index('--pattern') + 1]
+            (self.root / 'download' / name).write_bytes((self.root / name).read_bytes())
+            return ''
+        with patch.object(p, 'run', side_effect=fake):
+            p.fetch(self.plan, self.root / 'download')
+        self.assertEqual((self.root / 'download/empty-build.log').read_bytes(), b'')
+        self.assertFalse(any('empty-build.log' in call for call in calls))
+        self.plan['artifacts'][-1]['sha256'] = 'f' * 64
+        self.save()
+        with self.assertRaisesRegex(ValueError, 'Empty evidence digest mismatch'):
+            p.load_plan(self.path)
+
     def test_fetch_rejects_public_stable_unknown_assets_and_inventory_changes(self):
         self.plan['signing'] = 'unsigned-rc'
         assets = [{'name': a['name'], 'size': a['size']} for a in self.plan['artifacts']]

@@ -174,3 +174,7 @@ release assets. They are not downloaded or trusted by this fetch: the publisher
 verifies and signs the original bytes again. Published stable releases and
 unknown additional assets remain forbidden. npm is a separate incomplete channel
 until its actual publication and public integrity checks succeed.
+
+### Empty evidence files
+
+GitHub release uploads reject zero-byte files. The reviewed inventory retains empty build logs with size zero and the SHA-256 of the empty byte string. Fetching reconstructs only those explicitly declared evidence files; it never reconstructs missing nonempty files or executable packages. Native build reports still bind their exact original bytes. Detached signatures cover the reconstructed empty files too.
