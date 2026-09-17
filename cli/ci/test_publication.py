@@ -129,5 +129,139 @@ class PublicationTests(unittest.TestCase):
             run.assert_not_called()
 
 
+    def test_complete_partial_recovery_uses_token_only_for_new_platform_names(self):
+        self.plan['signing'] = 'unsigned-rc'
+        packages = {name: name.split('/')[1] + '.tgz' for name in p.PACKAGES}
+        integrities = {name: p.npm_integrity(self.root / path) for name, path in packages.items()}
+        published = {p.PACKAGES[0]: integrities[p.PACKAGES[0]]}
+        token = 'npm_' + 'x' * 36
+        routes = []
+        def command(argv):
+            self.assertNotIn('NPM_BOOTSTRAP_TOKEN', p.os.environ)
+            return '{"visibility":"public"}' if argv[0] == 'gh' else ''
+        def publish_package(name, package, tag, route, supplied_token):
+            self.assertEqual('rc', tag)
+            self.assertEqual(self.root / packages[name], package)
+            expected_route = 'oidc' if name == p.PACKAGES[-1] else 'bootstrap-token'
+            self.assertEqual(expected_route, route)
+            self.assertEqual(None if route == 'oidc' else token, supplied_token)
+            published[name] = integrities[name]
+            routes.append(name)
+        environment = {'GITHUB_REPOSITORY': p.REPOSITORY, 'GITHUB_REF': 'refs/heads/main',
+                       'GITHUB_EVENT_NAME': 'workflow_dispatch',
+                       'GITHUB_WORKFLOW_REF': p.REPOSITORY + '/.github/workflows/cli-publish.yml@refs/heads/main',
+                       'NPM_BOOTSTRAP_TOKEN': token}
+        with patch.dict(p.os.environ, environment, clear=True), patch.object(p, 'run', side_effect=command), patch.object(p, 'verify_local', return_value=(packages, {})), patch.object(p, 'registry_integrity', side_effect=lambda name, version: published.get(name)), patch.object(p, 'registry_package_exists', side_effect=lambda name: name == p.PACKAGES[-1] or name in published), patch.object(p, 'publish_package', side_effect=publish_package):
+            p.publish(self.plan, self.root, None, None, None, bootstrap=True)
+        self.assertEqual(list(p.PACKAGES[1:]), routes)
+        receipt = json.loads((self.root / 'publication-receipt.json').read_text())
+        self.assertEqual('already-published', receipt['credentialRoutes'][p.PACKAGES[0]])
+        self.assertEqual('oidc', receipt['credentialRoutes'][p.PACKAGES[-1]])
+        self.assertNotIn(token, json.dumps(receipt))
+
+
+class BootstrapTests(unittest.TestCase):
+    token = 'npm_' + 'x' * 36
+
+    def test_name_level_absence_requires_explicit_authorization_and_secret(self):
+        existing = dict.fromkeys(p.PACKAGES)
+        names = dict.fromkeys(p.PACKAGES, True)
+        names[p.PACKAGES[0]] = False
+        for enabled, token in [(False, self.token), (True, '')]:
+            with self.assertRaisesRegex(ValueError, 'explicit bootstrap'):
+                p.publication_routes(existing, names, enabled, token)
+        routes = p.publication_routes(existing, names, True, self.token)
+        self.assertEqual('bootstrap-token', routes[p.PACKAGES[0]])
+        self.assertEqual('oidc', routes[p.PACKAGES[-1]])
+        self.assertEqual('oidc', routes[p.PACKAGES[1]])
+
+    def test_root_cannot_be_bootstrapped_and_recovery_skips_existing_bytes(self):
+        existing = dict.fromkeys(p.PACKAGES)
+        names = dict.fromkeys(p.PACKAGES, True)
+        names[p.PACKAGES[-1]] = False
+        with self.assertRaisesRegex(ValueError, 'root package'):
+            p.publication_routes(existing, names, True, self.token)
+        names[p.PACKAGES[-1]] = True
+        existing[p.PACKAGES[0]] = 'verified-integrity'
+        routes = p.publication_routes(existing, names, False, '')
+        self.assertEqual('already-published', routes[p.PACKAGES[0]])
+        self.assertTrue(all(route == 'oidc' for name, route in routes.items() if name != p.PACKAGES[0]))
+
+    def test_registry_absence_is_name_not_version_and_other_errors_fail_closed(self):
+        import subprocess
+        for code in ['E401', 'E403', 'E429']:
+            with patch.object(p, 'npm_read', return_value=subprocess.CompletedProcess([], 1, json.dumps({'error': {'code': code}}), '')):
+                with self.assertRaisesRegex(ValueError, 'Package-name lookup failed'):
+                    p.registry_package_exists(p.PACKAGES[0])
+        with patch.object(p, 'npm_read', return_value=subprocess.CompletedProcess([], 1, '{"error":{"code":"E404"}}', '')) as read:
+            self.assertFalse(p.registry_package_exists(p.PACKAGES[0]))
+            self.assertEqual(['view', p.PACKAGES[0], 'name', '--json', '--registry=https://registry.npmjs.org'], read.call_args.args[0])
+
+    def test_bootstrap_uses_private_configuration_and_preserves_provenance_oidc(self):
+        import subprocess
+        paths = []
+        def execute(argv, **kwargs):
+            env = kwargs['env']
+            self.assertNotIn(self.token, argv)
+            for key in ['NPM_BOOTSTRAP_TOKEN', 'NPM_TOKEN', 'NODE_AUTH_TOKEN', 'npm_config_registry']:
+                self.assertNotIn(key, env)
+            self.assertEqual('oidc-request-token', env['ACTIONS_ID_TOKEN_REQUEST_TOKEN'])
+            self.assertEqual('oidc-request-url', env['ACTIONS_ID_TOKEN_REQUEST_URL'])
+            userconfig = Path(env['NPM_CONFIG_USERCONFIG'])
+            paths.append(userconfig)
+            self.assertEqual(0o600, userconfig.stat().st_mode & 0o777)
+            self.assertEqual(0o700, userconfig.parent.stat().st_mode & 0o777)
+            self.assertEqual('//registry.npmjs.org/:_authToken=' + self.token + '\n', userconfig.read_text())
+            self.assertEqual(kwargs['cwd'], userconfig.parent)
+            self.assertIn('--provenance', argv)
+            self.assertIn('--ignore-scripts', argv)
+            return subprocess.CompletedProcess(argv, 0, '', '')
+        ambient = {'NPM_BOOTSTRAP_TOKEN': self.token, 'NPM_TOKEN': 'hostile', 'NODE_AUTH_TOKEN': 'hostile', 'npm_config_registry': 'https://bad.invalid', 'ACTIONS_ID_TOKEN_REQUEST_TOKEN': 'oidc-request-token', 'ACTIONS_ID_TOKEN_REQUEST_URL': 'oidc-request-url'}
+        with patch.dict(p.os.environ, ambient, clear=True), patch.object(p, 'registry_package_exists', return_value=False), patch.object(p.subprocess, 'run', side_effect=execute):
+            p.publish_package(p.PACKAGES[0], Path('/tmp/qualified.tgz'), 'rc', 'bootstrap-token', self.token)
+        self.assertTrue(paths)
+        self.assertTrue(all(not path.parent.exists() for path in paths))
+
+    def test_oidc_error_is_not_retried_with_token_and_cleanup_is_guaranteed(self):
+        import subprocess
+        paths = []
+        def execute(argv, **kwargs):
+            path = Path(kwargs['env']['NPM_CONFIG_USERCONFIG'])
+            paths.append(path)
+            self.assertEqual('', path.read_text())
+            self.assertNotIn('NPM_BOOTSTRAP_TOKEN', kwargs['env'])
+            return subprocess.CompletedProcess(argv, 1, '', 'auth failed')
+        with patch.dict(p.os.environ, {'NPM_BOOTSTRAP_TOKEN': self.token}), patch.object(p.subprocess, 'run', side_effect=execute) as call:
+            with self.assertRaisesRegex(ValueError, 'no fallback'):
+                p.publish_package(p.PACKAGES[-1], Path('/tmp/root.tgz'), 'rc', 'oidc', self.token)
+            self.assertEqual(1, call.call_count)
+        self.assertTrue(all(not path.parent.exists() for path in paths))
+
+    def test_bootstrap_cannot_publish_root_or_race_with_existing_name(self):
+        with patch.object(p, 'npm_command') as call:
+            with self.assertRaisesRegex(ValueError, 'limited to absent'):
+                p.publish_package(p.PACKAGES[-1], Path('/tmp/root.tgz'), 'rc', 'bootstrap-token', self.token)
+            with patch.object(p, 'registry_package_exists', return_value=True):
+                with self.assertRaisesRegex(ValueError, 'now exists'):
+                    p.publish_package(p.PACKAGES[0], Path('/tmp/platform.tgz'), 'rc', 'bootstrap-token', self.token)
+            call.assert_not_called()
+
+    def test_auth_config_is_removed_after_subprocess_exception(self):
+        paths = []
+        def execute(argv, **kwargs):
+            paths.append(Path(kwargs['env']['NPM_CONFIG_USERCONFIG']))
+            raise OSError('process failed')
+        with patch.object(p.subprocess, 'run', side_effect=execute):
+            with self.assertRaises(OSError):
+                p.npm_command(['publish', '/tmp/package.tgz', '--provenance'], self.token)
+        self.assertTrue(all(not path.parent.exists() for path in paths))
+
+    def test_secret_cannot_inject_npm_config(self):
+        with patch.object(p.subprocess, 'run') as call:
+            with self.assertRaisesRegex(ValueError, 'credential format'):
+                p.npm_command(['publish', '/tmp/package.tgz'], self.token + '\nregistry=evil')
+            call.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()

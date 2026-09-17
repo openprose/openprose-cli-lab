@@ -406,3 +406,5 @@ The `macos_signing` agent owns `cli/ci/assemble_kernel_rc.py`,
 The lead retains publication.py, workflows, repository-name updates and Git.
 
 The `openrouter_final` agent additionally owns `cli/benchmarks/installed/benchmark.py` and its existing focused tests for schema-two launcher template parity; no benchmark success or admission criteria may be weakened.
+
+IMP-014 npm bootstrap lease: distribution_ci owns `cli/ci/publication.py`, `cli/ci/test_publication.py`, `.github/workflows/cli-publish.yml`, and `docs/cli-publication.md` for an explicit one-time missing-platform-package bootstrap with provenance, isolated temporary credentials and no root-package token authentication. The lead retains Git ownership.

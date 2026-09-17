@@ -6,6 +6,11 @@ on:
         description: Reviewed JSON filename in cli/release/plans on main
         type: string
         required: true
+      bootstrap_platform_packages:
+        description: One-time first publication of absent platform package names using the temporary bootstrap credential
+        type: boolean
+        default: false
+        required: true
 permissions:
   contents: read
 concurrency:
@@ -54,6 +59,8 @@ jobs:
       - name: Verify required platform trust, sign artifact digests, and publish exact npm bytes
         env:
           GH_TOKEN: ${{ github.token }}
+          BOOTSTRAP_PLATFORM_PACKAGES: ${{ inputs.bootstrap_platform_packages }}
+          NPM_BOOTSTRAP_TOKEN: ${{ inputs.bootstrap_platform_packages && secrets.NPM_BOOTSTRAP_TOKEN || '' }}
           APPLE_NOTARY_KEY_P8: ${{ secrets.APPLE_NOTARY_KEY_P8 }}
           APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
           APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
@@ -63,7 +70,11 @@ jobs:
           trap 'rm -f "$key"' EXIT
           printf '%s' "$APPLE_NOTARY_KEY_P8" > "$key"
           unset APPLE_NOTARY_KEY_P8
-          python3 cli/ci/publication.py publish --plan "$RELEASE_PLAN" --artifacts "$RUNNER_TEMP/prose-publication" --notary-key "$key" --notary-key-id "$APPLE_NOTARY_KEY_ID" --notary-issuer "$APPLE_NOTARY_ISSUER_ID"
+          bootstrap_args=()
+          if [ "$BOOTSTRAP_PLATFORM_PACKAGES" = true ]; then
+            bootstrap_args+=(--bootstrap-platform-packages)
+          fi
+          python3 cli/ci/publication.py publish "${bootstrap_args[@]}" --plan "$RELEASE_PLAN" --artifacts "$RUNNER_TEMP/prose-publication" --notary-key "$key" --notary-key-id "$APPLE_NOTARY_KEY_ID" --notary-issuer "$APPLE_NOTARY_ISSUER_ID"
       - name: Retain publication receipts and signatures
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
