@@ -12,6 +12,26 @@ but only the fake-process result details. Supervisor diagnostic and settlement
 changes are in independent files. Check a three-way merge before integration;
 preserve both ownership entries. No IMP-008 worktree was edited.
 
+## IMP-014 publication and platform follow-up (2026-09-17 UTC)
+
+The user authorized merge and publication, conditional on signing and qualification,
+and confirmed the existing npm identity `@openprose/prose-cli`. The lead owns
+`.github/workflows/cli-publish.yml`, `cli/ci/publication.py`,
+`cli/ci/test_publication.py`, `cli/ci/sign_macos.py`,
+`cli/ci/test_sign_macos.py`, `docs/cli-publication.md`, `docs/cli-distribution.md`
+and this registry. The `distribution_ci` agent owns
+`cli/conformance/runner/run.py`, `cli/conformance/runner/test_runner.py`,
+`cli/conformance/fixtures/adapter-host-expectations.json`,
+`cli/rust/crates/prose-runner-core/src/installed_adapters.rs` (host diagnostics only),
+`cli/rust/crates/prose-runner-core/src/runner.rs` (failure descriptor digest only),
+`cli/bun/scripts/image-bundle.ts`, and `.github/workflows/cli-distribution-check.yml`.
+The `macos_signing` agent owns `cli/ci/sign_macos.py`,
+`cli/ci/test_sign_macos.py`, `cli/ci/package_local.py`,
+`cli/ci/test_package_local.py`, and `cli/ci/test_npm_identity.py`; the lead owns publication integration and may also
+add `cli/release/plans/README.md`. The lead retains Git/index ownership. Host admission must not expand and sentinel artifacts must not be published. The user subsequently authorized an
+explicitly unsigned RC, with Apple signing tracked separately in IMP-015. This supersedes the initial
+publication-authorization and proposed npm-name notes above.
+
 ## Existing path leases
 
 | Task | Owner | Writable paths | Shared-file lease | State |

@@ -10,19 +10,13 @@ timing problem; the focused fixes and their shared cases are included here.
 
 ## Installation strategy and naming
 
-The user's preferred public npm identity is `@openprose/prose`, subject to
-ownership and registry checks. On September 16, 2026, public `npm view` returned
-not found or inaccessible for that name; this is not proof of availability.
-`@openprose/prose-cli` currently reports latest `0.14.0` without a deprecation
-field for that version. Legacy packaging defaults and release authorities still use the latter name.
-The packager now supports `--npm-package-name @openprose/prose` for explicit
-development rehearsals: meta/platform identities, launcher root binding,
-launcher self-digest and generated installation instructions change together.
-The new identity installed offline and preserved child exit status in a
-provider-free test; the actual Bun candidate also launched through that install.
-Non-development publication under the new name remains blocked until registry
-lineage and promotion authority are reviewed. Do not publish an alternative name or deprecate the old package
-without owner approval. Do not overwrite old versions.
+The user confirmed `@openprose/prose-cli` as the public npm identity on
+September 17, 2026 (UTC), correcting the earlier proposed `@openprose/prose`
+name. Keep the existing package and publish a new version; never overwrite an
+existing version. The optional alternative-name development rehearsal remains
+historical test tooling and is not a public migration plan. See
+[Publication and signing](cli-publication.md) for the exact OIDC identity and
+release gates.
 
 Standalone Bun and Rust downloads remain available independently. Proposed
 Homebrew setup: a public `openprose/homebrew-tap` GitHub repository, with Rust
@@ -108,10 +102,10 @@ for a channel message within the same deadline fixes that behavior without
 extending the production timeout or reducing assertions. Retain the failures
 alongside the corrected test result.
 
-Before public release: finish the npm-name migration and ownership checks,
+Before public release: verify existing package ownership and version lineage,
 restore or replace missing release/promotion authorities, qualify the actual
-IMP-008 artifact set, pass native installation lanes, complete mandatory artifact signing before any public CLI release, decide
-notarization requirements, verify dependency notices, and configure trusted publication.
+IMP-008 artifact set, pass native installation lanes, label the owner-authorized unsigned RC explicitly and track subsequent Apple
+signing in IMP-015, verify dependency notices, and configure trusted publication.
 No model runs, registry changes or global Prose installations occurred in this work.
 Build/test toolchains were prepared separately in temporary directories.
 
@@ -189,3 +183,12 @@ runtime corrected Linux x64 build preparation but did not resolve macOS Intel.
 The next diagnostic step is to expose the bounded Bun aggregate build error and
 check the isolated compiler runtime/cache behavior. No passing check was
 bypassed, and CLI PR 2 remains open and unmerged.
+
+
+## Current publication decision — September 17, 2026 (UTC)
+
+The user authorized public source and an explicitly unsigned RC under
+`@openprose/prose-cli`, preserving latest-kernel startup. This supersedes earlier
+name-migration and mandatory-signing-before-RC notes. See the maintained
+[publication setup](cli-publication.md) for OIDC fields, actual prerequisites and
+the separate Apple signing task. No CLI package has been published.

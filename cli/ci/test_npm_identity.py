@@ -1,4 +1,4 @@
-"""Exercise the proposed identity without changing legacy release authority."""
+"""Verify npm identities and explicit canonical-kernel RC platform selection."""
 import hashlib
 import json
 import os
@@ -65,6 +65,71 @@ class IdentityTests(unittest.TestCase):
                 with self.assertRaises(package.PackageError):
                     package.npm_packages(Path(tmp),b'x','0.1.0','darwin-arm64',0,'c'*40,{},'not-applicable',mode,b'',package_name=name)
             self.assertEqual(list(Path(tmp).iterdir()),[])
+
+
+class KernelReleaseCandidateTests(unittest.TestCase):
+    def image(self):
+        return {'formatVersion': '1', 'version': 'core-rc', 'sha256': 'a'*64,
+                'manifestSha256': 'b'*64, 'purpose': 'canonical-language-runtime',
+                'releaseEligible': True}
+
+    def test_four_platform_meta_packages_are_identical_and_non_authorizing(self):
+        digests = []
+        with tempfile.TemporaryDirectory() as temporary:
+            for platform in package.POSIX_PUBLICATION_PLATFORMS:
+                root = Path(temporary) / platform
+                root.mkdir()
+                runtime = {'minimumGlibc': '2.34', 'requiredGlibcMaximum': {'rust': '2.34', 'bun': '2.34'}, 'executionEvidence': 'ubuntu-22.04-only'} if platform.startswith('linux-') else 'not-applicable'
+                meta, native = package.npm_packages(
+                    root, b'fixture-' + platform.encode(), '0.15.0-rc.1', platform,
+                    123, 'c'*40, self.image(), runtime, 'release', b'hello',
+                    publication_platforms='posix-four')
+                digests.append(hashlib.sha256(meta.read_bytes()).hexdigest())
+                with tarfile.open(meta) as archive:
+                    manifest = json.load(archive.extractfile('package/package.json'))
+                    readme = archive.extractfile('package/README.md').read()
+                    launcher = archive.extractfile('package/bin/prose.js').read()
+                self.assertEqual(manifest['name'], '@openprose/prose-cli')
+                self.assertEqual(manifest['repository']['url'], 'git+https://github.com/openprose/openprose-cli-lab.git')
+                self.assertEqual(manifest['openproseCohort']['admittedPlatforms'], list(package.POSIX_PUBLICATION_PLATFORMS))
+                self.assertEqual(manifest['optionalDependencies'], {'@openprose/prose-cli-' + name: '0.15.0-rc.1' for name in package.POSIX_PUBLICATION_PLATFORMS})
+                self.assertIs(manifest['openproseCohort']['releaseEligible'], False)
+                self.assertIs(manifest['openproseCohort']['publicationAuthorized'], False)
+                self.assertEqual(manifest['openproseCohort']['releaseChannel'], 'release-candidate')
+                self.assertEqual(manifest['openproseLauncher']['sha256'], hashlib.sha256(launcher).hexdigest())
+                self.assertNotIn(b'win32-x64', readme)
+                self.assertIn(b'Windows is not included', readme)
+                with tarfile.open(native) as archive:
+                    native_manifest = json.load(archive.extractfile('package/package.json'))
+                self.assertEqual(native_manifest['repository']['url'], manifest['repository']['url'])
+                self.assertEqual(native_manifest['openproseCohort'], manifest['openproseCohort'])
+        self.assertEqual(len(set(digests)), 1)
+
+    def test_posix_route_does_not_change_legacy_cohorts(self):
+        common = dict(version='0.15.0-rc.1', source_revision='c'*40, image=self.image())
+        self.assertEqual(package.npm_cohort(mode='release', **common)['admittedPlatforms'], sorted(package.PLATFORMS))
+        self.assertEqual(package.npm_cohort(mode='alpha', **common)['admittedPlatforms'], sorted(package.ALPHA_HARNESS_SUPPORT))
+
+    def test_posix_route_rejects_unqualified_inputs(self):
+        baseline = dict(mode='release', version='0.15.0-rc.1', source_revision='c'*40,
+                        image=self.image(), publication_platforms='posix-four')
+        for changes in ({'mode': 'development'}, {'mode': 'alpha'}, {'version': '0.15.0'},
+                        {'version': '0.15.0-dev.1'}, {'version': '0.15.0-rc.01'},
+                        {'source_revision': 'main'}, {'publication_platforms': 'windows'},
+                        {'image': dict(self.image(), releaseEligible=False)},
+                        {'image': dict(self.image(), purpose='sentinel-transport-test')},
+                        {'image': dict(self.image(), purpose='functional-alpha-placeholder')}):
+            with self.subTest(changes=changes), self.assertRaises(package.PackageError):
+                package.npm_cohort(**dict(baseline, **changes))
+
+    def test_posix_route_rejects_windows_before_writing(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with self.assertRaises(package.PackageError):
+                package.npm_packages(root, b'fixture', '0.15.0-rc.1', 'win32-x64',
+                                     0, 'c'*40, self.image(), 'not-applicable',
+                                     'release', b'hello', publication_platforms='posix-four')
+            self.assertEqual(list(root.iterdir()), [])
 
 
 if __name__=='__main__': unittest.main()

@@ -1507,7 +1507,7 @@ class NpmPublicMetadataTests(unittest.TestCase):
                     manifest["repository"],
                     {
                         "type": "git",
-                        "url": "git+https://github.com/openprose/prose.git",
+                        "url": "git+https://github.com/openprose/openprose-cli-lab.git",
                         "directory": directory,
                     },
                 )
@@ -2965,7 +2965,7 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
             package["repository"],
             {
                 "type": "git",
-                "url": "git+https://github.com/openprose/prose.git",
+                "url": "git+https://github.com/openprose/openprose-cli-lab.git",
                 "directory": "cli/bun/npm",
             },
         )
@@ -2995,7 +2995,7 @@ process.stdout.write(JSON.stringify({ spawned, stderr, exitCode: fakeProcess.exi
             platform_manifest["repository"],
             {
                 "type": "git",
-                "url": "git+https://github.com/openprose/prose.git",
+                "url": "git+https://github.com/openprose/openprose-cli-lab.git",
                 "directory": "cli/bun",
             },
         )

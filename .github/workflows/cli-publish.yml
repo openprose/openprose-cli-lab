@@ -1,0 +1,76 @@
+name: Publish qualified Prose CLI packages
+on:
+  workflow_dispatch:
+    inputs:
+      plan:
+        description: Reviewed JSON filename in cli/release/plans on main
+        type: string
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: cli-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: macos-15
+    timeout-minutes: 40
+    environment: publication
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.20.0'
+      - uses: sigstore/cosign-installer@828df1e55de306ba29db814d6057ddae71883cda
+        with:
+          cosign-release: 'v2.4.3'
+      - name: Validate publisher inputs and toolchain
+        env:
+          PLAN_NAME: ${{ inputs.plan }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          name = os.environ['PLAN_NAME']
+          if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*\.json', name) or '..' in name:
+              raise SystemExit('Invalid plan filename')
+          path = Path('cli/release/plans') / name
+          if not path.is_file() or path.is_symlink():
+              raise SystemExit('A reviewed plan on main is required')
+          with open(os.environ['GITHUB_ENV'], 'a') as stream:
+              stream.write('RELEASE_PLAN=' + str(path) + '\n')
+          PY
+          test "$(npm --version)" = '11.15.0'
+      - name: Fetch exact draft artifacts without executing them
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 cli/ci/publication.py fetch --plan "$RELEASE_PLAN" --artifacts "$RUNNER_TEMP/prose-publication"
+      - name: Verify required platform trust, sign artifact digests, and publish exact npm bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APPLE_NOTARY_KEY_P8: ${{ secrets.APPLE_NOTARY_KEY_P8 }}
+          APPLE_NOTARY_KEY_ID: ${{ secrets.APPLE_NOTARY_KEY_ID }}
+          APPLE_NOTARY_ISSUER_ID: ${{ secrets.APPLE_NOTARY_ISSUER_ID }}
+        run: |
+          umask 077
+          key="$RUNNER_TEMP/prose-notary.p8"
+          trap 'rm -f "$key"' EXIT
+          printf '%s' "$APPLE_NOTARY_KEY_P8" > "$key"
+          unset APPLE_NOTARY_KEY_P8
+          python3 cli/ci/publication.py publish --plan "$RELEASE_PLAN" --artifacts "$RUNNER_TEMP/prose-publication" --notary-key "$key" --notary-key-id "$APPLE_NOTARY_KEY_ID" --notary-issuer "$APPLE_NOTARY_ISSUER_ID"
+      - name: Retain publication receipts and signatures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cli-publication-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/prose-publication/publication-receipt.json
+            ${{ runner.temp }}/prose-publication/signatures
+          retention-days: 90
+          if-no-files-found: warn

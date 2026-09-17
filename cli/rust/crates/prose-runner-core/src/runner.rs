@@ -3841,6 +3841,10 @@ fn forward_error_outcome_with_diagnostic(
         || sha256_hex(adapter_id.as_bytes()),
         |adapter| sha256_hex(adapter.recipe_json().as_bytes()),
     );
+    let capabilities = installed_adapters::for_harness(&config.harness.value).map_or_else(
+        || json!({"promptPlacement":"unsupported","isolation":"unsupported","streaming":"unsupported","cancellation":"unsupported","terminal":"unsupported"}),
+        |adapter| json!({"promptPlacement":adapter.prompt_placement(),"isolation":adapter.isolation_guarantee(),"streaming":"structured","cancellation":if cfg!(windows) {"unsupported"} else {"process-group-best-effort"},"terminal":"structured"}),
+    );
     let (owner, auth_category) = match config.harness.value.as_str() {
         "openprose" => ("openprose", "openprose-account"),
         "mock" => ("test-fixture", "none-test-only"),
@@ -3853,7 +3857,7 @@ fn forward_error_outcome_with_diagnostic(
         "runner":{"name":RUNNER_NAME,"version":RUNNER_VERSION,"commit":RUNNER_COMMIT},
         "adapter":{"id":adapter_id,"harnessVersion":null,"descriptorDigestSha256":descriptor_digest},
         "transport":resolved_transport,
-        "negotiatedCapabilities":{"promptPlacement":"unsupported","isolation":"unsupported","streaming":"unsupported","cancellation":"unsupported","terminal":"unsupported"},
+        "negotiatedCapabilities":capabilities,
         "languageImage":{"formatVersion":image.manifest.image_format_version,"version":image.manifest.image_version,"sha256":image.aggregate_sha256()},
         "digests":{"invocationSha256":invocation_digest,"taskSha256":task_digest,"normalizedEventsSha256":sha256_hex(b""),"deliveredImageSha256":null,"renderedPayloadSha256":null},
         "cwd":{"path":config.cwd.display().to_string(),"identitySha256":sha256_hex(config.cwd.as_os_str().to_string_lossy().as_bytes())},

@@ -108,6 +108,10 @@ BUN_RUNTIME_BY_PLATFORM = {
     },
 }
 
+POSIX_PUBLICATION_PLATFORMS = (
+    "darwin-arm64", "darwin-x64", "linux-arm64-gnu", "linux-x64-gnu",
+)
+
 ALPHA_HARNESS_SUPPORT = {
     "darwin-arm64": ("prime", "omp", "codex", "claude"),
     "darwin-x64": ("codex",),
@@ -505,7 +509,8 @@ def image_identity(image: dict[str, Any], manifest_sha256: str) -> dict[str, Any
 
 
 def npm_cohort(
-    *, mode: str, version: str, source_revision: str, image: dict[str, Any]
+    *, mode: str, version: str, source_revision: str, image: dict[str, Any],
+    publication_platforms: str | None = None,
 ) -> dict[str, Any]:
     channels = {
         "development": "development",
@@ -517,6 +522,19 @@ def npm_cohort(
     admitted_platforms = (
         sorted(ALPHA_HARNESS_SUPPORT) if mode == "alpha" else sorted(PLATFORMS)
     )
+    if publication_platforms is not None:
+        if publication_platforms != "posix-four":
+            raise PackageError("unsupported publication platform set")
+        if mode != "release" or re.fullmatch(
+            r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)",
+            version,
+        ) is None:
+            raise PackageError("posix-four publication packaging requires release mode and an explicit RC version")
+        if re.fullmatch(r"[0-9a-f]{40}", source_revision) is None:
+            raise PackageError("posix-four publication packaging requires an exact source commit")
+        if image.get("purpose") != "canonical-language-runtime" or image.get("releaseEligible") is not True:
+            raise PackageError("posix-four publication packaging requires a release-eligible canonical image")
+        admitted_platforms = list(POSIX_PUBLICATION_PLATFORMS)
     return {
         "schema": NPM_COHORT_SCHEMA,
         "version": version,
@@ -1450,7 +1468,8 @@ def development_npm_readme(version: str, platform_identifier: str) -> bytes:
 
 
 def npm_readme(
-    mode: str, version: str, platform_identifier: str | None = None
+    mode: str, version: str, platform_identifier: str | None = None,
+    *, publication_platforms: str | None = None,
 ) -> bytes:
     if mode == "development":
         if platform_identifier is None:
@@ -1567,6 +1586,10 @@ def npm_readme(
             "`linux-arm64-gnu`, and `linux-x64-gnu`. Windows is unsupported and is "
             "not advertised or installed as an optional dependency. "
             if mode == "alpha"
+            else "Release-candidate platform IDs are `darwin-arm64`, `darwin-x64`, "
+            "`linux-arm64-gnu`, and `linux-x64-gnu`. Windows is not included in "
+            "this release candidate. "
+            if publication_platforms == "posix-four"
             else "Supported platform IDs are `darwin-arm64`, `darwin-x64`, "
             "`linux-arm64-gnu`, `linux-x64-gnu`, and `win32-x64`. "
         )
@@ -1672,7 +1695,7 @@ def npm_meta_manifest(
         "type": "commonjs",
         "repository": {
             "type": "git",
-            "url": "git+https://github.com/openprose/prose.git",
+            "url": "git+https://github.com/openprose/openprose-cli-lab.git",
             "directory": "cli/bun/npm",
         },
         "bin": {"prose": "bin/prose.js"},
@@ -1718,7 +1741,7 @@ def npm_platform_manifest(
         "bugs": NPM_BUGS,
         "repository": {
             "type": "git",
-            "url": "git+https://github.com/openprose/prose.git",
+            "url": "git+https://github.com/openprose/openprose-cli-lab.git",
             "directory": "cli/bun",
         },
         "os": selector["os"],
@@ -1783,6 +1806,7 @@ def npm_packages(
     windows_host: bytes | None = None,
     *,
     package_name: str = "@openprose/prose-cli",
+    publication_platforms: str | None = None,
 ) -> tuple[Path, Path]:
     if package_name not in {"@openprose/prose-cli", "@openprose/prose"}:
         raise PackageError("npm identity must be explicitly supported")
@@ -1808,7 +1832,10 @@ def npm_packages(
         version=version,
         source_revision=source_revision,
         image=image,
+        publication_platforms=publication_platforms,
     )
+    if platform_identifier not in cohort["admittedPlatforms"]:
+        raise PackageError("package target is not in the selected publication platform set")
     if launcher.count("__OPENPROSE_COHORT__") != 1:
         raise PackageError(
             "npm launcher template must contain exactly one cohort token"
@@ -1818,7 +1845,7 @@ def npm_packages(
         json.dumps(cohort, sort_keys=True, separators=(",", ":")),
     ).encode()
     meta = output / f"{filename_prefix}-{version}.tgz"
-    readme = identity(npm_readme(mode, version, platform_identifier).decode()).replace("openprose-prose-cli", filename_prefix).encode()
+    readme = identity(npm_readme(mode, version, platform_identifier, publication_platforms=publication_platforms).decode()).replace("openprose-prose-cli", filename_prefix).encode()
     require_exact_runner_self_invocation(readme, "npm README")
     tar_gz(
         meta,
@@ -2326,6 +2353,11 @@ def build(
         raise PackageError("--source-date-epoch must be non-negative")
     image, image_manifest_sha256 = read_image_manifest(args.image_manifest)
     image_record = image_identity(image, image_manifest_sha256)
+    publication_platforms = getattr(args, "publication_platforms", None)
+    if publication_platforms is not None:
+        npm_cohort(mode=args.mode, version=args.version,
+                   source_revision=args.source_revision, image=image_record,
+                   publication_platforms=publication_platforms)
     if args.mode == "development":
         if internal_package_purpose == "ordinary-development":
             if (
@@ -2384,6 +2416,8 @@ def build(
 
     platform_identifier = current_platform_id()
     is_windows = platform_identifier.startswith("win32-")
+    if publication_platforms == "posix-four" and platform_identifier not in POSIX_PUBLICATION_PLATFORMS:
+        raise PackageError("posix-four publication packaging refuses this target")
     is_linux = platform_identifier.startswith("linux-")
     if args.mode == "alpha" and is_windows:
         raise PackageError(
@@ -2544,6 +2578,7 @@ def build(
             hello_example,
             windows_host_bytes,
             package_name=getattr(args, "npm_package_name", "@openprose/prose-cli"),
+            publication_platforms=publication_platforms,
         )
         artifacts = [
             artifact_record(
@@ -2762,6 +2797,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument(
         "--mode", choices=("development", "alpha", "release"), required=True
     )
+    result.add_argument("--publication-platforms", choices=("posix-four",), help="Explicit four-platform canonical kernel RC cohort; does not grant publication authority")
     result.add_argument("--npm-package-name", choices=("@openprose/prose-cli", "@openprose/prose"), default="@openprose/prose-cli")
     result.add_argument("--version", required=True)
     result.add_argument("--source-revision", required=True)
