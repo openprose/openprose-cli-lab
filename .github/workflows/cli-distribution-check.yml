@@ -40,6 +40,9 @@ jobs:
       - uses: oven-sh/setup-bun@3d267786b128fe76c2f16a390aa2448b815359f3
         with:
           bun-version: '1.3.5'
+          # Match the standalone target so isolated x64 builds do not fetch a
+          # second Bun runtime after the rehearsal disables network access.
+          bun-download-url: ${{ matrix.os == 'ubuntu-22.04' && 'https://github.com/oven-sh/bun/releases/download/bun-v1.3.5/bun-linux-x64-baseline.zip' || matrix.os == 'macos-15-intel' && 'https://github.com/oven-sh/bun/releases/download/bun-v1.3.5/bun-darwin-x64-baseline.zip' || '' }}
       - name: Prepare locked toolchains and dependencies
         run: |
           rustup toolchain install 1.87.0 --profile minimal
