@@ -138,7 +138,7 @@ A read-only check confirmed the existing root redirect still serves the kernel
 catalog. `/cli/channels/stable.json` returns 404 because no qualified CLI release
 has been staged. This is deployment of hosting support, not publication of a CLI.
 
-CLI [run 35168634350](https://github.com/openprose/openprose-cli-lab/actions/runs/35168634350)
+CLI [run 35168634350](https://github.com/openprose/prose-cli/actions/runs/35168634350)
 passed on macOS ARM64 but failed elsewhere. The x64 Bun builds failed inside isolated compilation. Commit `2549a78`
 installs the matching pinned baseline runtime during setup to avoid a runtime
 download after network access is disabled. Linux ARM64 compiled and
@@ -168,13 +168,13 @@ token. The present workflow is `cli-distribution-check.yml`, a read-only
 rehearsal with no npm publish step and no `id-token: write` permission. It is
 **not** a valid publisher mapping. Before configuring `@openprose/prose`, add and
 review the actual protected publication workflow, including its exact filename,
-repository `openprose/openprose-cli-lab`, environment, signing gate, package-name
+repository `openprose/prose-cli`, environment, signing gate, package-name
 migration, immutable artifact verification, and narrowly scoped OIDC permission.
 Then update the npm package's trusted publisher to that exact workflow. Do not
 claim an existing mapping or ownership has been verified from a public 404.
 
 
-[Verification run 35168892048](https://github.com/openprose/openprose-cli-lab/actions/runs/35168892048)
+[Verification run 35168892048](https://github.com/openprose/prose-cli/actions/runs/35168892048)
 tested `2549a781498156b7677022ca63d529772c15bf4d`: macOS ARM64 passed; Linux x64
 now built and reached the expected host-admission failures (70 assertions);
 Linux ARM64 reached the same class of failures (101 assertions). macOS Intel

@@ -55,6 +55,23 @@ def command(args, *, env, cwd, log, timeout=1200):
     require(result.returncode == 0, 'Command failed; inspect ' + str(log))
 
 
+def executable_tool(name, env):
+    selected = shutil.which(name, path=env.get('PATH'))
+    require(selected, name + ' required')
+    resolved = Path(selected).resolve(strict=True)
+    require(resolved.is_file() and os.access(resolved, os.X_OK), name + ' must resolve to an executable file')
+    return resolved
+
+
+def prepare_macos_binary(binary, env, logs):
+    # Rust's Intel linker need not emit the ad-hoc signature that ARM64 gets.
+    # This supplies Mach-O integrity only, without a trusted signing identity.
+    command(['/usr/bin/codesign', '--force', '--sign', '-', binary], env=env,
+            cwd=ROOT, log=logs / 'rust-ad-hoc-sign.log', timeout=60)
+    command(['/usr/bin/codesign', '--verify', '--deep', '--strict', binary], env=env,
+            cwd=ROOT, log=logs / 'rust-ad-hoc-verify.log', timeout=60)
+
+
 def extract_binary(archive, output):
     """Extract only one regular executable; reject unsafe archive metadata first."""
     with tarfile.open(archive) as source:
@@ -117,6 +134,8 @@ def build(version, output):
     command(['cargo', 'build', '--manifest-path', ROOT / 'cli/rust/Cargo.toml', '--release', '--locked',
              '--offline', '--bin', 'prose'], env=env, cwd=ROOT, log=logs / 'build-rust.log')
     shutil.copy2(output / 'cargo-target/release/prose', binaries / 'prose-rust')
+    if sys.platform == 'darwin':
+        prepare_macos_binary(binaries / 'prose-rust', env, logs)
     def check(binary, runner, label, node=None):
         command([sys.executable, ROOT / 'cli/ci/check_published_release.py', '--binary', binary,
                  '--runner', runner, '--commit', revision, '--version', version,
@@ -130,8 +149,7 @@ def build(version, output):
             '--rust-binary', binaries / 'prose-rust', '--bun-binary', binaries / 'prose-bun',
             '--image-manifest', ROOT / 'cli/shared/image/echo-v0/manifest.json', '--out', package]
     if sys.platform.startswith('linux'):
-        readelf = shutil.which('readelf', path=env.get('PATH')); require(readelf, 'readelf required')
-        args += ['--readelf', readelf]
+        args += ['--readelf', executable_tool('readelf', env)]
     command(args, env=env, cwd=ROOT, log=logs / 'package.log')
     manifest = verified_artifacts(package)
     for item in manifest['artifacts']:

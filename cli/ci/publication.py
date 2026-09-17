@@ -12,7 +12,7 @@ import tempfile
 import zipfile
 import tarfile
 
-REPOSITORY = 'openprose/openprose-cli-lab'
+REPOSITORY = 'openprose/prose-cli'
 PLATFORMS = ('darwin-arm64', 'darwin-x64', 'linux-arm64-gnu', 'linux-x64-gnu')
 PACKAGES = tuple('@openprose/prose-cli-' + p for p in PLATFORMS) + ('@openprose/prose-cli',)
 IDENTITY = 'https://github.com/' + REPOSITORY + '/.github/workflows/cli-publish.yml@refs/heads/main'
@@ -59,7 +59,7 @@ def load_plan(path):
     require(set(q) == {'status', 'evidence'} and q['status'] == 'kernel-smoke-qualified', 'Kernel qualification required')
     require(re.fullmatch(r'https://github.com/openprose/[a-z0-9-]+/(?:blob|tree)/[0-9a-f]{40}/[^\s?#]+', q['evidence']), 'Immutable qualification evidence required')
     require(plan['npmProvenance'] is True, 'npm provenance is mandatory until the owner approves a different policy')
-    require(isinstance(plan['artifacts'], list) and 1 <= len(plan['artifacts']) <= 64, 'Invalid artifact inventory')
+    require(isinstance(plan['artifacts'], list) and 1 <= len(plan['artifacts']) <= 128, 'Invalid artifact inventory')
     names = set()
     for item in plan['artifacts']:
         require(set(item) == {'name', 'sha256', 'size', 'kind', 'platform', 'implementation'}, 'Invalid artifact fields')
@@ -110,6 +110,7 @@ def verify_local(plan, root):
         require(p.is_file() and not p.is_symlink() and p.stat().st_size == item['size'] and digest(p) == item['sha256'], 'Artifact bytes differ from reviewed plan: ' + item['name'])
     preflight = read_json(root / plan['preflight'])
     moving = preflight.get('schema') == 'openprose.kernel-rc-release-evidence/1'
+    require(plan['signing'] != 'unsigned-rc' or moving, 'Unsigned RC must preserve latest-kernel startup')
     require(preflight.get('status') == 'pass' and preflight.get('failures') == [], 'Release qualification must pass')
     require(preflight.get('sourceSha') == plan['source'] and preflight.get('version') == plan['version'], 'Preflight does not bind the candidate')
     if moving:
@@ -117,7 +118,7 @@ def verify_local(plan, root):
         expected_image = preflight.get('embeddedDiagnosticImage', {})
         require(set(expected_image) == {'formatVersion', 'version', 'sha256', 'manifestSha256', 'purpose'} and expected_image['purpose'] == 'functional-alpha-placeholder', 'Invalid diagnostic image binding')
         require(preflight.get('kernelPolicy') == {'schema': 'openprose.published-kernel-policy/1', 'resolution': 'latest-published-on-run', 'entrypoint': 'https://pkg.prose.md/kernel.md', 'pinning': 'per-run'}, 'Unexpected kernel acquisition policy')
-        require(preflight.get('liveSmoke', {}).get('sourceSha') == plan['source'] and preflight['liveSmoke'].get('status') == 'pass', 'Exact-source live smoke evidence required')
+        require(preflight.get('liveSmoke', {}).get('schema') == 'openprose.kernel-rc-live-smoke/1' and preflight['liveSmoke'].get('version') == plan['version'] and preflight['liveSmoke'].get('sourceSha') == plan['source'] and preflight['liveSmoke'].get('status') == 'pass', 'Exact-source live smoke evidence required')
         for platform, record in preflight['platforms'].items():
             require(record.get('status') == 'pass' and safe_name(record.get('report')), 'Missing platform evidence')
             require(any(a['name'] == record['report'] and a['kind'] == 'evidence' for a in plan['artifacts']), 'Platform report is not bound to the plan')
@@ -171,6 +172,9 @@ def verify_local(plan, root):
     for p in PLATFORMS:
         require(binary_hashes[('npm', p)] == binary_hashes[('bun', p)], 'npm and standalone Bun bytes differ')
     if moving:
+        from kernel_rc_evidence import verify_platform_evidence
+        for platform, record in preflight['platforms'].items():
+            verify_platform_evidence(plan, root, platform, record['report'], binary_hashes)
         for implementation in ('bun', 'rust'):
             observation = preflight['liveSmoke'].get('runners', {}).get(implementation, {})
             require(observation.get('accepted') is True and observation.get('helloExact') is True and observation.get('binarySha256') == binary_hashes[(implementation, 'darwin-arm64')], 'Live smoke does not bind exact release binary')

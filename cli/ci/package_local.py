@@ -1735,7 +1735,7 @@ def npm_meta_manifest(
         "type": "commonjs",
         "repository": {
             "type": "git",
-            "url": "git+https://github.com/openprose/openprose-cli-lab.git",
+            "url": "git+https://github.com/openprose/prose-cli.git",
             "directory": "cli/bun/npm",
         },
         "bin": {"prose": "bin/prose.js"},
@@ -1781,7 +1781,7 @@ def npm_platform_manifest(
         "bugs": NPM_BUGS,
         "repository": {
             "type": "git",
-            "url": "git+https://github.com/openprose/openprose-cli-lab.git",
+            "url": "git+https://github.com/openprose/prose-cli.git",
             "directory": "cli/bun",
         },
         "os": selector["os"],

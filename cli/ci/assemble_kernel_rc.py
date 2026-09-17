@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import publication as pub
+import kernel_rc_evidence as custody
 
 
 def assemble(roots, output, evidence, live_smoke=None):
@@ -48,13 +49,30 @@ def assemble(roots, output, evidence, live_smoke=None):
                 pub.require(item['kind'] == 'npm-meta' and inventory[name][1] == record, 'Artifact collision or inconsistent root npm package')
             else:
                 inventory[name] = (actual, record)
-        # Keep complete immutable package evidence, disambiguating target-local names.
-        for relative in report['evidence']:
+        artifact_names = {a['path'] for a in manifest['artifacts']}
+        pub.require(set(custody.CHECK_PATHS).issubset(report['evidence']), 'Required structured evidence is missing')
+        native_hashes = {}
+        launcher_hash = None
+        for artifact in manifest['artifacts']:
+            members = pub.archive_members(package / artifact['path'])
+            if artifact['kind'] == 'standalone-archive':
+                binaries = [data for name, data in members.items() if name.endswith('/prose')]
+                pub.require(len(binaries) == 1, 'Expected one standalone binary')
+                native_hashes[(artifact['implementation'], platform)] = hashlib.sha256(binaries[0]).hexdigest()
+            elif artifact['kind'] == 'npm-meta':
+                pub.require('package/bin/prose.js' in members, 'Missing npm launcher')
+                launcher_hash = hashlib.sha256(members['package/bin/prose.js']).hexdigest()
+        checks = {name: pub.read_json(root / ('logs/' + name + '.json')) for name in custody.CHECKS}
+        custody.validate_native(report, manifest, checks, native_hashes, launcher_hash)
+        # Retain every report-bound input, including the five structured native
+        # observations. Publication independently repeats these bindings.
+        for relative, bound in report['evidence'].items():
             actual = root / relative
-            if relative.startswith('package/') and actual.name not in {a['path'] for a in manifest['artifacts']}:
-                name = platform + '-' + actual.name
-                pub.require(pub.safe_name(name) and name not in inventory, 'Evidence collision')
-                inventory[name] = (actual, {'name': name, 'sha256': pub.digest(actual), 'size': actual.stat().st_size, 'kind': 'evidence', 'platform': platform, 'implementation': 'shared'})
+            name = custody.asset_name(platform, relative, artifact_names)
+            if relative.startswith('package/') and actual.name in artifact_names:
+                continue
+            pub.require(pub.safe_name(name) and name not in inventory, 'Evidence collision')
+            inventory[name] = (actual, {'name': name, 'sha256': bound['sha256'], 'size': bound['byteLength'], 'kind': 'evidence', 'platform': platform, 'implementation': 'shared'})
         name = platform + '-build-report.json'
         actual = root / 'build-report.json'
         inventory[name] = (actual, {'name': name, 'sha256': pub.digest(actual), 'size': actual.stat().st_size, 'kind': 'evidence', 'platform': platform, 'implementation': 'shared'})

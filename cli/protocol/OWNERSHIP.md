@@ -397,3 +397,12 @@ Startup parity schema/test coverage also leases `cli/shared/schemas/adapter-admi
 Startup parity compiled-process tests also lease `cli/shared/tests/kernel_startup_process.py`; fake executables are created only in disposable temporary directories.
 Build regression maintenance also leases `cli/bun/test/build-identity.test.ts` and `cli/bun/test/standalone.test.ts`; historical echo checks must select the echo fixture explicitly so ordinary test suites remain provider-free after the startup-default change.
 Local diagnostic clarity also leases `cli/rust/crates/prose-runner-core/src/runner.rs` and `cli/shared/schemas/doctor-report.schema.json` for an optional published-startup source field; doctor must not imply its unfetched embedded diagnostic fixture is the selected runtime kernel.
+
+## IMP-014 review closure
+
+The `macos_signing` agent owns `cli/ci/assemble_kernel_rc.py`,
+`cli/ci/test_assemble_kernel_rc.py`, `cli/ci/kernel_rc_evidence.py`, and
+`cli/ci/test_kernel_rc_evidence.py` to bind native checks to final artifacts.
+The lead retains publication.py, workflows, repository-name updates and Git.
+
+The `openrouter_final` agent additionally owns `cli/benchmarks/installed/benchmark.py` and its existing focused tests for schema-two launcher template parity; no benchmark success or admission criteria may be weakened.

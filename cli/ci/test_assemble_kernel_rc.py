@@ -8,6 +8,7 @@ import unittest
 import assemble_kernel_rc as a
 import package_local as package
 import publication as p
+import kernel_rc_evidence as custody
 
 
 class AssemblyTests(unittest.TestCase):
@@ -37,10 +38,19 @@ class AssemblyTests(unittest.TestCase):
             runtime = {'minimumGlibc': '2.34', 'requiredGlibcMaximum': {'rust': '2.34', 'bun': '2.34'}, 'executionEvidence': 'ubuntu-22.04-only'} if platform.startswith('linux-') else 'not-applicable'
             meta, native = package.npm_packages(output, ('bun' + platform).encode(), self.version, platform, 0, self.source, self.image, runtime, 'kernel-rc', package.HELLO_EXAMPLE.read_bytes(), publication_platforms='posix-four')
             artifacts += [self.record(meta, 'bun', 'npm-meta', None), self.record(native, 'bun', 'npm-platform', platform)]
-            manifest = {'schema': 'openprose.local-release-manifest/1', 'mode': 'kernel-rc', 'platform': platform, 'version': self.version, 'source': {'revision': self.source}, 'imageSource': 'published-on-run', 'embeddedDiagnosticImage': {k:v for k,v in self.image.items() if k != 'releaseEligible'}, 'kernelPolicy': package.PUBLISHED_KERNEL_POLICY, 'artifacts': artifacts}
+            manifest = {'schema': 'openprose.local-release-manifest/1', 'mode': 'kernel-rc', 'platform': platform, 'version': self.version, 'source': {'revision': self.source, 'verification': 'matched-product-doctor'}, 'releaseEligible': False, 'publicationAuthorized': False, 'buildProfiles': {r: {'profile': 'release', 'testSeamsEnabled': False} for r in ('bun', 'rust')}, 'imageSource': 'published-on-run', 'embeddedDiagnosticImage': {k:v for k,v in self.image.items() if k != 'releaseEligible'}, 'kernelPolicy': package.PUBLISHED_KERNEL_POLICY, 'artifacts': artifacts}
             (output / 'release-manifest.json').write_text(json.dumps(manifest))
-            evidence = {str(f.relative_to(root)): {'sha256': p.digest(f), 'byteLength': f.stat().st_size} for f in output.iterdir()}
-            report = {'schema': 'openprose.kernel-rc-build/1', 'platform': platform, 'version': self.version, 'sourceRevision': self.source, 'imageSource': 'published-on-run', 'testSeamsEnabled': False, 'qualification': 'offline-install-only', 'publicationAuthorized': False, 'modelCalls': 0, 'checks': [{'name': n, 'status': 'passed'} for n in ('built-bun','built-rust','installed-bun','installed-rust','installed-npm')], 'evidence': evidence}
+            logs = root / 'logs'; logs.mkdir()
+            with tarfile.open(meta) as archive:
+                launcher_hash = hashlib.sha256(archive.extractfile('package/bin/prose.js').read()).hexdigest()
+            for name in custody.CHECKS:
+                runner = 'rust' if name.endswith('-rust') else 'bun'
+                check = {'schema': 'openprose.published-release-check/1', 'status': 'passed-offline-release-check', 'runner': runner, 'commit': self.source, 'version': self.version, 'binarySha256': launcher_hash if name == 'installed-npm' else hashlib.sha256((runner+platform).encode()).hexdigest(), 'imageSource': 'published-on-run', 'testSeamsEnabled': False, 'modelCalls': 0, 'networkCalls': 0}
+                if name == 'installed-npm':
+                    check['nodeInterpreterSha256'] = 'd'*64
+                (logs / (name + '.json')).write_text(json.dumps(check))
+            evidence = {str(f.relative_to(root)): {'sha256': p.digest(f), 'byteLength': f.stat().st_size} for directory in (output, logs) for f in directory.iterdir()}
+            report = {'schema': 'openprose.kernel-rc-build/1', 'platform': platform, 'version': self.version, 'sourceRevision': self.source, 'imageSource': 'published-on-run', 'testSeamsEnabled': False, 'qualification': 'offline-install-only', 'publicationAuthorized': False, 'modelCalls': 0, 'kernelFetches': 0, 'checks': [{'name': n, 'status': 'passed'} for n in ('built-bun','built-rust','installed-bun','installed-rust','installed-npm')], 'evidence': evidence}
             (root / 'build-report.json').write_text(json.dumps(report))
         self.evidence = 'https://github.com/openprose/openprose-expedition/tree/' + 'b'*40 + '/test'
 
@@ -70,7 +80,9 @@ class AssemblyTests(unittest.TestCase):
         path.write_text(json.dumps(live))
         plan = a.assemble(self.roots, self.root/'assembly', self.evidence, path)
         self.assertEqual(plan['qualification']['status'], 'kernel-smoke-qualified')
-        p.verify_local(plan, self.root/'assembly')
+        _, hashes = p.verify_local(plan, self.root/'assembly')
+        for platform in p.PLATFORMS:
+            custody.verify_platform_evidence(plan, self.root/'assembly', platform, platform+'-build-report.json', hashes)
         live['runners']['rust']['binarySha256'] = '0'*64
         path.write_text(json.dumps(live))
         with self.assertRaisesRegex(ValueError, 'differs from release bytes'):

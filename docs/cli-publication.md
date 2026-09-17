@@ -15,14 +15,14 @@ Configure the existing `@openprose/prose-cli` package with this exact identity:
 | --- | --- |
 | Provider | GitHub Actions |
 | Organization/user | `openprose` |
-| Repository | `openprose-cli-lab` |
+| Repository | `prose-cli` |
 | Workflow filename | `cli-publish.yml` |
 | Environment | `publication` |
 | Allowed action | Direct `npm publish` |
 
 The file is `.github/workflows/cli-publish.yml`; npm receives only its filename.
 Do not authorize the distribution rehearsal workflow. Create the GitHub
-`publication` environment with main-only deployment and an owner reviewer.
+`publication` environment with main-only deployment. This environment is configured; no required reviewer is currently enabled. The owner configured the root package trusted publisher on September 17, 2026. The four platform packages still require first-publication bootstrap and their own trusted publishers.
 The publishing job uses GitHub-hosted runners and `id-token: write`; it does
 not require `NPM_TOKEN`. The repository is public, as required for npm
 provenance. Every generated package must declare this repository URL.

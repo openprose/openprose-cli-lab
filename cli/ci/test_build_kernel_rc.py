@@ -78,6 +78,24 @@ class KernelRCBuildTests(unittest.TestCase):
             git.assert_not_called()
             self.assertEqual(marker.read_text(), 'preserved')
 
+    def test_tool_symlink_resolves_to_direct_executable(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); actual = root / 'target-readelf'; actual.write_text('#!/bin/sh\nexit 0\n'); actual.chmod(0o755)
+            alias = root / 'readelf'; alias.symlink_to(actual.name)
+            self.assertEqual(rc.executable_tool('readelf', {'PATH': d}), actual.resolve())
+
+    def test_macos_ad_hoc_signature_is_verified_before_packaging(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d); binary = root / 'prose-rust'
+            with patch.object(rc, 'command') as command:
+                rc.prepare_macos_binary(binary, {}, root)
+                self.assertEqual(command.call_args_list[0].args[0], ['/usr/bin/codesign', '--force', '--sign', '-', binary])
+                self.assertEqual(command.call_args_list[1].args[0], ['/usr/bin/codesign', '--verify', '--deep', '--strict', binary])
+            with patch.object(rc, 'command', side_effect=ValueError('sign failed')) as command:
+                with self.assertRaisesRegex(ValueError, 'sign failed'):
+                    rc.prepare_macos_binary(binary, {}, root)
+                self.assertEqual(command.call_count, 1)
+
     def test_tampered_artifact_is_rejected(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d); artifacts = []

@@ -91,7 +91,7 @@ class KernelReleaseCandidateTests(unittest.TestCase):
                     readme = archive.extractfile('package/README.md').read()
                     launcher = archive.extractfile('package/bin/prose.js').read()
                 self.assertEqual(manifest['name'], '@openprose/prose-cli')
-                self.assertEqual(manifest['repository']['url'], 'git+https://github.com/openprose/openprose-cli-lab.git')
+                self.assertEqual(manifest['repository']['url'], 'git+https://github.com/openprose/prose-cli.git')
                 self.assertEqual(manifest['openproseCohort']['admittedPlatforms'], list(package.POSIX_PUBLICATION_PLATFORMS))
                 self.assertEqual(manifest['optionalDependencies'], {'@openprose/prose-cli-' + name: '0.15.0-rc.1' for name in package.POSIX_PUBLICATION_PLATFORMS})
                 self.assertIs(manifest['openproseCohort']['releaseEligible'], False)
