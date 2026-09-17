@@ -28,6 +28,32 @@ SPEC.loader.exec_module(runner)
 
 
 class RunnerUnitTest(unittest.TestCase):
+    def test_host_oracle_keeps_admitted_expectations_and_requires_rejection(self):
+        for path in runner.case_paths(7, set()):
+            case = json.loads(path.read_text("utf-8"))
+            original = json.loads(json.dumps(case))
+            self.assertEqual(case["expected"], runner.expected_for_host(case, "darwin", "arm64"))
+            for os_name, arch in [("linux", "aarch64"), ("linux", "x86_64"), ("darwin", "x86_64")]:
+                expected = runner.expected_for_host(case, os_name, arch)
+                adapter = case.get("controls", {}).get("installedAdapter", {}).get("adapterId")
+                rejected = adapter in {"claude/print-stream-json", "prime/rpc"} or (
+                    adapter == "omp/rpc" and (os_name, arch) != ("linux", "x86_64"))
+                if rejected:
+                    self.assertEqual(10, expected["exitCode"])
+                    self.assertFalse(expected["startedHarness"])
+                    self.assertNotIn("forwardedTask", expected)
+                    self.assertIn("HARNESS_INCOMPATIBLE", json.dumps(expected))
+                else:
+                    self.assertEqual(case["expected"], expected)
+            self.assertEqual(original, case)
+
+    def test_host_oracle_rejects_unsupported_host_without_skipping_case(self):
+        case = json.loads((runner.CASES / "adapters/claude-functional-alpha.json").read_text())
+        wanted = runner.expected_for_host(case, "linux", "aarch64")
+        self.assertEqual("arm64", wanted["resultMatches"]["error"]["details"]["hostArchitecture"])
+        self.assertTrue(runner.deep_subset({"terminal": {"classification": "success"}}, wanted["resultMatches"]))
+        self.assertEqual(48, len(list(runner.case_paths(7, set()))))
+
     def test_hosted_transport_and_missing_selection_cases_freeze_dx_precedence(
         self,
     ) -> None:

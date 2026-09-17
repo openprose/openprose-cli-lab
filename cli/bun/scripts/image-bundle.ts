@@ -255,6 +255,13 @@ try {
   if (input.command !== "check") await compile(input);
 } catch (error) {
   console.error(`image-bundle: ${error instanceof Error ? error.message : String(error)}`);
+  // Bun throws AggregateError before returning BuildOutput for compilation
+  // failures. Retain bounded compiler messages so CI can diagnose native builds.
+  if (error instanceof AggregateError) {
+    for (const item of error.errors.slice(0, 8)) {
+      console.error(`image-bundle detail: ${String(item).slice(0, 2048)}`);
+    }
+  }
   process.exitCode = 2;
 } finally {
   if (testBundleRoot !== undefined) {

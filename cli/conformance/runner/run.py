@@ -9,6 +9,7 @@ from dataclasses import dataclass
 import hashlib
 import json
 import os
+import platform
 from pathlib import Path
 import re
 import shutil
@@ -1626,8 +1627,49 @@ def observed_harness_started(observation: Observation) -> bool:
     return False
 
 
+def expected_for_host(case: dict[str, Any], host_os: str | None = None,
+                      host_arch: str | None = None) -> dict[str, Any]:
+    """Apply the independently frozen host oracle; never infer success from products."""
+    expected = deepcopy(case["expected"])
+    oracle = json.loads((CLI / "conformance/fixtures/adapter-host-expectations.json").read_text("utf-8"))
+    adapter = oracle["cases"].get(case.get("id"))
+    if adapter is None:
+        return expected
+    os_name = host_os or sys.platform
+    arch = host_arch or platform.machine()
+    os_name = {"macos": "darwin", "windows": "win32"}.get(os_name, os_name)
+    arch = {"aarch64": "arm64", "x86_64": "x64", "AMD64": "x64"}.get(arch, arch)
+    if f"{os_name}-{arch}" in oracle["admittedHosts"][adapter]:
+        return expected
+    error = {
+        "schema": "openprose.runner-error/1", "code": "HARNESS_INCOMPATIBLE",
+        "boundary": "adapter", "message": "The selected harness version is incompatible with this adapter.",
+        "action": "Run the exact Repair command reported with this error, then retry.",
+        "exitCode": 10, "retryable": False,
+        "details": {"adapterId": adapter, "hostPlatform": os_name,
+                    "hostArchitecture": arch, "fallbackAttempted": False},
+    }
+    expected.update(exitCode=10, startedHarness=False)
+    expected.pop("forwardedTask", None)
+    if case["id"] == "dx.dry-run-prime":
+        dry_run = load_exact_result_fixture(expected.pop("resultFixture"))
+        dry_run["selection"]["runtimeVersion"] = None
+        dry_run.update(readiness="blocked", blockingError=error)
+        expected["resultMatches"] = dry_run
+    elif "version-probe" in case["id"]:
+        expected["resultMatches"]["problems"] = [error]
+    else:
+        expected["resultMatches"] = {
+            "adapter": {"id": adapter}, "runnerExitCode": 10,
+            "terminal": {"classification": "runner-error", "transportCompleted": False,
+                         "terminalEventObserved": False, "exitCode": None, "signal": None},
+            "semantic": {"status": "unknown"}, "error": error,
+        }
+    return expected
+
+
 def validate_output(observation: Observation, contracts: ContractRegistry) -> list[str]:
-    expected = observation.case["expected"]
+    expected = expected_for_host(observation.case)
     failures: list[str] = []
     if not observation.process_settled:
         failures.append(
