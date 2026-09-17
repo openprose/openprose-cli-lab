@@ -16,6 +16,7 @@ import { uuidV7 } from "./core/ids";
 import { reportedConfigurationKeys, configurationExplanation, formatHumanError, humanAction, humanConfiguration, humanRunnerCommand, humanSafeMultiline, humanSafeScalar, humanVersionRepairDetails, jsonLine } from "./core/output";
 import { HumanAssistantStream } from "./core/human-stream";
 import { parseDurationMs, runFakeProcessTransport } from "./supervision/fake-transport";
+import { fakeProtocolFailureDetails } from "./supervision/fake-failure";
 import { collectSecretValues } from "./supervision/environment";
 import { encodeRuntimeImage } from "./supervision/files";
 import type { FakeProcessOptions, ProcessSupervisionResult, RawTransportEvent } from "./supervision/types";
@@ -776,6 +777,7 @@ async function runFakeProcessInvocation(
     dependencies.writeStderr(mode === "human" ? humanSafeMultiline(outcome.stderr) : outcome.stderr);
   }
   let attemptedError = outcome.error === null ? null : failure(outcome.error.code, {
+    ...fakeProtocolFailureDetails(outcome),
     processExit: outcome.exitCode,
     processSignal: outcome.signal,
     terminalEventObserved: outcome.terminalEnvelope !== null,

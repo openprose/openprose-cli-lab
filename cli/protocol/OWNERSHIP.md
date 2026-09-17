@@ -3,6 +3,37 @@
 The lead owns Git, integration, root-level changes, `SPEC.md`, this registry,
 `STATUS.md`, `protocol/decisions/**`, and shared manifest/lockfile windows.
 
+## IMP-014 isolated worktree
+
+Codex task lead owns Git and integration on `codex/imp-014-cli-distribution`. Exact active paths: `cli/ci/rehearse_npm_identity.py`, `cli/ci/test_rehearse_npm_identity.py`, `docs/validation/imp-014/README.md`, `docs/validation/imp-014/SHA256.json`, `docs/validation/imp-014/.gitattributes`, `docs/validation/imp-014/*.log`, `docs/validation/imp-014/rehearsal.json`, `cli/bun/test/cli-process.test.ts`, `cli/rust/crates/prose-process-supervisor/src/framing.rs`, `cli/rust/crates/prose-process-supervisor/src/supervisor.rs`, `cli/rust/crates/prose-process-supervisor/src/windows_supervision.rs` (truncated-message pattern only), `cli/bun/src/cli.ts` (fake-process diagnostics only), `cli/bun/src/supervision/fake-failure.ts`, `cli/bun/test/fake-failure.test.ts`, `cli/conformance/cases/transport/fake-malformed.json`, `cli/conformance/cases/transport/fake-nonzero.json`, `cli/conformance/cases/transport/fake-truncated.json`, `cli/ci/package_local.py`, `cli/ci/test_npm_identity.py`, `LICENSE`, `.github/workflows/cli-distribution-check.yml`, `cli/ci/distribution_plan.py`, `cli/ci/test_distribution_plan.py`, `cli/shared/fixtures/distribution/plan.json`, `docs/cli-distribution.md`, and this registry. No IMP-008 runtime or lockfile paths are leased. Public naming remains a user decision; no registry or infrastructure publication is authorized.
+
+The diagnostic correction touches `cli/bun/src/cli.ts`, also changed by IMP-008,
+but only the fake-process result details. Supervisor diagnostic and settlement
+changes are in independent files. Check a three-way merge before integration;
+preserve both ownership entries. No IMP-008 worktree was edited.
+
+## IMP-014 publication and platform follow-up (2026-09-17 UTC)
+
+The user authorized merge and publication, conditional on signing and qualification,
+and confirmed the existing npm identity `@openprose/prose-cli`. The lead owns
+`.github/workflows/cli-publish.yml`, `cli/ci/publication.py`,
+`cli/ci/test_publication.py`, `cli/ci/sign_macos.py`,
+`cli/ci/test_sign_macos.py`, `docs/cli-publication.md`, `docs/cli-distribution.md`
+and this registry. The `distribution_ci` agent owns
+`cli/conformance/runner/run.py`, `cli/conformance/runner/test_runner.py`,
+`cli/conformance/fixtures/adapter-host-expectations.json`,
+`cli/rust/crates/prose-runner-core/src/installed_adapters.rs` (host diagnostics only),
+`cli/rust/crates/prose-runner-core/src/runner.rs` (failure descriptor digest only),
+`cli/bun/scripts/image-bundle.ts`, and `.github/workflows/cli-distribution-check.yml`.
+The `macos_signing` agent owns `cli/ci/sign_macos.py`,
+`cli/ci/test_sign_macos.py`, `cli/ci/package_local.py`,
+`cli/ci/test_package_local.py`, and `cli/ci/test_npm_identity.py`; the lead owns publication integration and may also
+add `cli/release/plans/README.md`. The lead retains Git/index ownership. Host admission must not expand and sentinel artifacts must not be published. The user subsequently authorized an
+explicitly unsigned RC, with Apple signing tracked separately in IMP-015. This supersedes the initial
+publication-authorization and proposed npm-name notes above.
+
+## Existing path leases
+
 | Task | Owner | Writable paths | Shared-file lease | State |
 | --- | --- | --- | --- | --- |
 | W0-LEAD | lead | `cli/AGENTS.md`, `cli/protocol/**`, `cli/conformance/runner/**`, `cli/README.md` | repository Git index | active |

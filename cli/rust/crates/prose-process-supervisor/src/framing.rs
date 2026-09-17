@@ -24,7 +24,7 @@ impl Default for StreamLimits {
 pub(crate) enum ReaderMessage {
     Record(Vec<u8>),
     StdoutEof,
-    StdoutTruncated,
+    StdoutTruncated { observed: usize },
     StdoutLimit { record: bool, observed: usize, limit: usize },
     StdoutIo,
     Stderr(Vec<u8>),
@@ -47,7 +47,7 @@ pub(crate) fn read_jsonl(
                 let message = if record.is_empty() {
                     ReaderMessage::StdoutEof
                 } else {
-                    ReaderMessage::StdoutTruncated
+                    ReaderMessage::StdoutTruncated { observed: record.len() }
                 };
                 let _ = sender.send(message);
                 return;
@@ -155,7 +155,7 @@ mod tests {
     #[test]
     fn partial_eof_and_record_limit_are_distinct() {
         let truncated = records(b"{\"unfinished\"", StreamLimits::default());
-        assert!(matches!(truncated[0], ReaderMessage::StdoutTruncated));
+        assert!(matches!(truncated[0], ReaderMessage::StdoutTruncated { .. }));
         let limited = records(
             b"12345\n",
             StreamLimits {

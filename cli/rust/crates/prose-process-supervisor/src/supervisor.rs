@@ -82,6 +82,19 @@ impl SupervisorFailure {
         Some(serde_json::json!({"schema":"openprose.transport-diagnostic/1","reason":reason}))
     }
 
+    fn with_observed_diagnostic(mut self, reason: &str, observed: usize) -> Self {
+        let mut diagnostic = serde_json::json!({
+            "schema": "openprose.transport-diagnostic/1",
+            "reason": reason,
+            "observedBytes": observed.min(u32::MAX as usize),
+        });
+        if observed > u32::MAX as usize {
+            diagnostic["saturated"] = Value::Bool(true);
+        }
+        self.transport_diagnostic = Some(diagnostic);
+        self
+    }
+
     pub(crate) fn with_byte_diagnostic(mut self, record: bool, observed: usize, limit: usize) -> Self {
         self.transport_diagnostic = Some(serde_json::json!({"schema":"openprose.transport-diagnostic/1","reason":if record {"record-byte-limit"} else {"aggregate-stdout-limit"},"observedBytes":observed.min(u32::MAX as usize),"limitBytes":limit.min(u32::MAX as usize),"saturated":observed > u32::MAX as usize || limit > u32::MAX as usize}));
         self
@@ -432,13 +445,13 @@ impl ProtocolState {
             SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
                 "harness emitted a malformed JSONL record",
-            )
+            ).with_observed_diagnostic("invalid-json", bytes.len())
         })?;
         let object = value.as_object().ok_or_else(|| {
             SupervisorFailure::new(
                 FailureKind::ProtocolMalformed,
                 "harness emitted a non-object JSONL record",
-            )
+            ).with_observed_diagnostic("non-object-record", bytes.len())
         })?;
         if let Some(expected_schema) = protocol.schema.as_deref() {
             if object.get("schema").and_then(Value::as_str) != Some(expected_schema) {
@@ -565,7 +578,7 @@ impl HarnessJsonlAssembler {
             Err(SupervisorFailure::new(
                 FailureKind::ProtocolTruncated,
                 "harness stream ended in the middle of a structured record",
-            ))
+            ).with_observed_diagnostic("truncated-record", self.record.len()))
         }
     }
 }
@@ -1217,7 +1230,7 @@ fn settle_readers_with_diagnostics(
         && Instant::now() < natural_deadline
     {
         if drain_diagnostics(receiver, stderr_bytes, maximum_stderr_bytes) == 0 {
-            thread::sleep(Duration::from_millis(1));
+            wait_for_diagnostic(receiver, stderr_bytes, maximum_stderr_bytes, natural_deadline);
         } else {
             thread::yield_now();
         }
@@ -1240,7 +1253,7 @@ fn settle_readers_with_diagnostics(
         && Instant::now() < stop_deadline
     {
         if drain_diagnostics(receiver, stderr_bytes, maximum_stderr_bytes) == 0 {
-            thread::sleep(Duration::from_millis(1));
+            wait_for_diagnostic(receiver, stderr_bytes, maximum_stderr_bytes, stop_deadline);
         } else {
             thread::yield_now();
         }
@@ -1985,10 +1998,10 @@ fn handle_message(
             *stdout_eof = true;
             Ok(())
         }
-        ReaderMessage::StdoutTruncated => Err(SupervisorFailure::new(
+        ReaderMessage::StdoutTruncated { observed } => Err(SupervisorFailure::new(
             FailureKind::ProtocolTruncated,
             "harness stream ended in the middle of a structured record",
-        )),
+        ).with_observed_diagnostic("truncated-record", observed)),
         ReaderMessage::StdoutLimit { record, observed, limit } => Err(SupervisorFailure::new(
             FailureKind::ProtocolMalformed,
             if record { "harness structured output exceeded a fixed record limit" } else { "harness structured output exceeded a fixed transport limit" },
@@ -2013,6 +2026,21 @@ fn handle_message(
             FailureKind::HarnessFailed,
             "harness diagnostic output could not be read to completion",
         )),
+    }
+}
+
+// Wake when a blocked sender supplies data instead of sleeping after every
+// empty poll. A one-slot channel must not incur 1 ms per diagnostic record.
+fn wait_for_diagnostic(
+    receiver: &Receiver<ReaderMessage>,
+    stderr: &mut Vec<u8>,
+    maximum: usize,
+    deadline: Instant,
+) {
+    let timeout = deadline.saturating_duration_since(Instant::now()).min(Duration::from_millis(1));
+    if let Ok(ReaderMessage::Stderr(bytes)) = receiver.recv_timeout(timeout) {
+        let remaining = maximum.saturating_sub(stderr.len());
+        stderr.extend_from_slice(&bytes[..bytes.len().min(remaining)]);
     }
 }
 

@@ -609,8 +609,16 @@ pub fn assert_platform_supported(
     }
     Err(RunnerError::catalog(ErrorCode::HarnessIncompatible)
         .with_detail("adapterId", adapter.id())
-        .with_detail("hostPlatform", host.os)
-        .with_detail("hostArchitecture", host.arch)
+        .with_detail(
+            "hostPlatform",
+            match host.os {
+                "macos" => "darwin",
+                "windows" => "win32",
+                other => other,
+            },
+        )
+        .with_detail("hostArchitecture", arch.unwrap_or(host.arch))
+        .with_detail("supportedPlatforms", supported.clone())
         .with_detail("fallbackAttempted", false))
 }
 
@@ -4119,6 +4127,23 @@ mod tests {
             .code,
             ErrorCode::HarnessIncompatible
         );
+    }
+
+    #[test]
+    fn rejected_host_diagnostics_use_portable_platform_names() {
+        for (os, arch, wanted_os, wanted_arch) in [
+            ("linux", "aarch64", "linux", "arm64"),
+            ("macos", "x86_64", "darwin", "x64"),
+        ] {
+            let error = assert_platform_supported(
+                InstalledAdapter::PrimeRpc,
+                HostPlatform { os, arch, libc: None },
+            ).unwrap_err();
+            let value = serde_json::to_value(error).unwrap();
+            assert_eq!(value["details"]["hostPlatform"], wanted_os);
+            assert_eq!(value["details"]["hostArchitecture"], wanted_arch);
+            assert_eq!(value["details"]["fallbackAttempted"], false);
+        }
     }
 
     #[test]
