@@ -72,8 +72,7 @@ four platforms. `cli-kernel-rc.yml` runs on PRs for validation and manually from
 main for actual candidates. `assemble_kernel_rc.py` verifies the native reports
 and package bytes; without exact-binary live smoke evidence, it emits an
 unqualified development plan that publication refuses. Do not satisfy the gate by embedding a fixed kernel, relabeling
-an echo/sentinel fixture, or fabricating a protected passing report. No qualified
-plan has been committed. Existing alpha workflows and their independent
+an echo/sentinel fixture, or fabricating a protected passing report. The reviewed [0.15.0-rc.1 plan](../cli/release/plans/0.15.0-rc.1.json) binds the qualified main-build artifacts and paired live smoke evidence. Existing alpha workflows and their independent
 requirements are not silently replaced by this new path.
 
 ## Deferred macOS signing
@@ -178,3 +177,23 @@ until its actual publication and public integrity checks succeed.
 ### Empty evidence files
 
 GitHub release uploads reject zero-byte files. The reviewed inventory retains empty build logs with size zero and the SHA-256 of the empty byte string. Fetching reconstructs only those explicitly declared evidence files; it never reconstructs missing nonempty files or executable packages. Native build reports still bind their exact original bytes. Detached signatures cover the reconstructed empty files too.
+
+## Resume an interrupted draft asset upload
+
+Use `python3 cli/ci/stage_upload.py --plan PLAN --artifacts DIRECTORY` after the
+qualified draft exists, whether empty or partially uploaded. The
+helper repeats local qualification, verifies the tag's source commit, and checks
+the complete paginated GitHub asset inventory. It skips an existing asset only
+when its uploaded state, byte size, and GitHub SHA-256 digest all match the plan.
+Unknown assets, missing digests, mismatches, and incomplete `starter` assets stop
+for operator inspection. It never deletes or overwrites an asset.
+
+Declared zero-byte evidence is verified locally against the empty SHA-256 and
+retained virtually; GitHub does not accept empty asset uploads. Empty packages
+are forbidden. The final remote inventory contains only nonempty plan entries.
+Uploads are sequential. Only HTTP 429, 500, 502, 503, and 504 receive bounded
+retries: at most three attempts with 2-second and 8-second delays. Every response
+is reconciled against GitHub because an error may arrive after a successful
+upload. Authentication errors, permanent failures, and unconfirmed timeouts stop.
+The helper verifies the complete final inventory and leaves the release a draft;
+it does not publish npm packages, promote GitHub releases, or change channels.
