@@ -80,6 +80,12 @@ class PackTests(unittest.TestCase):
                 for target in re.findall(r'\]\(([^)]+)\)',document.read_text()):
                     if '://' not in target and not target.startswith('#'):
                         self.assertTrue((document.parent/target.split('#')[0]).exists(),f'{relative}: {target}')
+            document=source/'docs/weave-v1-readiness.md'
+            for target in re.findall(r'\]\(([^)]+)\)',document.read_text()):
+                if '://' not in target and not target.startswith('#'):
+                    self.assertTrue((document.parent/target.split('#')[0]).exists(),f'readiness: {target}')
+            helper=subprocess.run([sys.executable,'-B','cli/shared/tests/weave_host_process.py','--help'],cwd=source,env={},capture_output=True,text=True,timeout=10,check=True)
+            self.assertIn('--report',helper.stdout)
             result=subprocess.run([sys.executable,'-B','experiments/weave/demo.py'],cwd=source,env={},capture_output=True,text=True,timeout=10,check=True)
             self.assertIn('satisfied',result.stdout)
             self.assertIn('unknown',result.stdout)
