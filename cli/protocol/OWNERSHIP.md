@@ -430,3 +430,5 @@ User extended work through 11:00 Eastern, with no publication. Root owns Git and
 - Root: experiments/weave-seed/HOST.md, fixtures/checkpoint-v1.json, integration/, seed README and docs/weave-v1-readiness.md; shared metadata.
 
 IMP-014 staging recovery lease: distribution_ci owns `cli/ci/stage_upload.py` and `cli/ci/test_stage_upload.py` for bounded, sequential, digest-verified draft asset uploads and transient-error recovery. Root retains Git and actual publication operations.
+
+Extended example lease at 10:47 Eastern: weave_onboarding also owns experiments/weave-seed/bun/persistent-example.mjs and bun/HOST-EXAMPLE.md. weave_parity retains rust-host/examples/ and README within its existing lease. Examples remain deterministic and unpublished.

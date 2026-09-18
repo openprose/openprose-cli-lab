@@ -11,5 +11,8 @@ try{
  assert.equal(runConfig(config).status,'satisfied');assert.equal(runConfig(config).status,'reused');
  writeFileSync(join(root,'batch.txt'),'batch-2');assert.equal(runConfig(config).status,'satisfied');assert.equal(readFileSync(join(root,'report.txt'),'utf8'),'batch-2');
  writeFileSync(join(root,'batch.txt'),'batch-3');assert.equal(runConfig(config).status,'attempt-limit');
+ const parsed=JSON.parse(readFileSync(config,'utf8'));
+ writeFileSync(config,JSON.stringify({...parsed,environment:{SECRET:'do-not-store'}}));assert.throws(()=>runConfig(config),/environmentKeys/);
+ writeFileSync(config,JSON.stringify({...parsed,environmentKeys:['WEAVE_NONEXISTENT_TEST_9898']}));assert.throws(()=>runConfig(config),/unavailable/);
  console.log('PASS durable process integration: ready state does not skip required report; new batch invalidates reuse; restarted host preserves cumulative budget');
 }finally{rmSync(root,{recursive:true,force:true});}

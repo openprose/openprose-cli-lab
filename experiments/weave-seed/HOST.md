@@ -13,3 +13,5 @@ Expose load/save within a locked operation, a step wrapper delegating to the exi
 Checkpoint JSON rejects duplicate object keys, a leading UTF-8 BOM, malformed UTF-8, and noncanonical integer number tokens (fractional or exponent notation, negative zero). Persisted fields must use unsigned decimal integer tokens; this shared lexical boundary avoids runtime-dependent interpretation.
 
 String values must contain Unicode scalar values, not unpaired surrogate escapes. A required nonblank string must contain a character outside the union of Unicode White_Space and U+FEFF. This includes U+0085 and prevents Rust/JavaScript trimming differences from changing acceptance.
+
+The host may create missing directory ancestors, but current implementations do not sync every newly created ancestor entry. Full power-loss durability of a newly created root is not established. Provision a durably created root externally when that guarantee matters. Process-interruption tests and explicit file/directory fsync do not establish hardware power-loss behavior.

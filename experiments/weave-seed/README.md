@@ -60,3 +60,5 @@ Both implementations now have experimental local hosts under the [shared host co
 Run the Bun host checks with `bun --no-env-file experiments/weave-seed/bun/host.test.mjs`. See the [Rust host guide](rust-host/README.md) for its standalone Cargo crate and tests. The [file/process integration](integration/README.md) includes a Bun-only subprocess bridge and cross-runtime checkpoint tests. It does not yet connect a shipped CLI command to arbitrary kernel-backed programs.
 
 These additions test local restart and failure behavior. Power-loss durability, distributed storage, hostile filesystem behavior and model-based fulfillment remain separate qualification gates.
+
+For a file-backed walkthrough with inspectable retained state, use the [Bun persistent example](bun/HOST-EXAMPLE.md) or the [Rust persistent example](rust-host/README.md). Both recreate the host between events and demonstrate two repairs followed by abstention on corrupt and missing evidence. They use deterministic rules, not a generative provider.

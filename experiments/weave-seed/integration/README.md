@@ -6,7 +6,7 @@ This is an unpublished Bun-only integration experiment. It connects the bounded 
 
 `process.mjs` starts explicit argument arrays without a shell. Each child receives one JSON object on standard input with schema `openprose.weave-input/1`, the evidence envelope, and the actor attempt ID where applicable. The evidence payload contains the explicitly bound source contents. Assessor output must be exactly one JSON field named `judgment`, with value `satisfied`, `work-needed`, or `unknown`. Extra fields, duplicate keys, escaped alternative spellings and extra output are rejected. Actor exit status zero requests fresh assessment; it is not proof of fulfillment. Nonzero status or timeout leaves uncertain effects pending.
 
-The environment defaults to empty; supply required credentials and environment explicitly in memory when using the capability API. Do not commit secrets in JSON configuration. Timeouts send SIGKILL to the direct child. This is not process-tree supervision: detached descendants may remain and external effects may already have occurred. Output is bounded, but no operating-system sandbox or provider spending cap is supplied. Use only trusted commands. Executable and dependency immutability is a host requirement; changing capability code requires updating `capabilityVersion`.
+The environment defaults to empty; supply required credentials and environment explicitly in memory when using the capability API. For the file-based runner, select existing parent variables by name with `environmentKeys`; literal environment values in the file are rejected. Do not commit secrets in JSON configuration. Timeouts send SIGKILL to the direct child. This is not process-tree supervision: detached descendants may remain and external effects may already have occurred. Output is bounded, but no operating-system sandbox or provider spending cap is supplied. Use only trusted commands. Executable and dependency immutability is a host requirement; changing capability code requires updating `capabilityVersion`.
 
 ## Provider-free checks
 
@@ -35,6 +35,7 @@ These tests create disposable files and actual child processes. The process test
   "assessor": ["/absolute/path/to/assessor", "--protocol", "weave-input-v1"],
   "actor": ["/absolute/path/to/actor", "--protocol", "weave-input-v1"],
   "checkpointDirectory": ".weave-host",
+  "environmentKeys": [],
   "maxAttempts": 2,
   "timeoutMs": 30000
 }

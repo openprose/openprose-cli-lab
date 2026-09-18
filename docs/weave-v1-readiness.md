@@ -6,7 +6,7 @@ Status: unpublished experiment, September 18, 2026. This is a readiness assessme
 
 The inspected CLI baseline is `22c14915cad5ab6eadb5f70b7c7177b89e6abe5b`. Candidate files are additions on its development branch until the lead records a new commit. The inspected kernel is `7dc90670b4ccd862b7d0939a75d8b819b03a2b1b` in its separately owned source repository. Kernel and contract semantics remain authoritative; the seeds do not parse or automatically bind Markdown.
 
-This CLI branch predates later CLI release and packaging work. Reconcile the candidate with the current CLI release base and repeat affected integration checks before proposing product integration. An old baseline's passing checks do not qualify newer release artifacts.
+The candidate now includes inspected upstream CLI main `332c511` through local merge `ba55296`. The ownership-record conflict was resolved by preserving both sets of leases. Twelve upstream upload-control tests and five assembly tests pass; these use fixtures and mocks, not actual uploads. New seed code remains isolated from the shipped CLI, so this does not qualify a new installed release.
 
 ## Checks actually performed
 
@@ -49,7 +49,7 @@ Both implementations passed the 25 shared lifecycle cases. Bun additionally pass
 | Complete invocation | An end-to-end integration must preserve per-invocation reports and required verification even when maintained state is unchanged. Artifact existence does not prove a claimed read occurred. |
 | Host persistence and recovery | Specify and test durable storage, serialization, interruption, external-effect reconciliation, receipts, and repeated recovery. A callback loop alone is not a production host. |
 | Permissions and costs | Define enforceable effect permissions, credential ownership, scheduling, attempt limits, timeouts, and provider-specific budgets. Contract declarations alone cannot enforce these. |
-| Integration and compatibility | Reconcile the current CLI release base; verify an explicit kernel/evidence binding and the agreed output convention without introducing a prose parser or replacing the existing generative runner. |
+| Integration and compatibility | Verify an explicit kernel/evidence binding and the agreed output convention without introducing a prose parser or replacing the existing generative runner. |
 | Runtime and distribution | Complete target-platform and runtime qualification, API review, packaging, upgrade behavior, dependency/security review, and release authorization. A source-level test is not an installed-package test. |
 | Onboarding | Run a fresh developer/agent trial of the instructions and the kernel-backed example; independently inspect its artifacts and reported operations. The new prose example has not had a live model run in this phase. |
 | Feedback | Establish maintainer ownership and triage for manually submitted reports; validate the synthetic reproduction workflow. No automatic evidence collection or upload is introduced. |

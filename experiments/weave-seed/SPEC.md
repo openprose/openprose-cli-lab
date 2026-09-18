@@ -8,7 +8,7 @@ A pending attempt returns `recovery-needed` without observing. Fresh identical e
 
 `settlePending` (Rust `settle_pending`) accepts exact binding and pending attempt, a trusted `completed` or `not-applied` outcome and nonempty receipt reference. It returns a checkpoint with pending and cached satisfaction cleared, unchanged attempts, and the latest settlement retained. The caller must atomically save it. Settlement establishes neither fulfillment nor receipt authenticity.
 
-The caller owns durable atomic saves, serialization, identity construction, authorization, scheduling, source freshness, provider calls, deadlines and costs. No filesystem host, async runtime, distributed recovery, exactly-once effects, JSON checkpoint interchange, SDK packaging or CLI integration is supplied. Callback panics in Rust are outside the recoverable Result interface. No model reliability follows from deterministic parity.
+The caller owns durable atomic saves, serialization, identity construction, authorization, scheduling, source freshness, provider calls, deadlines and costs. The core supplies no filesystem host, async runtime, distributed recovery, exactly-once effects, SDK packaging or CLI integration. Optional experimental local hosts and their JSON interchange are specified separately in HOST.md. Callback panics in Rust are outside the recoverable Result interface. No model reliability follows from deterministic parity.
 
 ## Shared black-box corpus
 

@@ -8,9 +8,14 @@ import { processCapabilities } from './process.mjs';
 export function runConfig(path) {
   const configPath=resolve(path), config=JSON.parse(readFileSync(configPath,'utf8'));
   if(config.schema!==1 || typeof config.capabilityVersion!=='string' || !config.capabilityVersion.trim() || !Number.isSafeInteger(config.maxAttempts) || config.maxAttempts<0 || typeof config.checkpointDirectory!=='string')throw Error('invalid explicit configuration');
+  if ('environment' in config) throw Error('use environmentKeys, not environment values, in configuration files');
+  const keys=config.environmentKeys??[];
+  if (!Array.isArray(keys) || keys.some(k=>typeof k!=='string'||!/^[A-Za-z_][A-Za-z0-9_]*$/.test(k)) || new Set(keys).size!==keys.length) throw Error('invalid environment key selection');
+  const environment={};
+  for (const key of keys) { if (process.env[key]===undefined) throw Error('a selected environment variable is unavailable'); environment[key]=process.env[key]; }
   const root=resolve(dirname(configPath),config.root??'.');
-  const capabilities=processCapabilities({...config,cwd:root});
-  const policy=createHash('sha256').update(JSON.stringify({version:config.capabilityVersion,assessor:config.assessor,actor:config.actor,environment:config.environment??{},timeoutMs:config.timeoutMs??30000})).digest('hex');
+  const capabilities=processCapabilities({...config,cwd:root,environment});
+  const policy=createHash('sha256').update(JSON.stringify({version:config.capabilityVersion,assessor:config.assessor,actor:config.actor,environment,timeoutMs:config.timeoutMs??30000})).digest('hex');
   const bound=bindFiles({...config,root,policy});
   const host=new FileHost(resolve(dirname(configPath),config.checkpointDirectory));
   return host.step(bound.binding,{...capabilities,observe:()=>bound.observe(Date.now()),clock:Date.now,newId:randomUUID},config.maxAttempts);
