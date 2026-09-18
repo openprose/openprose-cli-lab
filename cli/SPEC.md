@@ -401,6 +401,22 @@ the skill-owned unresolved-input or unresolved-approval terminal status. The
 runner never opens a prompt to continue the run. Users who want conversational
 questions, approvals, or a TUI use the direct skill path.
 
+### 7.2.1 Proposed local weave host bridge (IMP-026)
+
+This isolated branch proposes `prose cli weave --host-binding ABS OP CONFIG ...`.
+It is not a released command. The exact admission, operation grammar, byte-stream,
+exit and interruption contract is [the IMP-026 decision](protocol/decisions/imp026-weave-host.md),
+with its self-contained [black-box fixture](shared/fixtures/weave-host-v1.json).
+Implementation must follow that corpus in both products before qualification.
+
+The bridge invokes an explicitly selected, digest-pinned local coordinator; it
+never implements or discovers language `init`, `run`, or other Markdown commands.
+`prose weave ...` and `prose -- cli weave ...` remain opaque language invocations.
+It bypasses runner configuration, kernel/image resolution and harness discovery.
+Its dedicated host binding contains executable identity, selected environment
+names and resource bounds, not credentials or harness defaults. No existing
+runner-global flag is admitted for this operation, including `--dry-run`.
+
 ### 7.3 Global options
 
 The grammar is:

@@ -1,0 +1,1297 @@
+{
+  "schema": "openprose.weave-host-fixture/1",
+  "status": "proposed-not-released",
+  "contract": "cli/protocol/decisions/imp026-weave-host.md",
+  "harness": {
+    "description": "Declarative self-contained bridge corpus, not runner-case/1. Independent root-owned harness must expand tokens and construct real fake executables. Missing host stdout/stderr defaults empty; missing host exit defaults0. Cases are not claimed executed by this fixture. Token expansion also applies inside raw binding JSON strings before writing UTF-8 bytes.",
+    "tokens": {
+      "{{ROOT}}": "fresh canonical absolute temporary directory",
+      "{{BINDING}}": "ROOT/host.json",
+      "{{CONFIG}}": "ROOT/weave.json (need not exist)",
+      "{{HOST}}": "ROOT/fake-host",
+      "{{HOST_SHA256}}": "actual fake-host executable SHA256"
+    },
+    "baseBinding": {
+      "schema": "openprose.weave-host-binding/1",
+      "executable": "{{HOST}}",
+      "sha256": "{{HOST_SHA256}}",
+      "environmentKeys": [],
+      "timeoutMs": 2000,
+      "maxOutputBytes": 65536
+    },
+    "mutationOrder": [
+      "construct fake host",
+      "derive base binding with its actual digest",
+      "apply bindingPatch or bindingRawUtf8 or bindingFile",
+      "apply hostFile mutation",
+      "launch CLI under selected ambient and control"
+    ],
+    "ambientDefault": {},
+    "network": "denied",
+    "providerCalls": 0,
+    "outerTestTimeoutMs": 10000,
+    "notes": [
+      "Hex expectations refer to raw bytes, including malformed UTF8.",
+      "Generic stderr expectations cover wrapper output only unless suffix is specified.",
+      "Timing upper bounds include CI scheduling allowance, not a runtime deadline extension.",
+      "Harness must clean its intentionally detached fake descendants itself.",
+      "Sparse oversized executable fixture avoids allocating536MiB.",
+      "Structured fake behaviors must use literal argv and no shell."
+    ]
+  },
+  "cases": [
+    {
+      "id": "forward-check",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "check",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "7b7d0a",
+        "stderrHex": "",
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "childArgv": [
+          "check",
+          "{{CONFIG}}"
+        ],
+        "exitCode": 0,
+        "stdoutHex": "7b7d0a",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "forward-status",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "7b7d0a",
+        "stderrHex": "",
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "childArgv": [
+          "status",
+          "{{CONFIG}}"
+        ],
+        "exitCode": 0,
+        "stdoutHex": "7b7d0a",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "forward-step",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "7b7d0a",
+        "stderrHex": "",
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "childArgv": [
+          "step",
+          "{{CONFIG}}"
+        ],
+        "exitCode": 0,
+        "stdoutHex": "7b7d0a",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "exit-1",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "check",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe",
+        "exitCode": 1
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 1,
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe"
+      }
+    },
+    {
+      "id": "exit-2",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "check",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe",
+        "exitCode": 2
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 2,
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe"
+      }
+    },
+    {
+      "id": "exit-42",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "check",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe",
+        "exitCode": 42
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 42,
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe"
+      }
+    },
+    {
+      "id": "exit-255",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "check",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe",
+        "exitCode": 255
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 255,
+        "stdoutHex": "ff000a",
+        "stderrHex": "fe"
+      }
+    },
+    {
+      "id": "forward-serve",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "serve",
+        "{{CONFIG}}",
+        "--poll-ms",
+        "1",
+        "--max-steps",
+        "2"
+      ],
+      "host": {
+        "stdoutHex": "7b7d0a",
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "childArgv": [
+          "serve",
+          "{{CONFIG}}",
+          "--poll-ms",
+          "1",
+          "--max-steps",
+          "2"
+        ],
+        "exitCode": 0,
+        "stdoutHex": "7b7d0a",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "forward-settle",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "settle",
+        "{{CONFIG}}",
+        "--binding",
+        "old-binding",
+        "--attempt",
+        "attempt-1",
+        "--outcome",
+        "completed",
+        "--receipt",
+        "reviewed"
+      ],
+      "host": {
+        "stdoutHex": "7b7d0a",
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "childArgv": [
+          "settle",
+          "{{CONFIG}}",
+          "--binding",
+          "old-binding",
+          "--attempt",
+          "attempt-1",
+          "--outcome",
+          "completed",
+          "--receipt",
+          "reviewed"
+        ],
+        "exitCode": 0,
+        "stdoutHex": "7b7d0a",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "selected-environment",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "environmentKeys": [
+          "PRESENT",
+          "ABSENT",
+          "__proto__"
+        ]
+      },
+      "ambient": {
+        "PRESENT": "chosen",
+        "UNSELECTED": "secret",
+        "__proto__": "literal"
+      },
+      "host": {
+        "behavior": "assert-environment",
+        "expectedEnvironment": {
+          "PRESENT": "chosen",
+          "__proto__": "literal"
+        },
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 0,
+        "stdinEOF": true,
+        "childCwd": "{{ROOT}}"
+      }
+    },
+    {
+      "id": "runner-config-independent",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "runnerConfig": "invalid",
+      "image": "unavailable",
+      "host": {
+        "exitCode": 0
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 0,
+        "startedHarness": false,
+        "resolvedImage": false
+      }
+    },
+    {
+      "id": "binding-sha256-11",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "id": "binding-timeoutMs-12",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 0
+      }
+    },
+    {
+      "id": "binding-timeoutMs-13",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 86400001
+      }
+    },
+    {
+      "id": "binding-maxOutputBytes-14",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "maxOutputBytes": 0
+      }
+    },
+    {
+      "id": "binding-maxOutputBytes-15",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "maxOutputBytes": 16777217
+      }
+    },
+    {
+      "id": "binding-environmentKeys-16",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "environmentKeys": [
+          "A",
+          "A"
+        ]
+      }
+    },
+    {
+      "id": "binding-environmentKeys-17",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "environmentKeys": [
+          "BAD-NAME"
+        ]
+      }
+    },
+    {
+      "id": "binding-executable-18",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "executable": "relative"
+      }
+    },
+    {
+      "id": "binding-extra-19",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "extra": true
+      }
+    },
+    {
+      "id": "binding-json-20",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"{{HOST}}\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":2000,\"maxOutputBytes\":65536,\"schema\":\"duplicate\"}"
+    },
+    {
+      "id": "binding-json-21",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"{{HOST}}\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":2000,\"maxOutputBytes\":65536,\"\\u0073chema\":\"duplicate\"}"
+    },
+    {
+      "id": "binding-json-22",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"{{HOST}}\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":2e3,\"maxOutputBytes\":65536}"
+    },
+    {
+      "id": "binding-json-23",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"{{HOST}}\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":2000.0,\"maxOutputBytes\":65536}"
+    },
+    {
+      "id": "binding-json-24",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"{{HOST}}\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":-0,\"maxOutputBytes\":65536}"
+    },
+    {
+      "id": "binding-json-25",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingRawUtf8": "{\"schema\":\"openprose.weave-host-binding/1\",\"executable\":\"\\ud800\",\"sha256\":\"{{HOST_SHA256}}\",\"environmentKeys\":[],\"timeoutMs\":2000,\"maxOutputBytes\":65536}"
+    },
+    {
+      "id": "binding-file-missing",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "missing"
+    },
+    {
+      "id": "binding-file-fifo",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "fifo"
+    },
+    {
+      "id": "binding-file-directory",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "directory"
+    },
+    {
+      "id": "binding-file-oversized-65537",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "oversized-65537"
+    },
+    {
+      "id": "binding-file-invalid-utf8",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "invalid-utf8"
+    },
+    {
+      "id": "binding-file-utf8-bom",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingFile": "utf8-bom"
+    },
+    {
+      "id": "host-file-missing",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "hostFile": "missing"
+    },
+    {
+      "id": "host-file-directory",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "hostFile": "directory"
+    },
+    {
+      "id": "host-file-not-executable",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "hostFile": "not-executable"
+    },
+    {
+      "id": "host-file-changed-after-binding",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "hostFile": "changed-after-binding"
+    },
+    {
+      "id": "host-file-oversized-536870913",
+      "expected": {
+        "spawned": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_BINDING_INVALID\n"
+      },
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "hostFile": "oversized-536870913"
+    },
+    {
+      "id": "invalid-grammar-37",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "relative"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-grammar-38",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}",
+        "extra"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-grammar-39",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "serve",
+        "{{CONFIG}}",
+        "--poll-ms",
+        "01",
+        "--max-steps",
+        "1"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-grammar-40",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "serve",
+        "{{CONFIG}}",
+        "--poll-ms",
+        "1",
+        "--max-steps",
+        "1000001"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-grammar-41",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "settle",
+        "{{CONFIG}}",
+        "--binding",
+        "b",
+        "--attempt",
+        "a",
+        "--outcome",
+        "guess",
+        "--receipt",
+        "r"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stdoutHex": "",
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-global-42",
+      "argv": [
+        "--dry-run",
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-global-43",
+      "argv": [
+        "--cwd",
+        "{{ROOT}}",
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-global-44",
+      "argv": [
+        "--output",
+        "json",
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-global-45",
+      "argv": [
+        "--model",
+        "ignored",
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "invalid-global-46",
+      "argv": [
+        "--no-color",
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_INVOCATION_INVALID\n"
+      }
+    },
+    {
+      "id": "language-routing-47",
+      "argv": [
+        "weave",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "weaveHostSpawned": false,
+        "languageArgv": [
+          "prose",
+          "weave",
+          "step",
+          "{{CONFIG}}"
+        ]
+      }
+    },
+    {
+      "id": "language-routing-48",
+      "argv": [
+        "--",
+        "cli",
+        "weave",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "weaveHostSpawned": false,
+        "languageArgv": [
+          "prose",
+          "cli",
+          "weave",
+          "step",
+          "{{CONFIG}}"
+        ]
+      }
+    },
+    {
+      "id": "help",
+      "argv": [
+        "cli",
+        "weave",
+        "--help"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 0,
+        "stdoutContains": "--host-binding",
+        "stderrHex": ""
+      }
+    },
+    {
+      "id": "unsupported-platform",
+      "platform": "windows",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "expected": {
+        "spawned": false,
+        "bindingOpened": false,
+        "exitCode": 2,
+        "stderrAscii": "WEAVE_HOST_UNSUPPORTED_PLATFORM\n"
+      }
+    },
+    {
+      "id": "spawn-failure",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "behavior": "executable-with-missing-interpreter"
+      },
+      "expected": {
+        "exitCode": 126,
+        "stderrAscii": "WEAVE_HOST_START_FAILED\n"
+      }
+    },
+    {
+      "id": "stdout-budget",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "maxOutputBytes": 4
+      },
+      "host": {
+        "stdoutHex": "0001020304",
+        "sleepMs": 5000
+      },
+      "expected": {
+        "spawned": true,
+        "exitCode": 125,
+        "stdoutHex": "00010203",
+        "stderrAscii": "WEAVE_HOST_OUTPUT_LIMIT\n",
+        "maxElapsedMs": 3000
+      }
+    },
+    {
+      "id": "combined-budget",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "maxOutputBytes": 1024
+      },
+      "host": {
+        "behavior": "concurrent-output-flood"
+      },
+      "expected": {
+        "exitCode": 125,
+        "childOutputBytesAtMost": 1024,
+        "stderrSuffixAscii": "WEAVE_HOST_OUTPUT_LIMIT\n",
+        "maxElapsedMs": 3000
+      }
+    },
+    {
+      "id": "deadline",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 100
+      },
+      "host": {
+        "behavior": "ignore-term-and-sleep",
+        "sleepMs": 5000
+      },
+      "expected": {
+        "exitCode": 124,
+        "stderrAscii": "WEAVE_HOST_TIMEOUT\n",
+        "maxElapsedMs": 3000,
+        "directChildReaped": true
+      }
+    },
+    {
+      "id": "cancel-SIGINT",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "serve",
+        "{{CONFIG}}",
+        "--poll-ms",
+        "1",
+        "--max-steps",
+        "2"
+      ],
+      "host": {
+        "behavior": "write-pending-then-wait"
+      },
+      "control": {
+        "signalAfter": "pending-file",
+        "signal": "SIGINT"
+      },
+      "expected": {
+        "exitCode": 130,
+        "stderrSuffixAscii": "WEAVE_HOST_CANCELLED\n",
+        "pendingPreserved": true,
+        "maxElapsedAfterSignalMs": 3000,
+        "directChildReaped": true
+      }
+    },
+    {
+      "id": "cancel-SIGTERM",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "serve",
+        "{{CONFIG}}",
+        "--poll-ms",
+        "1",
+        "--max-steps",
+        "2"
+      ],
+      "host": {
+        "behavior": "write-pending-then-wait"
+      },
+      "control": {
+        "signalAfter": "pending-file",
+        "signal": "SIGTERM"
+      },
+      "expected": {
+        "exitCode": 143,
+        "stderrSuffixAscii": "WEAVE_HOST_CANCELLED\n",
+        "pendingPreserved": true,
+        "maxElapsedAfterSignalMs": 3000,
+        "directChildReaped": true
+      }
+    },
+    {
+      "id": "inherited-open-pipe",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 100
+      },
+      "host": {
+        "behavior": "exit-zero-leave-descendant-pipe-open"
+      },
+      "expected": {
+        "exitCode": 124,
+        "stderrSuffixAscii": "WEAVE_HOST_TIMEOUT\n",
+        "maxElapsedMs": 3000,
+        "signalAfterDirectChildExit": false
+      }
+    },
+    {
+      "id": "closed-wrapper-stdout",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "status",
+        "{{CONFIG}}"
+      ],
+      "host": {
+        "behavior": "write-until-stopped"
+      },
+      "control": {
+        "closeWrapperStdout": true
+      },
+      "expected": {
+        "exitCode": 125,
+        "stderrSuffixAscii": "WEAVE_HOST_IO_FAILED\n",
+        "directChildReaped": true
+      }
+    }
+  ]
+}
