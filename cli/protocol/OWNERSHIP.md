@@ -462,3 +462,5 @@ Root accepts the corpus-first host bridge contract in `cli/protocol/decisions/im
 All roles preserve opaque language routing and existing commands. No backend, provider calls, publication, version bump or release changes. Shared schema, architectural guard or cross-lease needs return to root.
 
 Root additionally owns `cli/rust/crates/prose-cli/Cargo.toml` and `cli/rust/Cargo.lock` for bridge use of already-approved workspace sha2, rustix (fs feature), and signal-hook dependencies. No new registry package is introduced.
+
+At16:50Eastern root assigns weave_stress `experiments/weave-seed/getting-started/host-binding.mjs`, `host-binding.test.mjs`, and an additive host-binding section in `getting-started/README.md`. This independent helper writes a fresh explicit host binding and prints command arrays; it performs no host/provider execution or existing configuration/state mutation. Root owns integration and qualification.

@@ -83,3 +83,42 @@ WEAVE_RUST_LOCAL=/absolute/path/to/weave-rust-local \
 ```
 
 Both the Bun-only and Bun/Rust variants passed locally. The Rust variant still selects Bun adapter processes explicitly; it does not claim a Bun-free provider stack.
+
+## Generate an explicit `prose cli weave` host binding
+
+For a CLI build containing the experimental `cli weave` bridge, generate its host binding without manually hashing a binary. This helper works with an existing synthetic or BYOK config and an explicitly selected compiled sidecar (`weave-bun` or `weave-rust`). It does not modify that config, inspect credentials, run either executable, call a provider, or claim readiness. No CLI version, public installation or cross-platform compatibility is inferred from an executable file.
+
+```sh
+bun --no-env-file experiments/weave-seed/getting-started/host-binding.mjs \
+  --host /absolute/private-installation/payload/bin/weave-rust \
+  --config /absolute/subject/config.json \
+  --output /absolute/subject/host-binding.json \
+  --environment-keys '[]' \
+  --timeout-ms 900000 \
+  --max-output-bytes 1048576 \
+  --prose /absolute/selected-prose-cli
+```
+
+All seven options are required. Their order may vary; duplicates, unknown options, equals forms and noncanonical decimal numbers are rejected. The output's parent must exist and the output file must be new; existing files, directories and symlinks are never replaced. Setup writes a private mode-0600 file with exactly the bridge binding schema and a SHA-256 of the complete selected host executable. The host must be an executable regular file of at most 512 MiB. Executable symlinks resolve to their canonical target. The supplied absolute config path is preserved, because changing a symlink-parent spelling can change config-relative source resolution. Setup checks that it names an existing regular file but does not parse or validate the coordinator config.
+
+The result is one JSON record with `status: "binding-created-not-executed"`, `hostExecuted: false`, `cliProbed: false`, and `providerVerified: false`. Its `commands` are argument arrays for `check`, `status`, `step`, and `serve`. Review them before running anything; serve's generated example uses a 1000 ms poll and **one** maximum step. For example, after reviewing the generated paths:
+
+```sh
+/absolute/selected-prose-cli cli weave \
+  --host-binding /absolute/subject/host-binding.json \
+  check /absolute/subject/config.json
+```
+
+`--environment-keys` is an explicit JSON array of unique environment-variable **names**, at most 128 names of at most 128 ASCII identifier characters each. `[]` passes an empty environment and works for the offline fixture's absolute executables. A live config may require an explicitly reviewed list such as `["OPENAI_API_KEY"]`, or `PATH` if its selected native harness needs it. The helper neither reads those variables nor infers additional names from the config. The bridge copies only present selected values when a command actually runs; the coordinator's separate environment policy still applies. Selecting names does not verify that credentials exist or work.
+
+The bridge timeout must be 1..86400000 ms and the combined child stdout/stderr budget 1..16777216 bytes. These are whole-command limits, including a complete serve invocation; they are independent of provider/action deadlines and the cumulative action budget. Expiry or interruption may leave pending effects or conservative locks. Use the [explicit recovery guide](../local/RECOVERY.md); generating a binding does not settle effects, unlock state or reset attempts.
+
+The digest proves which selected bytes were recorded, not who published them. Trusted parent-path resolution, shebang interpreters and concurrent filesystem replacement remain outside this helper's attestation. The bridge rechecks the host digest before launch. A changed host requires an explicitly reviewed **new** binding file; setup does not update an old binding or migrate a configuration/checkpoint. A failed write can leave an unaccepted partial output: inspect it and choose a fresh path rather than running it. File fsync alone is not a universal power-loss guarantee.
+
+This helper is standalone: it can be copied to another directory and run with explicit absolute inputs, without importing the source checkout. Run its eight offline test groups with:
+
+```sh
+bun --no-env-file test experiments/weave-seed/getting-started/host-binding.test.mjs
+```
+
+Tests cover exact hashing and private output, spaces and symlink resolution, config preservation, overwrite refusal, strict bounds/names/arguments, oversized and FIFO inputs, and the fully copied helper with an ambient secret canary. The selected fake host and CLI deliberately cannot execute; successful setup is evidence that the helper did not probe them. No provider is called.
