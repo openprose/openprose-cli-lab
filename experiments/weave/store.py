@@ -5,7 +5,7 @@ import json
 import os
 from dataclasses import asdict
 from pathlib import Path
-from engine import Checkpoint,reconcile
+from engine import Checkpoint,reconcile,settle_pending
 
 class FileHost:
     def __init__(self,path):self.path=Path(path)
@@ -28,3 +28,9 @@ class FileHost:
     def step(self,binding,observe,assess,act,clock,new_id,max_attempts=1):
         with self.locked():
             return reconcile(binding,self.read(),observe,assess,act,self.save,clock,new_id,max_attempts)
+
+    def settle(self,binding,attempt,outcome,receipt):
+        with self.locked():
+            checkpoint=settle_pending(self.read(),binding,attempt,outcome,receipt)
+            self.save(checkpoint)
+            return checkpoint

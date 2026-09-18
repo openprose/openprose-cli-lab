@@ -10,6 +10,7 @@ class Checkpoint:
     valid_until: float = 0
     pending: Optional[str] = None
     attempts: int = 0
+    settlement: Optional[dict] = None
 
 
 def reconcile(binding, checkpoint, observe, assess, act, save, clock, new_id, max_attempts=1):
@@ -54,3 +55,23 @@ def reconcile(binding, checkpoint, observe, assess, act, save, clock, new_id, ma
     cp.evidence=fresh.identity;cp.disposition=result
     cp.valid_until=min(after.valid_until,fresh.valid_until);save(cp)
     return cp,'stale-assessment' if stale else result
+
+
+def settle_pending(checkpoint, binding, attempt, outcome, receipt):
+    """Trusted host settlement only; receipt authenticity is caller responsibility.
+
+    Does not assert contract satisfaction, replenish attempts, or perform work.
+    Caller serializes and atomically saves the returned checkpoint.
+    """
+    if not attempt or checkpoint.pending != attempt:
+        raise ValueError('pending attempt mismatch')
+    if checkpoint.binding != binding:
+        raise ValueError('binding mismatch')
+    if outcome not in ('completed', 'not-applied'):
+        raise ValueError('unresolved action outcome')
+    if not isinstance(receipt, str) or not receipt.strip():
+        raise ValueError('receipt reference required')
+    cp=Checkpoint(**asdict(checkpoint))
+    cp.settlement={'attempt':attempt,'binding':binding,'outcome':outcome,'receipt':receipt}
+    cp.pending=None;cp.disposition='unknown';cp.valid_until=0
+    return cp

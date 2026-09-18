@@ -14,3 +14,9 @@ Single owner, one binding, bounded step. Bindings are supplied by caller; no Mar
 10. Budget exhaustion prevents launching work but permits assessment.
 
 This synchronous reference requires external serialization and durable checkpoint writes. It does not claim multi-process locking, remote exactly-once effects, or atomic world updates. Its final read detects tested races but cannot guarantee the world never changes after return.
+
+## Explicit interrupted-action settlement (before implementation)
+- A caller supplies the exact pending attempt, binding, known outcome (completed or not-applied), and nonempty receipt reference. This is a trusted host assertion, not classifier output.
+- Wrong attempt/binding, unresolved outcome, absent receipt, and duplicate settlement are rejected without modifying checkpoint.
+- Settlement clears pending and cached satisfaction, retains cumulative attempts, and records the settlement receipt in the same atomic checkpoint write. It performs no observation, model call, or effect.
+- Next ordinary step rereads/reassesses. Already repaired state rests. Unrepaired state cannot bypass the exhausted attempt budget. Failure to save leaves on-disk pending intact.
