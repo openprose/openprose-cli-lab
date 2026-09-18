@@ -115,6 +115,9 @@ def verify_local(plan, root):
     require(preflight.get('status') == 'pass' and preflight.get('failures') == [], 'Release qualification must pass')
     require(preflight.get('sourceSha') == plan['source'] and preflight.get('version') == plan['version'], 'Preflight does not bind the candidate')
     if moving:
+        require(any(a['name'] == 'SHA256SUMS' and a['kind'] == 'evidence' for a in plan['artifacts']), 'Aggregate install checksums required')
+        sums = ''.join(a['sha256'] + '  ' + a['name'] + '\n' for a in sorted(plan['artifacts'], key=lambda a: a['name']) if a['kind'] in ('standalone', 'npm')).encode()
+        require((root / 'SHA256SUMS').read_bytes() == sums, 'Aggregate install checksums do not match reviewed archives')
         require(preflight.get('imageSource') == 'published-on-run' and set(preflight.get('platforms', {})) == set(PLATFORMS), 'Latest-kernel platform qualification required')
         expected_image = preflight.get('embeddedDiagnosticImage', {})
         require(set(expected_image) == {'formatVersion', 'version', 'sha256', 'manifestSha256', 'purpose'} and expected_image['purpose'] == 'functional-alpha-placeholder', 'Invalid diagnostic image binding')

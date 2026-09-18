@@ -428,3 +428,5 @@ User extended work through 11:00 Eastern, with no publication. Root owns Git and
 - weave_onboarding: experiments/weave-seed/bun/host.mjs and host.test.mjs only (same host contract).
 - weave_stress: read-only review; additive lab imp-017-weave/docs/EXTENDED-REVIEW.md only.
 - Root: experiments/weave-seed/HOST.md, fixtures/checkpoint-v1.json, integration/, seed README and docs/weave-v1-readiness.md; shared metadata.
+
+IMP-014 staging recovery lease: distribution_ci owns `cli/ci/stage_upload.py` and `cli/ci/test_stage_upload.py` for bounded, sequential, digest-verified draft asset uploads and transient-error recovery. Root retains Git and actual publication operations.
