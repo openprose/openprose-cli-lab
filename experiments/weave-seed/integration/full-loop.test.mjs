@@ -1,5 +1,6 @@
 /** Real process boundaries with a mocked Jev transport and fake native CLI. Never uses a model. */
 import assert from 'node:assert/strict';
+import {kernelImageSha256} from './native-actor/actor.mjs';
 import { mkdtempSync, realpathSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,9 +13,9 @@ const sha=x=>createHash('sha256').update(x).digest('hex');
 const rust=process.argv[2];
 try {
  for(const [file,content] of Object.entries({'kernel.md':'Synthetic kernel for transport qualification only.','program.md':'Copy source.txt into report.txt.','source.txt':'first revision','report.txt':''}))writeFileSync(join(root,file),content);
- const kernelHash=sha(readFileSync(join(root,'kernel.md'))),imageHash='a'.repeat(64);
+ const kernelHash=sha(readFileSync(join(root,'kernel.md'))),imageHash=kernelImageSha256(readFileSync(join(root,'kernel.md')));
  const native=join(root,'fake-prose');
- writeFileSync(native,`#!${process.execPath}\nimport {readFileSync,writeFileSync,appendFileSync} from 'node:fs';\nconst args=process.argv.slice(2), option=n=>args[args.indexOf(n)+1];\nconst limits={maxTurns:8,timeoutSeconds:120,toolTimeoutSeconds:15,maxOutputTokens:12000};\nif(args.includes('--dry-run'))console.log(JSON.stringify({readiness:'ready',wouldStartModel:false,selection:{harness:'agents-sdk',model:'offline-test-model',adapterId:'agents-sdk/jsonl'},billingOwner:'user-provider',prompt:{placement:'system-append',strictness:'strict'},cwd:process.cwd(),languageImage:{sha256:${JSON.stringify(imageHash)}},nativeLimits:limits}));\nelse {appendFileSync('native-calls.txt','act\\n');writeFileSync('report.txt',readFileSync('source.txt'));console.log(JSON.stringify({type:'runner.completed',payload:{result:{terminal:{classification:'success'},runnerExitCode:0,languageImage:{sha256:${JSON.stringify(imageHash)}},digests:{deliveredImageSha256:${JSON.stringify(kernelHash)}},nativeLimits:limits}}}));}\n`,{mode:0o700});
+ writeFileSync(native,`#!${process.execPath}\nimport {readFileSync,writeFileSync,appendFileSync} from 'node:fs';\nconst args=process.argv.slice(2), option=n=>args[args.indexOf(n)+1];\nconst limits={maxTurns:8,timeoutSeconds:120,toolTimeoutSeconds:15,maxOutputTokens:12000};\nif(args.includes('doctor'))console.log(JSON.stringify({schema:'openprose.doctor-report/1',build:{testSeamsEnabled:false},image:{sha256:${JSON.stringify(imageHash)}}}));\nelse if(args.includes('--dry-run'))console.log(JSON.stringify({readiness:'ready',wouldStartModel:false,selection:{harness:'agents-sdk',model:'offline-test-model',adapterId:'agents-sdk/jsonl'},billingOwner:'user-provider',prompt:{placement:'system-append',strictness:'strict'},cwd:process.cwd(),languageImage:{sha256:${JSON.stringify(imageHash)}},nativeLimits:limits}));\nelse {appendFileSync('native-calls.txt','act\\n');writeFileSync('report.txt',readFileSync('source.txt'));console.log(JSON.stringify({type:'runner.completed',payload:{result:{terminal:{classification:'success'},runnerExitCode:0,languageImage:{sha256:${JSON.stringify(imageHash)}},digests:{deliveredImageSha256:${JSON.stringify(kernelHash)}},nativeLimits:limits}}}));}\n`,{mode:0o700});
  const actor={schema:1,executable:native,executableSha256:sha(readFileSync(native)),cwd:'.',kernel:'kernel.md',task:'program.md',expectedImageSha256:imageHash,harness:'agents-sdk',authProfile:'openai-api-key',model:'offline-test-model',environmentKeys:[]};
  writeFileSync(join(root,'actor.json'),JSON.stringify(actor));
  const provider=JSON.parse(readFileSync(join(seed,'providers/jev.config.example.json'),'utf8'));

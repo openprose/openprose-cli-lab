@@ -85,6 +85,7 @@ def main():
         env['WEAVE_RUST_LOCAL'] = str(target/'debug/weave-rust-local')
         check('Generated Bun/Rust configuration loop', [bun, 'test', '--no-env-file', prefix+'getting-started/generated-loop.test.mjs'])
         check('Independent copied Rust SDK', [sys.executable, prefix+'rust-local/consumer-check.py', '--cargo', cargo])
+        check('Fixed kernel image staging', [sys.executable, '-m', 'unittest', 'discover', '-s', prefix+'getting-started', '-p', 'test_stage_kernel_image.py', '-q'])
         check('Private bundle tooling', [sys.executable, '-m', 'unittest', 'discover', '-s', prefix+'distribution', '-p', 'test_pack.py', '-q'])
     unchanged = source_digest == snapshot()
     report = {'schema': 'openprose.local-qualification/1', 'finishedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(),

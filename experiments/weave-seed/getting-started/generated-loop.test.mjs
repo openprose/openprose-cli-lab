@@ -8,17 +8,19 @@ import {pathToFileURL,fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {configure} from './configure.mjs';
+import {kernelImageSha256} from '../integration/native-actor/actor.mjs';
 const here=dirname(fileURLToPath(import.meta.url)),seed=dirname(here),sha=v=>createHash('sha256').update(v).digest('hex');
 const rust=process.env.WEAVE_RUST_LOCAL;
 test('generated config runs real adapter/coordinator boundaries with mock transport and retains uncertain effects',()=>{
  const root=realpathSync(mkdtempSync(join(tmpdir(),'weave-generated-loop-')));
  try {
   for(const[name,body]of Object.entries({'kernel.md':'Synthetic kernel; transport fixture only.','program.md':'Synthetic program; fixture copies source.txt into report.txt.','source.txt':'first','report.txt':'','mode.txt':'ok'}))writeFileSync(join(root,name),body);
-  const native=join(root,'fake-prose'),image='a'.repeat(64),kernel=sha(readFileSync(join(root,'kernel.md')));
+  const native=join(root,'fake-prose'),image=kernelImageSha256(readFileSync(join(root,'kernel.md'))),kernel=sha(readFileSync(join(root,'kernel.md')));
   writeFileSync(native,`#!${process.execPath} --no-env-file
 import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
 const limits={maxTurns:8,timeoutSeconds:120,toolTimeoutSeconds:15,maxOutputTokens:12000};
-if(process.argv.includes('--dry-run')) console.log(JSON.stringify({readiness:'ready',wouldStartModel:false,selection:{harness:'agents-sdk',model:'offline-test-model',adapterId:'agents-sdk/jsonl'},billingOwner:'user-provider',prompt:{placement:'system-append',strictness:'strict'},cwd:process.cwd(),languageImage:{sha256:${JSON.stringify(image)}},nativeLimits:limits}));
+if(process.argv.includes('doctor'))console.log(JSON.stringify({schema:'openprose.doctor-report/1',build:{testSeamsEnabled:false},image:{sha256:${JSON.stringify(image)}}}));
+else if(process.argv.includes('--dry-run')) console.log(JSON.stringify({readiness:'ready',wouldStartModel:false,selection:{harness:'agents-sdk',model:'offline-test-model',adapterId:'agents-sdk/jsonl'},billingOwner:'user-provider',prompt:{placement:'system-append',strictness:'strict'},cwd:process.cwd(),languageImage:{sha256:${JSON.stringify(image)}},nativeLimits:limits}));
 else {
  appendFileSync('native-calls.log','act\\n');writeFileSync('report.txt',readFileSync('source.txt'));
  if(readFileSync('mode.txt','utf8')==='fail') process.exitCode=1;

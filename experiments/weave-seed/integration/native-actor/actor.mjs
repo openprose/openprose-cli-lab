@@ -6,6 +6,12 @@ import { spawn } from 'node:child_process';
 export const MAX_INPUT = 1048576;
 const MAX_FILE = 262144;
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+/** Exact CLI aggregate for the supported single payload at payload/kernel.md. */
+export function kernelImageSha256(bytes) {
+  if (!(bytes instanceof Uint8Array)) throw Error('kernel bytes required');
+  const payload = Buffer.from(bytes);
+  return hash(Buffer.concat([Buffer.from(`payload/kernel.md\0${payload.length}\0`), payload, Buffer.from([0])]));
+}
 const fail = () => { throw Error('native actor rejected input, configuration, or evidence'); };
 const integer = (n, min = 1, max = 9007199254740991) => Number.isSafeInteger(n) && n >= min && n <= max;
 const sha = value => typeof value === 'string' && /^[a-f0-9]{64}$/.test(value);
@@ -67,7 +73,9 @@ export function validateSnapshot(c, envelope, now = Date.now()) {
   }
   if (payload.files.filter(f => f.role === 'kernel').length !== 1 || !seen.has(`kernel:${c.kernelPath}`) || !seen.has(`contract:${c.taskPath}`) || !seen.has(`evidence:${c.configPath}`)) fail();
   if (hash(boundedFile(c.configPath)) !== c.configDigest || hash(boundedFile(c.executable, 536870912)) !== c.executableSha256) fail();
-  return payload.files.find(f => f.role === 'kernel').sha256;
+  const kernel = payload.files.find(f => f.role === 'kernel');
+  if (kernelImageSha256(Buffer.from(kernel.content, 'utf8')) !== c.expectedImageSha256) fail();
+  return kernel.sha256;
 }
 export function command(c) {
   return [c.executable, '--harness', c.harness, '--auth-profile', c.authProfile, '--model', c.model,
@@ -126,6 +134,9 @@ export async function invokeNative(configPath, envelope, { signal, processRunner
     const environment = Object.create(null);
     for (const key of c.environmentKeys) { if (typeof ambient[key] !== 'string') fail(); environment[key] = ambient[key]; }
     const argv = command(c), options = { cwd: c.cwd, environment, maxCaptureBytes: c.maxCaptureBytes, signal };
+    record.phase = 'image-policy';
+    const doctor = parseJSON(await processRunner([...argv, 'cli', 'doctor', '--json'], { ...options, timeoutMs: c.readinessTimeoutMs }));
+    if (doctor.schema !== 'openprose.doctor-report/1' || Object.hasOwn(doctor, 'imageSource') || doctor.build?.testSeamsEnabled !== false || doctor.image?.sha256 !== c.expectedImageSha256) fail();
     record.phase = 'readiness';
     const ready = parseJSON(await processRunner([...argv, '--dry-run', '--output', 'json', 'run', c.task], { ...options, timeoutMs: c.readinessTimeoutMs }));
     if (ready.readiness !== 'ready' || ready.wouldStartModel !== false || ready.selection?.harness !== c.harness || ready.selection?.model !== c.model || ready.selection?.adapterId !== 'agents-sdk/jsonl' || ready.billingOwner !== 'user-provider' || ready.prompt?.placement !== 'system-append' || ready.prompt?.strictness !== 'strict' || ready.cwd !== c.cwd || ready.languageImage?.sha256 !== c.expectedImageSha256 || !sameLimits(ready.nativeLimits, c)) fail();
@@ -142,7 +153,7 @@ export async function invokeNative(configPath, envelope, { signal, processRunner
     record.status = 'native-completed';
     return { status: 'native-completed', attempt: envelope.attempt, deliveredKernelSha256: kernel, acceptance: 'requires fresh observation and assessment' };
   } catch {
-    record.errorCode = `NATIVE_ACTOR_${record.phase.toUpperCase()}_FAILED`;
+    record.errorCode = `NATIVE_ACTOR_${record.phase.toUpperCase().replaceAll('-', '_')}_FAILED`;
     throw Error(record.errorCode);
   } finally {
     record.finishedAt = Date.now();

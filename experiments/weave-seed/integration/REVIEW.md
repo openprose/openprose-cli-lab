@@ -114,3 +114,19 @@ Updated working-tree byte identities supersede the earlier native actor fingerpr
 - `integration/native-actor/actor.mjs`: `33fb88381c8ac619df0eddba0c785941f53ff99ed7497477b5038681074c51a8`
 - `integration/native-actor/run.mjs`: `2690fe2b98e2cde3f54a63bb20e8c05323f1b2b0d51b3781ce243f5bb8f1197f`
 - `integration/native-actor/actor.test.mjs`: `e22c43c482fdeb51ee0543ea4b83bdc5b29fd7ca998417d3e3c3507eb25e079c`
+
+
+### Additive correction: retained CLI builds were published-on-run
+
+The preceding section “actual retained native CLI readiness” incorrectly described the two imp014-final-release-smoke executables as fixed-image. Root subsequently inspected their actual `cli doctor --json` output and found **imageSource: published-on-run** in both. The successful dry-run results and hashes remain accurate observations, but their interpretation as fixed-image readiness is withdrawn. These artifacts can change selected kernel content across invocations and are not admitted by the corrected native actor.
+
+The native actor now invokes bounded local doctor before readiness and requires the exact doctor schema, no imageSource property, build.testSeamsEnabled=false, and the configured image SHA256. Any published/unknown source property, malformed schema, image mismatch or enabled test seam fails with NATIVE_ACTOR_IMAGE_POLICY_FAILED before readiness/action. This is admission of an explicitly pinned trusted executable's declared fixed image, not a sandbox or independent binary attestation. Actual fixed-image binary qualification is being performed separately by root; this addendum does not claim it has completed.
+
+Ten grouped native actor tests passed after the correction, including exact doctor→dry-run→run argv, doctor rejection with only one process invocation, and image-policy private receipts. The full-loop Bun/Rust offline adapter test passed with the doctor-aware fixture; generated-loop's actual Bun test-runner case also passed with the real adapters and mock provider transport. An initial direct invocation of generated-loop correctly failed because it requires `bun test`; the corrected test-runner invocation passed. No model/provider calls occurred. Doctor adds a second readinessTimeoutMs deadline; defaults therefore require outer coordination greater than 45+45+165 seconds, with 270 seconds documented.
+
+
+### Pre-effect selected kernel/image binding correction
+
+Doctor aggregate equality alone did not establish that the local observed kernel matched the embedded payload before an effect. Snapshot validation now computes the documented CLI aggregate for the narrow single-payload profile `payload/kernel.md` from the actual selected kernel bytes and rejects an expected-image mismatch before **any** process launch. It rechecks before action. The exported helper kernelImageSha256 frames internal path, byte length and payload with NUL separators. Multiple-payload/arbitrary-path images are explicitly unsupported rather than guessed.
+
+All 11 native actor groups passed, including zero-process-call rejection of mismatched image/selected kernel and Unicode byte-length framing. The full-loop test passed; generated-loop plus root-owned configure tests passed 6 groups. A read-only calculation against the retained actual kernel bytes produced `6cd37fd568df61026688ca2e3f684dbf76e1a51fa8a67fbd832f6225bbb81cb7`, matching the established canonical aggregate. No model/provider calls occurred. This is stronger admission than the earlier post-run delivered-kernel check and supersedes claims that doctor comparison alone closed the selected-kernel mismatch.

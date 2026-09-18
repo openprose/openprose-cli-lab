@@ -4,7 +4,7 @@ import {resolve,join,dirname,isAbsolute,relative} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
 import {strictJSON,loadConfiguration as loadJev,prepare as prepareJev} from '../providers/jev.mjs';
-import {loadConfig as loadActor,validateSnapshot} from '../integration/native-actor/actor.mjs';
+import {loadConfig as loadActor,validateSnapshot,kernelImageSha256} from '../integration/native-actor/actor.mjs';
 import {prepareConfig} from '../integration/run.mjs';
 const here=dirname(fileURLToPath(import.meta.url));
 const fail=()=>{throw Error('CONFIGURATION_SETUP_REJECTED');};
@@ -28,7 +28,7 @@ const nextSteps={
  root:'Select an existing canonical absolute source root and a new single configuration directory name.',
  sources:'Select existing bounded UTF-8 regular files inside the root; include the task among unique contract selections.',
  runtime:'Select an existing executable Bun file by absolute path. The helper does not execute or verify its runtime version.',
- 'native-cli':'Select an existing executable CLI file and provide its matching lowercase SHA-256 and reviewed image digest.',
+ 'native-cli':'Select an existing executable CLI file and provide its matching lowercase SHA-256 and a fixed single-payload kernel image digest matching the selected kernel bytes.',
  question:'Review the explicit endpoint, pinned model, environment-variable name, decision thresholds and question JSON schema.',
  destination:'Choose a new configuration directory inside the selected root; existing destinations are never overwritten.',
  'generated-binding':'Check aggregate source size, canonical paths and required config/question/kernel/task evidence bindings. No capability was executed.'
@@ -55,7 +55,7 @@ function configureStages(setupPath,stage){
  const a=s.assessment;if(!exact(a,['endpoint','model','questionFile','decisionPolicy','apiKeyEnv'])||!nonempty(a.questionFile)||!isAbsolute(a.questionFile))fail();
  const questionBytes=read(a.questionFile,65536);strictJSON(questionBytes);
  stage('runtime');const runtime=executable(s.bun);
- stage('native-cli');if(!hex(s.nativeCliSha256)||!hex(s.expectedImageSha256))fail();const native=executable(s.nativeCli,s.nativeCliSha256);
+ stage('native-cli');if(!hex(s.nativeCliSha256)||!hex(s.expectedImageSha256)||kernelImageSha256(read(kernel))!==s.expectedImageSha256)fail();const native=executable(s.nativeCli,s.nativeCliSha256);
  const target=join(s.root,s.configDirectory);let owned;
  try {
   stage('destination');mkdirSync(target,{mode:0o700});owned=lstatSync(target);
@@ -64,7 +64,7 @@ function configureStages(setupPath,stage){
   const actor={schema:1,executable:native.path,executableSha256:native.sha256,cwd:s.root,kernel:s.kernel,task:s.task,expectedImageSha256:s.expectedImageSha256,harness:'agents-sdk',authProfile:'openai-api-key',model:s.actionModel,environmentKeys:s.actorEnvironmentKeys,maxTurns:8,nativeTimeoutMs:120000,toolTimeoutMs:15000,outerTimeoutMs:150000,processTimeoutMs:165000,readinessTimeoutMs:45000,maxCaptureBytes:4194304};
   stage('generated-binding');
   const codeFiles=['./configure.mjs','../providers/jev.mjs','../integration/native-actor/run.mjs','../integration/native-actor/actor.mjs','../integration/run.mjs','../integration/process.mjs','../integration/config.mjs','../integration/binding.mjs','../local/run.mjs','../local/coordinator.mjs','../local/check.mjs','../bun/index.mjs','../bun/host.mjs'].map(path=>sha(read(resolve(here,path))));
-  const config={schema:1,root:s.root,kernel:s.kernel,contracts:s.contracts,evidence:[...s.evidence,...['question.json','jev.json','actor.json','config.json'].map(name=>join(s.configDirectory,name))],capabilityVersion:'explicit-local-setup-v1-'+sha(JSON.stringify({setup:sha(setupBytes),runtime:runtime.sha256,code:codeFiles})),assessor:[runtime.path,'--no-env-file',resolve(here,'../providers/jev.mjs'),'--config',join(target,'jev.json')],actor:[runtime.path,'--no-env-file',resolve(here,'../integration/native-actor/run.mjs'),'--config',join(target,'actor.json')],environmentKeys:[...new Set([a.apiKeyEnv,...s.actorEnvironmentKeys])],checkpointDirectory:'host',maxAttempts:s.maxAttempts,ttlMs:300000,timeoutMs:220000,maxOutputBytes:1048576};
+  const config={schema:1,root:s.root,kernel:s.kernel,contracts:s.contracts,evidence:[...s.evidence,...['question.json','jev.json','actor.json','config.json'].map(name=>join(s.configDirectory,name))],capabilityVersion:'explicit-local-setup-v1-'+sha(JSON.stringify({setup:sha(setupBytes),runtime:runtime.sha256,code:codeFiles})),assessor:[runtime.path,'--no-env-file',resolve(here,'../providers/jev.mjs'),'--config',join(target,'jev.json')],actor:[runtime.path,'--no-env-file',resolve(here,'../integration/native-actor/run.mjs'),'--config',join(target,'actor.json')],environmentKeys:[...new Set([a.apiKeyEnv,...s.actorEnvironmentKeys])],checkpointDirectory:'host',maxAttempts:s.maxAttempts,ttlMs:300000,timeoutMs:270000,maxOutputBytes:1048576};
   write('question.json',questionBytes);write('jev.json',JSON.stringify(provider,null,2)+'\n');write('actor.json',JSON.stringify(actor,null,2)+'\n');write('config.json',JSON.stringify(config,null,2)+'\n');
   // Reuse the actual adapters' configuration validators; no commands or provider calls.
   stage('question');const jev=loadJev(join(target,'jev.json'));
