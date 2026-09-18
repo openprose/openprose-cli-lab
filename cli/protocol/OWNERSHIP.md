@@ -468,3 +468,7 @@ At16:50Eastern root assigns weave_stress `experiments/weave-seed/getting-started
 ## IMP-030 final onboarding and test-profile repair — September 18, 17:20 Eastern
 
 Root assigns weave_parity exactly `cli/rust/crates/prose-cli/tests/cli.rs` to bind the ordinary helper to the explicit echo fixture image, preserving assertions and the test-seams branch; run all 52 ordinary CLI tests. Production defaults remain unchanged. weave_onboarding owns `experiments/weave-seed/distribution/install.py`, `test_install.py`, `INSTALL.md` to expose the bundled host-binding helper path when available and clarify the installed bridge flow; preserve older-bundle compatibility. Root owns `getting-started/host-binding.mjs`, its test and README for safe copyable POSIX command examples beside authoritative argv arrays. No provider/backend/publication changes.
+
+At17:40Eastern root assigns architecture_audit exactly `cli/ci/check_architecture.py` and `cli/ci/test_check_architecture.py` to implement the independently documented remediation: exact shared-file admissions, source-specific built-in imports, manifest-scoped pinned ureq admission, and structural read-call parsing with negative regressions. No runner exemption, directory wildcard or production change. Root reviews the diff and owns Git.
+
+At17:45Eastern root assigns weave_onboarding only `docs/weave-v1-readiness.md` to consolidate current readiness and material historical findings into a clear assessment; no new validation claims. Root retains final qualification disposition.

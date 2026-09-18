@@ -38,6 +38,9 @@ ALLOWED_BUN_MODULES = frozenset(
 ALLOWED_BUN_SOURCE_MODULES = frozenset(
     {
         ("cli/bun/src/adapters/prime-owned-service.ts", "node:net"),
+        ("cli/bun/src/adapters/native-tool-lifecycle.ts", "node:util"),
+        ("cli/bun/src/adapters/prime-drain.ts", "node:util"),
+        ("cli/bun/src/adapters/protocols.ts", "node:util"),
     }
 )
 NPM_LAUNCHER = "cli/bun/npm/bin/prose.js"
@@ -83,6 +86,29 @@ ALLOWED_RUST_CRATES = frozenset(
 ALLOWED_SHARED_REFERENCE_FILES = frozenset(
     {
         "cli/conformance/cases/fixtures/runner-help.txt",
+        "cli/shared/capabilities/adapters/codex-env-route.v1.json",
+        "cli/shared/fixtures/adapters/claude-background-tasks.json",
+        "cli/shared/fixtures/adapters/claude-native-turns.json",
+        "cli/shared/fixtures/adapters/claude-shutdown.json",
+        "cli/shared/fixtures/adapters/claude-task-lifecycle.json",
+        "cli/shared/fixtures/adapters/claude-thinking-tokens.json",
+        "cli/shared/fixtures/adapters/native-output.v1.json",
+        "cli/shared/fixtures/adapters/native-profile.json",
+        "cli/shared/fixtures/adapters/sdk-native-limits.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/omp-custom.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/omp-late-progress.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/omp.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime-child-telemetry.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime-drain.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime-implicit-turn.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime-queue-telemetry.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime-turn-transition.json",
+        "cli/shared/fixtures/adapters/tool-lifecycle/prime.json",
+        "cli/shared/fixtures/config/optional-reporting.json",
+        "cli/shared/fixtures/kernel-startup/release.json",
+        "cli/shared/fixtures/native-output-budget.json",
+        "cli/shared/fixtures/transport-diagnostics.json",
         "cli/conformance/fake-harness/fake_harness.py",
         "cli/shared/capabilities/transport-limits.v1.json",
         "cli/shared/capabilities/adapters/oracle.v1.json",
@@ -751,6 +777,19 @@ def _check_cargo_manifest(root: Path, manifest: Path) -> list[Violation]:
                         f"Cargo local dependency is not explicitly allowed: {dependency_key}",
                     )
                 )
+        elif (
+            relative == "cli/rust/crates/prose-runner-core/Cargo.toml"
+            and assignment.table == "dependencies"
+            and assignment.key == "ureq"
+            and re.fullmatch(
+                r'\{\s*version\s*=\s*"=2\.12\.1"\s*,\s*'
+                r'default-features\s*=\s*false\s*,\s*'
+                r'features\s*=\s*\[\s*"tls"\s*\]\s*\}',
+                assignment.value,
+            )
+        ):
+            # Only the reviewed, pinned published-kernel acquisition dependency.
+            pass
         elif package_name not in ALLOWED_RUST_EXTERNAL_DEPENDENCIES:
             violations.append(
                 Violation(
@@ -1231,6 +1270,47 @@ def _opaque_read_scopes(code: str, *, rust: bool) -> tuple[str, ...]:
     return tuple(code[start:end] for start, end in zip(starts, (*starts[1:], len(code))))
 
 
+def _first_call_argument(code: str, opening: int, *, rust: bool) -> str:
+    """Extract only the path argument, respecting nested expressions/literals.
+
+    A greedy line match can mistake a later redaction argument or even a struct
+    field after the call for its filesystem path. Keep conservative call-name
+    detection, but do not propagate taint from those unrelated expressions.
+    """
+    cursor = opening + 1
+    start = cursor
+    depth = 0
+    while cursor < len(code):
+        char = code[cursor]
+        if rust and char in {"b", "c", "r"}:
+            end = _rust_raw_literal_end(code, cursor)
+            if end is not None:
+                cursor = end
+                continue
+        if char in ({'"', "`", "'"} if not rust else {'"'}):
+            literal = _escaped_literal(code, cursor, char)
+            if literal is None:
+                return code[start:]
+            cursor = literal[1]
+            continue
+        if rust and char == "'":
+            # Character literals, not Rust lifetimes.
+            character = re.match(r"'(?:\\.|[^'\\])'", code[cursor:])
+            if character:
+                cursor += character.end()
+                continue
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            if depth == 0:
+                return code[start:cursor]
+            depth -= 1
+        elif char == "," and depth == 0:
+            return code[start:cursor]
+        cursor += 1
+    return code[start:]
+
+
 def _check_opaque_reads(source: Path, code: str, root: Path) -> list[Violation]:
     rust = source.suffix == ".rs"
     read_names = _read_aliases(code, rust=rust)
@@ -1239,17 +1319,17 @@ def _check_opaque_reads(source: Path, code: str, root: Path) -> list[Violation]:
     )
     for scope in _opaque_read_scopes(code, rust=rust):
         tainted = _tainted_names(scope, rust=rust)
-        expressions = [
-            match.group(1)
-            for match in re.finditer(
-                rf"(?:(?:\b(?:std::fs::|fs::|File::|OpenOptions::))|(?:\b[A-Za-z_$][A-Za-z0-9_$]*\.))?\b(?:{call_names})\s*\(([^;\n]*)\)",
-                scope,
-            )
-        ]
-        expressions.extend(
-            match.group(1)
-            for match in re.finditer(r"\bBun\.file\s*\(([^;\n]*)\)", scope)
+        expressions: list[str] = []
+        calls = re.finditer(
+            rf"\b(?:{call_names}|Bun\.file)\s*\(", scope
         )
+        for call in calls:
+            # Function declarations are not reads (notably `fn open(...)`).
+            if rust and re.search(r"\bfn\s+$", scope[:call.start()]):
+                continue
+            expressions.append(
+                _first_call_argument(scope, call.end() - 1, rust=rust)
+            )
         for expression in expressions:
             if (
                 "process.argv" in expression

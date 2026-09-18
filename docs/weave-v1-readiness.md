@@ -1,105 +1,69 @@
 # Weave candidate readiness
 
-Status: unpublished experiment, September 18, 2026. This is a readiness assessment, not a v1 release declaration. The candidate adds independent loop seeds and onboarding beside the Python reference; it does not add a public CLI command or package.
+Status: unpublished local candidate, September 18, 2026. The local implementation is usable for bounded review. It is **not qualified for v1 promotion or public distribution**. Login, hosted transfer and backend work remain deferred.
 
-## Source and evidence boundary
+## Current implementation
 
-The Python reference baseline is `22c14915cad5ab6eadb5f70b7c7177b89e6abe5b`. The extended Rust/Bun candidate is local commit `979e785417b593d4961559386445afac79e1cfca`; all 12 commands in the final source-level validation passed against that clean revision. The inspected kernel is `7dc90670b4ccd862b7d0939a75d8b819b03a2b1b` in its separately owned source repository. Kernel and contract semantics remain authoritative; the seeds do not parse or automatically bind Markdown.
+The [SDK](../experiments/weave-seed/SDK.md) provides independent Bun and Rust loop implementations. Native coordinators provide `check`, `status`, bounded `step` and `serve`, and explicit `settle`. Both observe selected files, preserve cumulative attempts and pending effects, and share checkpoint and binding formats. The Rust coordinator no longer delegates observation to Bun; the selected Jev and native action adapters still require Bun.
 
-The candidate now includes inspected upstream CLI main `332c511` through local merge `ba55296`. The ownership-record conflict was resolved by preserving both sets of leases. Twelve upstream upload-control tests and five assembly tests pass; these use fixtures and mocks, not actual uploads. New seed code remains isolated from the shipped CLI, so this does not qualify a new installed release.
+The reserved [CLI bridge](../cli/protocol/decisions/imp026-weave-host.md) is implemented in both products:
 
-## Checks actually performed
-
-From the CLI repository root, the onboarding review ran:
-
-```sh
-python3 experiments/weave/demo.py
-python3 -m unittest discover -s experiments/weave -p 'test_*.py' -q
+```text
+prose cli weave --host-binding ABS check CONFIG
 ```
 
-With Python 3.9.6 on macOS, the demonstration produced the documented five statuses, four assessments, and one action; all 48 reference tests passed. The example uses temporary local state, synthetic data, and deterministic assessment/action. No provider was called. This does not establish semantic classifier reliability, source authenticity, or production service safety.
+Its reviewed binding selects a coordinator executable digest, environment names, timeout and output limit. The bridge carries bounded process I/O; the coordinator owns loop and recovery semantics. Top-level requests such as `prose init` remain framework-owned and opaque. The bridge does not parse Markdown, resolve adoptions or introduce a framework initialization command.
 
-The onboarding review also executed the two seed examples on actual Bun 1.3.5 and Rust 1.98.1 (`48a229cea`, September 1, 2026), with each runtime executable selected explicitly because neither was on the shell's default `PATH`. The portable equivalents below assume those same installed runtimes on `PATH`:
+Kernel and adopted contract semantics remain authoritative. Explicit file identities bind the assessment inputs; their hashes establish byte identity, not authority, truth or fulfillment. No kernel-origin migration or live URL change is part of this candidate.
 
-```sh
-bun experiments/weave-seed/examples/local.mjs
-WEAVE_EXAMPLE_DIR=$(mktemp -d)
-rustc --edition=2021 experiments/weave-seed/examples/local.rs -o "$WEAVE_EXAMPLE_DIR/local"
-"$WEAVE_EXAMPLE_DIR/local"
-```
+## Developer and operator path
 
-Both examples passed assertions for `satisfied`, then `reused`, with exactly one action. Their host saves are in memory, and they do not establish persistence or crash recovery. A Node run alone must not be described as a Bun runtime check.
+1. Follow the [local walkthrough](../experiments/weave-seed/getting-started/README.md) to create a synthetic example in a fresh directory and run offline check, repair and reuse.
+2. Use the [private installer](../experiments/weave-seed/distribution/INSTALL.md) with a trusted manifest digest. It verifies the complete inventory, writes a fresh private installation and exposes installed helper paths. It does not run executables, alter PATH or migrate subject state. Upgrades are side by side.
+3. Generate an explicit host binding with the installed helper. It hashes the selected coordinator and prints argument arrays and quoted POSIX commands. The native Prose CLI remains a separately selected installation.
+4. For provider work, use the [BYOK guide](../experiments/weave-seed/getting-started/BYOK.md). Setup materializes reviewed configuration without calls or credential values; configuration and question bytes are selected evidence.
+5. Investigate uncertain effects before using [recovery](../experiments/weave-seed/local/RECOVERY.md). Settlement requires the exact pending identity, outcome and receipt. It preserves attempts, expires prior satisfaction and does not invoke a provider. There is no automatic unlock or replay.
 
-The final seed checks were also run with the same actual Bun and Rust versions:
+The [native actor](../experiments/weave-seed/integration/native-actor/README.md) currently supports the explicit Agents SDK/OpenAI-key profile. OpenRouter and other action profiles are not qualified here. The actor admits only a digest-pinned fixed-image CLI with test seams disabled and one payload at `payload/kernel.md`. It checks the selected kernel against that image before effects. Moving published-on-run selection is rejected. The [staging guide](../experiments/weave-seed/getting-started/FIXED-IMAGE.md) uses the official image tooling; native building remains an explicit step. There is no runtime kernel override or arbitrary multi-payload support in this profile.
 
-```sh
-bun experiments/weave-seed/bun/conformance.mjs
-WEAVE_TEST_DIR=$(mktemp -d)
-rustc --edition=2021 --test experiments/weave-seed/rust/lib.rs -o "$WEAVE_TEST_DIR/tests"
-"$WEAVE_TEST_DIR/tests"
-```
+## Retained qualification evidence
 
-Both implementations passed the 25 shared lifecycle cases. Bun additionally passed four save-failure cases, settlement acceptance/rejection, checkpoint immutability and settlement validation, mutable-observer snapshot checks, and synchronous-callback enforcement. Rust reported three passing test functions covering the shared corpus, save failures, and settlement. These are source-level deterministic checks on macOS ARM64, not installed-package, cross-platform, or live-model qualification. The documentation review resolved 27 local Markdown links without missing targets.
+Results belong to the exact sources and artifacts named in their receipts. They do not automatically qualify later changes or every target platform.
 
-## Gates still required for v1
-
-| Area | Required evidence or decision |
+| Area | Observed result and boundary |
 |---|---|
-| Semantic assessment | Independent labels and adversarial evaluation of complete real agreements, including source authority, missing evidence, reporting duties, and abstention. Deterministic fixtures do not establish model accuracy or calibration. |
-| Complete invocation | An end-to-end integration must preserve per-invocation reports and required verification even when maintained state is unchanged. Artifact existence does not prove a claimed read occurred. |
-| Host persistence and recovery | Specify and test durable storage, serialization, interruption, external-effect reconciliation, receipts, and repeated recovery. A callback loop alone is not a production host. |
-| Permissions and costs | Define enforceable effect permissions, credential ownership, scheduling, attempt limits, timeouts, and provider-specific budgets. Contract declarations alone cannot enforce these. |
-| Integration and compatibility | Verify an explicit kernel/evidence binding and the agreed output convention without introducing a prose parser or replacing the existing generative runner. |
-| Runtime and distribution | Complete target-platform and runtime qualification, API review, packaging, upgrade behavior, dependency/security review, and release authorization. A source-level test is not an installed-package test. |
-| Onboarding | Run a fresh developer/agent trial of the instructions and the kernel-backed example; independently inspect its artifacts and reported operations. The new prose example has not had a live model run in this phase. |
-| Feedback | Establish maintainer ownership and triage for manually submitted reports; validate the synthetic reproduction workflow. No automatic evidence collection or upload is introduced. |
-| Kernel origin | Plan any future `openprose/prose` origin migration separately, preserving exact identities, links, package selections, and compatibility. No live URL or consumer pin changes occur here. |
+| Local SDK and coordinators | Copied-consumer checks, generated configuration through real adapters with fake transports, 313 configuration comparisons, and 100 alternating-runtime repairs plus 100 reuses passed in the retained local campaign. These are deterministic and process checks. |
+| Aggregate local checks | Clean source `f99e4b58c4ebaa1230a18a3e1cbb42999218e2dc` passed 37 recorded commands with unchanged source digest. Later focused changes require a new final aggregate disposition; this is not a current-head all-green claim. |
+| Private installation | Copied-source and relocated compiled journeys passed on macOS arm64. Installed-copy acceptance removed its own incoming copy, used installed capability paths and rechecked inventories. This was a fresh directory on the existing machine, not a clean operating-system installation. |
+| CLI bridge | Each final 61-case report records 44 full observable passes, 14 passes with explicit observation limitations and three unexecuted cases. Three repetitions per fixed-image CLI added 348 executed cases with no failures or retries, including 84 cases with explicit observation limits; 18 cases remained unexecuted. Windows was not run; two opaque-routing cases are covered by separate parser tests. Binding-open syscall ordering and some image/configuration isolation assertions are not independently proved. |
+| Real coordinator delegation | Eight compiled CLI/coordinator combinations passed 80 commands covering repair, reuse, bounded serving, unknown effects, refusal to replay and both settlement outcomes while preserving attempts. No provider was called. |
+| Generated bridge setup | Four CLI/coordinator pairings passed 28 printed-command journey commands. An independent fresh-user walkthrough succeeded; optional installed-helper discovery and safely quoted commands address its reported friction. |
+| Fixed-image native CLI | Fresh Rust and Bun artifacts passed the bridge corpus and image admission checks. Actual adapter preflight used fake credentials and intercepted normal model execution. It does not establish authenticated provider access or live fulfillment. |
+| Rust CLI regression profile | Test-only repair `1cab860` passed 52 ordinary CLI tests and both targeted sentinel placement tests. Earlier failing reports remain retained. Production behavior and the retained release-profile binary were unchanged by this repair. |
 
-No publication, version bump, merge into the release branch, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.
+The bridge implementation is identified by `8ca9f2caa983083eb6f402fc64a4865e32fe57b8`; setup/receipt improvements are recorded at `f99e4b58c4ebaa1230a18a3e1cbb42999218e2dc` and `3ed57c9`. These are local source references, not published downloads. A fixed-image Bun receipt distinguishes its embedded ancestor identity from the later actual build checkout; file and artifact hashes are the evidence for that build.
 
-Final port hardening: 10,000 sequential transitions passed in each implementation, including exactly 2,000 bounded actions per port, changing bindings, expiry, reuse, and budget exhaustion. These use deterministic callbacks and do not establish model accuracy, crash durability, or installed-package readiness.
+Use the [aggregate qualifier](../experiments/weave-seed/integration/qualify.py), [independent bridge process harness](../cli/shared/tests/weave_host_process.py), [shared bridge corpus](../cli/shared/fixtures/weave-host-v1.json) and [bundle guide](../experiments/weave-seed/distribution/README.md) for repeatable checks. The private IMP-017 lab retains `docs/CLI-BRIDGE-READOUT.md` and `docs/LOCAL-IMP026-READOUT.md`, with linked reports and prior failures. Those lab records are not bundled public evidence; this document does not invent external download links for them.
 
-## Extended local-host evidence
+## Semantic assessment remains unresolved
 
-The extended candidate adds Rust and Bun local checkpoint hosts. Bun passes 13 host checks; Rust passes 17 tests including its embedded core tests, plus one helper invoked by a subprocess test. Checks cover competing processes, abrupt exit, pending-action restart, explicit settlement, malformed state and uncertain checkpoint publication. Cross-runtime testing passes 100 bidirectional checkpoint round trips and 19 shared malformed-state rejections. These close a bounded local-host implementation gap, not production or power-loss qualification.
+An earlier live campaign used the real kernel, Jev `jev-1.13.0` and an Agents SDK agent across finite Bun and Rust sequences. Correct artifacts did not imply complete compliance: the shell-capable actors made prohibited Git calls in two of six actions. Artifact-only assessment lacked those operation observations. Subsequent trace disclosure, question narrowing and parsed-trace diagnostics did not reliably detect the violations. These negative cases remain required evidence, not superseded successes.
 
-A Bun-only file/process bridge now hashes explicitly selected kernel, contract and evidence bytes, and invokes bounded synchronous child commands. Its deterministic integration fixture preserves new batch-report obligations despite already-correct maintained state. The fixture uses synthetic kernel text. It does not validate the actual OpenProse kernel or supply an automatic adapter for the existing native CLI. The live integration and semantic-evaluation gates above remain open.
+A separate restricted file-tool profile passed all ten event checks across the two sequences. Removing shell/process tools restricted available effects; it did not demonstrate that the classifier can certify arbitrary procedures. The profile was a trusted laboratory harness, not an operating-system sandbox or the final portable packaged actor.
 
+The current local product has not had a new live BYOK campaign against its final installed artifacts. Assessment research must distinguish insufficient inputs, evidence representation, question design, decision policy and model errors. Artifact correctness, required operations, reporting duties and permission compliance need separately observable evidence and independent labels. Decomposition or clearer questions are testable proposals, not established fixes. The retained failures do not establish that the classifier approach is impossible; they prevent claiming general reliability today.
 
-## Live integration findings — September 18, 2026
+## Remaining gates
 
-A subsequent isolated lab campaign exercised this source-level loop through the real Bun CLI and real Rust CLI, with the pinned kernel above, Jev `jev-1.13.0`, and an Agents SDK agent using `gpt-5.6-luna`. Each host completed a five-event sequence: initial repair, unchanged reuse, changed-source repair, missing-source stop, and a new invocation report while preserving unchanged maintained state. These are two finite synthetic sequences, not broad agreement conformance or semantic accuracy evidence.
+| Gate | Required work or decision |
+|---|---|
+| Architecture guard | The scoped repair passes the repository guard and all 34 checker tests, including negative regressions. It admits exact reviewed files, imports and one pinned dependency; it corrects read-argument parsing without exempting the runner. This is a structural check, not a security audit. |
+| Final integrated acceptance | Rerun qualification for the selected final source, copied bundle and installed artifacts; retain exact identities and all failed runs. Focused passes are not a substitute for the final aggregate. |
+| Semantic and live BYOK acceptance | Run a separately authorized, finite campaign with complete agreement/evidence identities, independent operational review, uncertainty handling and the original negative cases. Preserve spending reservations and unknown effects. |
+| Platform and provisioning | Qualify the advertised target matrix and native harness installation. Current compiled evidence is macOS arm64; process supervision is Unix-specific. Existing cached dependencies are not evidence of a fresh network installation. |
+| Release review | Review API compatibility, dependency/security boundaries, support and feedback ownership, upgrade behavior and publication authorization. Private package versions and local builds are not a v1 release. |
+| Account and hosted work | IMP-027/028/029 cover account flow, hosted transfer and publication. Reuse existing authentication/services where possible; any required backend addition needs a separately reviewed Raymond-approved change. No backend deployment occurred here. |
 
-The original shell-capable harness produced correct artifacts but made prohibited Git calls in two of six native actions. Artifact-only classifier assessment did not observe those operations; subsequent trace-disclosure and question-narrowing probes did not reliably identify the violations. These failures remain part of the evidence.
+Local locks coordinate cooperating processes; they do not provide distributed ownership, exactly-once effects or an operating-system sandbox. Checkpoint durability has documented filesystem and power-loss limits. Bun's synchronous coordinator capabilities may wait for their bound during cancellation; Rust can interrupt an active child. Bridge supervision does not erase that host-level distinction or authorize clearing a conservative lock.
 
-A separate laboratory profile then repeated both sequences with only scoped file reads, writes to two declared outputs, and JSON comparison tools. All ten event checks passed. Independent trace review is retained in the lab. This profile removes model-accessible shell/process tools; it is a capability restriction in a trusted harness, not an operating-system sandbox. Its fixed local Python environment is not a portable installed distribution.
-
-The integration gate therefore has bounded live evidence. The productization gate remains open: package and select the profile explicitly, represent enforced capabilities in receipts, make evidence limitations visible in status, and test installed artifacts. Classifier satisfaction alone must not be presented as proof of required operations or permission compliance. The native CLI binaries tested here identify source `68297eff23990a5153e5d0a938febf68c3c4751d`; they are not freshly built releases of the experimental branch.
-
-The maintained lab record is IMP-017, `docs/LIVE-LOOP-READOUT.md`, with the corrective implementation frozen at lab commit `d0a30ff`. The Rust live host uses the Rust loop and CLI but delegates file observation to Bun. No Bun-independent Rust integration, public CLI command, v1 release, or repository migration is established by these results.
-
-A post-live offline check on Python 3.14.6 exposed unclosed SQLite connections in the Python reference observer and test fixtures. The observer now closes read-only connections after both successful queries and evidence gaps. All 49 reference tests pass, including a regression checking closure on success and SQL failure; all 77 lab tests and 13 file-harness checks pass. This resource-lifecycle repair does not change the frozen live Rust/Bun implementations or reinterpret their results.
-
-## Local SDK and developer workflow — September 18 afternoon
-
-The IMP-025/026 branch adds a usable local execution path without an OpenProse account. Bun and native Rust coordinators expose `check`, `status`, one bounded `step`, and bounded `serve`. They share file observation identities, checkpoint encoding, cumulative attempts and cooperating-process ownership. The Rust path now observes files and runs capabilities natively. Normal Cargo dependencies replace the host's include of source outside its crate.
-
-The source SDK has fresh copied-consumer checks. A setup helper creates a synthetic project for the first local run. A separate reviewed-manifest helper materializes a BYOK configuration without executing commands or contacting providers. It binds the selected kernel, contracts, evidence and generated assessment/action configuration; no credentials are stored in that configuration. The first action profile uses the existing Agents SDK/OpenAI-key route. OpenRouter and other action profiles are not qualified by this adapter.
-
-The Jev adapter validates explicit versioned requests, returns three outcomes, abstains according to caller-selected policy and can retain private bounded receipts. The native actor checks selected source bytes, executable/image identity, readiness and completion, then requires reassessment. Its optional private receipts record phases and fixed failure codes without native output, prompts or environment values. This is transport and evidence handling; it does not establish semantic classifier reliability or add an operating-system sandbox.
-
-Offline qualification now includes generated configuration through both actual adapters with fake transports, 100 alternating-runtime repairs and 100 cross-runtime reuses, 313 configuration comparisons, separate-process interruption and recovery, and independent SDK consumers. Private bundle tooling compiles both standalone sidecars from copied source and tests them after relocation. The maintained command and machine-readable record format are in `experiments/weave-seed/integration/qualify.py`; retain a fresh record against the selected source before making an acceptance claim.
-
-Material fixes from this pass include output-limit policy invalidation, combined output rejection, bounded regular-file configuration reads, preserved explicitly selected environment names, canonical provider configuration paths, source-file reads that allocate for actual input, and removal of a test's hidden dependency on a checkout-built fixture executable. Failed actor effects remain pending across both runtimes. Rust can cancel an active child promptly; Bun's synchronous child waits for its bound before handling a signal. Both behaviors are documented and tested rather than described as identical cancellation.
-
-The private review bundle is not a public v1 release. Current compiled-artifact qualification covers macOS arm64 only. The sidecars do not alter existing Prose command parsing. Native acting still needs an installed Prose CLI and admitted harness. The native actor now admits only fixed-image CLI builds with test seams disabled. The supported image has one payload at `payload/kernel.md`; the adapter checks its aggregate against the selected kernel bytes before launching any process. A doctor check then rejects moving published-on-run selection before readiness or action. The current CLI still has no runtime kernel-file override; building the fixed image is an explicit setup step. Arbitrary multiple-payload images are not supported by this profile.
-
-Login, hosted ownership, deployment/transfer and publication remain deferred to IMP-027/028/029 in openprose-workspace. The first account milestone reuses existing device/API-key routes with zero server changes if possible; any needed run-prose change requires a small PR approved by Raymond. No backend source or deployment was changed in this pass. The new portable BYOK path has not performed a new live model campaign; the earlier retained live evidence remains separate.
-
-
-The local sidecars now expose explicit `settle` recovery in both runtimes. It requires the exact recorded binding and pending attempt, an operator-selected outcome and a receipt reference. It preserves the attempt budget, expires prior satisfaction and makes no provider call. The shared recovery guide explains investigation, unresolved external effects and existing-lock handling. Five new Bun recovery groups, five new native groups and 52 cross-runtime command invocations exercise both outcomes and both directions. There is no automatic unlock or inferred successful completion.
-
-The private bundle also includes an exact supporting-document/Python-reference allowlist, so primary source-guide links and the offline Python quick start work from its copied source root. Native CLI and harness installation remain separate, explicitly documented prerequisites. These changes improve the local review experience without widening release or hosted scope.
-
-
-A later preflight exposed a documentation error: the retained IMP-014 binaries previously described as fixed-image actually reported `published-on-run`. That earlier description is withdrawn in the additive integration review. Fresh fixed-image Rust and Bun CLIs were built without network access using the retained real kernel, and both passed actual doctor and dry-run checks with a fake credential. The actual adapter admitted those checks and rejected the moving binaries; the normal model-run boundary was deliberately intercepted. These results qualify preflight compatibility, not a new live invocation or authenticated provider account.
+Continue through the current guides and [manual feedback template](../experiments/weave-seed/FEEDBACK.md). Evidence and secrets are not uploaded automatically. No publication, version promotion, release-branch merge or kernel migration is authorized by this readiness assessment.

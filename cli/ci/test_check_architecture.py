@@ -88,6 +88,136 @@ class ArchitectureBoundaryTest(unittest.TestCase):
             [violation.rule for violation in violations],
         )
 
+    def test_reviewed_shared_json_admissions_are_exact(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        source = root / "cli/bun/src/main.ts"
+        paths = (
+            'cli/shared/capabilities/adapters/codex-env-route.v1.json',
+            'cli/shared/fixtures/adapters/claude-background-tasks.json',
+            'cli/shared/fixtures/adapters/claude-native-turns.json',
+            'cli/shared/fixtures/adapters/claude-shutdown.json',
+            'cli/shared/fixtures/adapters/claude-task-lifecycle.json',
+            'cli/shared/fixtures/adapters/claude-thinking-tokens.json',
+            'cli/shared/fixtures/adapters/native-output.v1.json',
+            'cli/shared/fixtures/adapters/native-profile.json',
+            'cli/shared/fixtures/adapters/sdk-native-limits.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/omp-custom.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/omp-late-progress.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/omp-task-defaults.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/omp.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime-child-telemetry.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime-drain.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime-implicit-turn.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime-queue-telemetry.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime-turn-transition.json',
+            'cli/shared/fixtures/adapters/tool-lifecycle/prime.json',
+            'cli/shared/fixtures/config/optional-reporting.json',
+            'cli/shared/fixtures/kernel-startup/release.json',
+            'cli/shared/fixtures/native-output-budget.json',
+            'cli/shared/fixtures/transport-diagnostics.json',
+        )
+        for path in paths:
+            relative = "../../" + path.removeprefix("cli/")
+            with self.subTest(path=path):
+                source.write_text(f'import data from "{relative}";\n', "utf-8")
+                self.assertEqual([], check_repository(root))
+                adjacent = relative.rsplit("/", 1)[0] + "/unreviewed.json"
+                source.write_text(f'import data from "{adjacent}";\n', "utf-8")
+                self.assertIn("source-import-escape", {v.rule for v in check_repository(root)})
+        source.write_text('import data from "../../shared/fixtures/../../../../outside.json";\n', "utf-8")
+        self.assertIn("source-import-escape", {v.rule for v in check_repository(root)})
+
+    def test_util_admission_is_limited_to_reviewed_adapter_sources(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        for name in ["native-tool-lifecycle", "prime-drain", "protocols", "unreviewed"]:
+            source = root / f"cli/bun/src/adapters/{name}.ts"
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text('import { isDeepStrictEqual } from "node:util";\n', "utf-8")
+            rules = {v.rule for v in check_repository(root)}
+            with self.subTest(name=name):
+                self.assertEqual({"dependency-not-allowed"} if name == "unreviewed" else set(), rules)
+            source.unlink()
+
+    def test_kernel_http_dependency_is_exact_and_manifest_scoped(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        source = root / "cli/rust/crates/prose-runner-core/Cargo.toml"
+        source.parent.mkdir(parents=True)
+        admitted = 'ureq = { version = "=2.12.1", default-features = false, features = ["tls"] }'
+        source.write_text("[dependencies]\n" + admitted, "utf-8")
+        self.assertEqual([], check_repository(root))
+        for declaration in [
+            admitted.replace("=2.12.1", "2.12.1"),
+            admitted.replace("2.12.1", "2.12.2"),
+            admitted.replace("false", "true"),
+            admitted.replace('["tls"]', '["tls", "json"]'),
+            admitted.replace(' }', ', git = "https://example.invalid/ureq" }'),
+            admitted.replace(' }', ', registry = "other" }'),
+            admitted.replace('ureq = {', 'client = { package = "ureq",'),
+            'ureq.workspace = true',
+        ]:
+            with self.subTest(declaration=declaration):
+                source.write_text("[dependencies]\n" + declaration, "utf-8")
+                self.assertIn("dependency-not-allowed", {v.rule for v in check_repository(root)})
+        source.write_text("[dev-dependencies]\n" + admitted, "utf-8")
+        self.assertIn("dependency-not-allowed", {v.rule for v in check_repository(root)})
+        source.unlink()
+        other = root / "cli/rust/crates/prose-cli/Cargo.toml"
+        other.parent.mkdir(parents=True)
+        other.write_text("[dependencies]\n" + admitted, "utf-8")
+        self.assertIn("dependency-not-allowed", {v.rule for v in check_repository(root)})
+
+    def test_read_paths_exclude_declarations_and_unrelated_redaction_values(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        source = root / "cli/rust/crates/example/src/lib.rs"
+        source.write_text('fn capture(secrets: Vec<String>) {\n    let path = config.native_log();\n    let capture = NativeCapture::open(path, secrets.clone(), limit()).unwrap();\n    let record = (std::fs::read("fixture"), secrets);\n}\nimpl NativeCapture {\n    fn open(path: &str, secrets: Vec<String>, limit: usize) -> Self {\n        let mut options = std::fs::OpenOptions::new();\n        options.write(true).create_new(true);\n        Self { file: options.open(path).unwrap(), secrets, limit }\n    }\n}\n', "utf-8")
+        self.assertEqual([], check_repository(root))
+        source.write_text("fn open(argv: Vec<String>) { forward(argv); }\n", "utf-8")
+        self.assertEqual([], check_repository(root))
+
+    def test_nested_argv_paths_and_read_open_aliases_remain_rejected(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        source = root / "cli/rust/crates/example/src/lib.rs"
+        for read in [
+            'std::fs::read(&forwarded[0])',
+            'std::fs::read_to_string(resolve(&forwarded[0], "a,b)"))',
+            'std::fs::File::open(Path::new(&forwarded[0]))',
+            'Input::open(Path::new(&forwarded[0]))',
+            'load(resolve(&forwarded[0], r#"a,)"#))',
+            'options.open(&forwarded[0])',
+            'NativeCapture::open(&forwarded[0], vec![], 1024)',
+            'std::fs::OpenOptions::new().read(true).open(&forwarded[0])',
+        ]:
+            with self.subTest(read=read):
+                source.write_text(
+                    'use std::fs::read as load;\nuse std::fs::File as Input;\n'
+                    'fn boundary(argv: Vec<String>) {\n'
+                    'let forwarded = argv;\n'
+                    'let mut options = std::fs::OpenOptions::new();\noptions.read(true);\n'
+                    f'let _ = {read};\n}}\n', "utf-8")
+                self.assertIn("opaque-program-boundary", {v.rule for v in check_repository(root)})
+
+    def test_bun_nested_read_paths_remain_rejected_without_later_argument_taint(self) -> None:
+        temporary, root = self.fixture()
+        self.addCleanup(temporary.cleanup)
+        source = root / "cli/bun/src/main.ts"
+        source.write_text(
+            'import { readFile as load } from "node:fs/promises";\n'
+            'const argv = process.argv;\n'
+            'await load("fixture", argv);\n', "utf-8")
+        self.assertEqual([], check_repository(root))
+        for expression in ['load(resolve(argv[0], "a,b)"))', 'Bun.file(resolve(argv[0]))']:
+            source.write_text(
+                'import { readFile as load } from "node:fs/promises";\n'
+                'const argv = process.argv;\n'
+                f'await {expression};\n', "utf-8")
+            with self.subTest(expression=expression):
+                self.assertIn("opaque-program-boundary", {v.rule for v in check_repository(root)})
+
     def test_language_token_substrings_do_not_create_false_violations(self) -> None:
         temporary, root = self.fixture()
         self.addCleanup(temporary.cleanup)
