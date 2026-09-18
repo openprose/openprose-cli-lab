@@ -408,3 +408,7 @@ The lead retains publication.py, workflows, repository-name updates and Git.
 The `openrouter_final` agent additionally owns `cli/benchmarks/installed/benchmark.py` and its existing focused tests for schema-two launcher template parity; no benchmark success or admission criteria may be weakened.
 
 IMP-014 npm bootstrap lease: distribution_ci owns `cli/ci/publication.py`, `cli/ci/test_publication.py`, `.github/workflows/cli-publish.yml`, and `docs/cli-publication.md` for an explicit one-time missing-platform-package bootstrap with provenance, isolated temporary credentials and no root-package token authentication. The lead retains Git ownership.
+
+## IMP-017 isolated weave experiment — September 17, 2026
+
+User-assigned lead: Codex session 01a0af60-f059-7e50-bf2e-6ae7dfabf7ee, branch codex/imp-017-weave; lead owns Git operations. Exact scope: `experiments/weave/` (new isolated headless research library, explicit capability bindings, deterministic evidence, offline lifecycle fixtures/tests and documentation) and this additive ownership entry. No edits to runner transport, language parsing, package manifests, release tooling, existing shared schemas or IMP-014 paths. Prototype-only Python implementation; not a shipped Bun/Rust command or runtime semantic change. Library behavior is specified by experimental black-box cases before implementation. Lab evidence belongs in openprose-expedition under IMP-017.
