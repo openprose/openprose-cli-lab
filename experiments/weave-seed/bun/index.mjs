@@ -1,5 +1,7 @@
 /** Provider-neutral synchronous experiment. The host owns persistence and effects. */
 const judgments = new Set(['unknown', 'satisfied', 'work-needed']);
+const scalarText = value => typeof value === 'string' && !/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/.test(value);
+const nonblank = value => scalarText(value) && /[^\s\u0085]/u.test(value);
 const integer = n => Number.isSafeInteger(n) && n >= 0;
 export const emptyCheckpoint = () => ({ binding: '', evidence: '', disposition: 'unknown', validUntil: 0, pending: null, attempts: 0, settlement: null });
 function sync(value) {
@@ -8,19 +10,19 @@ function sync(value) {
 }
 function snapshot(value) { return Object.freeze(structuredClone(sync(value))); }
 function validate(cp) {
-  if (typeof cp.binding !== 'string' || typeof cp.evidence !== 'string' || !judgments.has(cp.disposition) || !integer(cp.validUntil) || !integer(cp.attempts) || (cp.pending !== null && (typeof cp.pending !== 'string' || !cp.pending.trim()))) throw new Error('invalid checkpoint');
+  if (!scalarText(cp.binding) || !scalarText(cp.evidence) || !judgments.has(cp.disposition) || !integer(cp.validUntil) || !integer(cp.attempts) || (cp.pending !== null && !nonblank(cp.pending))) throw new Error('invalid checkpoint');
   if (cp.settlement !== null) {
     const r = cp.settlement;
-    if (!r || typeof r !== 'object' || Object.keys(r).sort().join(',') !== 'attempt,binding,outcome,receipt' || Object.values(r).some(v => typeof v !== 'string' || !v.trim()) || !['completed', 'not-applied'].includes(r.outcome)) throw new Error('invalid settlement record');
+    if (!r || typeof r !== 'object' || Object.keys(r).sort().join(',') !== 'attempt,binding,outcome,receipt' || Object.values(r).some(v => !nonblank(v)) || !['completed', 'not-applied'].includes(r.outcome)) throw new Error('invalid settlement record');
   }
 }
 function fresh(e, now) {
-  if (typeof e.identity !== 'string' || typeof e.payload !== 'string' || typeof e.gap !== 'boolean' || !integer(e.observedAt) || !integer(e.validUntil) || !integer(now)) throw new Error('invalid observation or clock');
+  if (!scalarText(e.identity) || typeof e.payload !== 'string' || typeof e.gap !== 'boolean' || !integer(e.observedAt) || !integer(e.validUntil) || !integer(now)) throw new Error('invalid observation or clock');
   return !e.gap && e.observedAt <= now && now < e.validUntil;
 }
 export function reconcile(binding, checkpoint, host, maxAttempts = 1) {
   validate(checkpoint);
-  if (typeof binding !== 'string' || !binding.trim() || !integer(maxAttempts)) throw new Error('invalid binding or limit');
+  if (!nonblank(binding) || !integer(maxAttempts)) throw new Error('invalid binding or limit');
   const cp = structuredClone(checkpoint);
   const done = status => ({ checkpoint: cp, status });
   const save = () => sync(host.save(structuredClone(cp)));
@@ -43,7 +45,7 @@ export function reconcile(binding, checkpoint, host, maxAttempts = 1) {
   if (judged.result !== 'work-needed') return done(judged.result);
   if (cp.attempts >= maxAttempts) return done('attempt-limit');
   const attempt = sync(host.newId());
-  if (typeof attempt !== 'string' || !attempt.trim()) throw new Error('invalid attempt identity');
+  if (!nonblank(attempt)) throw new Error('invalid attempt identity');
   cp.pending = attempt; cp.attempts++; save();
   try { sync(host.act(first, attempt)); } catch { return done('action-outcome-unknown'); }
   cp.pending = null; cp.disposition = 'unknown'; save();
@@ -56,6 +58,6 @@ export function reconcile(binding, checkpoint, host, maxAttempts = 1) {
 }
 export function settlePending(checkpoint, binding, attempt, outcome, receipt) {
   validate(checkpoint);
-  if (!attempt || checkpoint.pending !== attempt || checkpoint.binding !== binding || !['completed', 'not-applied'].includes(outcome) || typeof receipt !== 'string' || !receipt.trim()) throw new Error('invalid settlement');
+  if (!attempt || checkpoint.pending !== attempt || checkpoint.binding !== binding || !['completed', 'not-applied'].includes(outcome) || !nonblank(receipt)) throw new Error('invalid settlement');
   return { ...structuredClone(checkpoint), pending: null, disposition: 'unknown', validUntil: 0, settlement: { binding, attempt, outcome, receipt } };
 }

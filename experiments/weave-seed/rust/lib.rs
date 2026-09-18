@@ -23,10 +23,11 @@ pub trait Host {
     fn new_id(&mut self) -> String;
 }
 const MAX_SAFE: u64 = 9_007_199_254_740_991;
+fn nonblank(value: &str) -> bool { value.chars().any(|c| !c.is_whitespace() && c != '\u{feff}') }
 fn validate(cp: &Checkpoint) -> Result<(), String> {
-    if cp.attempts > MAX_SAFE || cp.valid_until > MAX_SAFE || cp.pending.as_ref().is_some_and(|p| p.trim().is_empty()) { return Err("invalid checkpoint".into()); }
+    if cp.attempts > MAX_SAFE || cp.valid_until > MAX_SAFE || cp.pending.as_ref().is_some_and(|p| !nonblank(p)) { return Err("invalid checkpoint".into()); }
     if let Some(r) = &cp.settlement {
-        if [&r.binding, &r.attempt, &r.outcome, &r.receipt].iter().any(|v| v.trim().is_empty()) || !["completed", "not-applied"].contains(&r.outcome.as_str()) { return Err("invalid settlement record".into()); }
+        if [&r.binding, &r.attempt, &r.outcome, &r.receipt].iter().any(|v| !nonblank(v)) || !["completed", "not-applied"].contains(&r.outcome.as_str()) { return Err("invalid settlement record".into()); }
     }
     Ok(())
 }
@@ -42,7 +43,7 @@ fn judge(host: &mut impl Host, evidence: &Evidence) -> Result<(Judgment, Evidenc
 }
 pub fn reconcile(binding: &str, checkpoint: &Checkpoint, host: &mut impl Host, max_attempts: u64) -> Result<(Checkpoint, &'static str), String> {
     validate(checkpoint)?;
-    if binding.trim().is_empty() || max_attempts > MAX_SAFE { return Err("invalid binding or limit".into()); }
+    if !nonblank(binding) || max_attempts > MAX_SAFE { return Err("invalid binding or limit".into()); }
     let mut cp = checkpoint.clone();
     if cp.pending.is_some() { return Ok((cp, "recovery-needed")); }
     let first = host.observe()?;
@@ -56,7 +57,7 @@ pub fn reconcile(binding: &str, checkpoint: &Checkpoint, host: &mut impl Host, m
     if cp.disposition != Judgment::WorkNeeded { let status = cp.disposition.as_str(); return Ok((cp, status)); }
     if cp.attempts >= max_attempts { return Ok((cp, "attempt-limit")); }
     let attempt = host.new_id();
-    if attempt.trim().is_empty() { return Err("invalid attempt identity".into()); }
+    if !nonblank(&attempt) { return Err("invalid attempt identity".into()); }
     cp.pending = Some(attempt.clone()); cp.attempts += 1; host.save(&cp)?;
     if host.act(&first, &attempt).is_err() { return Ok((cp, "action-outcome-unknown")); }
     cp.pending = None; cp.disposition = Judgment::Unknown; host.save(&cp)?;
@@ -69,7 +70,7 @@ pub fn reconcile(binding: &str, checkpoint: &Checkpoint, host: &mut impl Host, m
 }
 pub fn settle_pending(checkpoint: &Checkpoint, binding: &str, attempt: &str, outcome: &str, receipt: &str) -> Result<Checkpoint, String> {
     validate(checkpoint)?;
-    if attempt.is_empty() || checkpoint.pending.as_deref() != Some(attempt) || checkpoint.binding != binding || !["completed", "not-applied"].contains(&outcome) || receipt.trim().is_empty() { return Err("invalid settlement".into()); }
+    if attempt.is_empty() || checkpoint.pending.as_deref() != Some(attempt) || checkpoint.binding != binding || !["completed", "not-applied"].contains(&outcome) || !nonblank(receipt) { return Err("invalid settlement".into()); }
     let mut cp = checkpoint.clone();
     cp.pending = None; cp.disposition = Judgment::Unknown; cp.valid_until = 0;
     cp.settlement = Some(Settlement { binding: binding.into(), attempt: attempt.into(), outcome: outcome.into(), receipt: receipt.into() });
@@ -77,3 +78,6 @@ pub fn settle_pending(checkpoint: &Checkpoint, binding: &str, attempt: &str, out
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod identity_tests;

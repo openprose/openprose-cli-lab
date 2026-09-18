@@ -1,0 +1,12 @@
+{
+  "schema": "openprose.weave-core-identity/1",
+  "columns": ["name", "unicodeScalarHex", "accepted"],
+  "cases": [
+    ["nel", "0085", false],
+    ["bom", "FEFF", false],
+    ["mixed-blank", "0020 0085 FEFF 0009", false],
+    ["non-ascii", "00E9", true],
+    ["supplementary", "1F680", true],
+    ["surrounded-nonblank", "0085 00E9 FEFF", true]
+  ]
+}

@@ -91,3 +91,30 @@ for (let i = 0; i < 10000; i++) {
 }
 assert.equal(actions, 2000);
 console.log('PASS 10000 sequential world transitions; 2000 cumulative actions; binding/expiry/reuse/budget assertions');
+
+// Shared Unicode identity boundary, without normalization or effect execution on rejection.
+const identities = JSON.parse(readFileSync(new URL('../fixtures/core-identity.json', import.meta.url), 'utf8'));
+assert.equal(identities.schema, 'openprose.weave-core-identity/1');
+for (const [name, hex, accepted] of identities.cases) {
+  const value = String.fromCodePoint(...hex.split(' ').map(v => parseInt(v, 16)));
+  for (const field of ['binding', 'newId', 'pending', 'receipt', 'storedReceipt']) {
+    const host = hostFor('aaaa', 'ws', 'ok'), cp = emptyCheckpoint();
+    let binding = 'v1';
+    if (field === 'binding') binding = value;
+    if (field === 'newId') host.newId = () => value;
+    if (field === 'pending') cp.pending = value;
+    if (field === 'storedReceipt') cp.settlement = {binding:'v1',attempt:'prior',outcome:'completed',receipt:value};
+    const call = field === 'receipt' ? () => settlePending({...cp,binding:'v1',pending:'prior',attempts:1},'v1','prior','completed',value) : () => reconcile(binding, cp, host);
+    if (accepted) assert.doesNotThrow(call, `${name}/${field}`);
+    else { assert.throws(call, undefined, `${name}/${field}`); assert.equal(host.counts()[2], 0); }
+  }
+}
+for (const value of ['\ud800', '\udfff']) {
+  for (const field of ['binding','evidence','pending']) {
+    assert.throws(() => reconcile('v1', {...emptyCheckpoint(),[field]:value}, hostFor('aa','s','ok')));
+  }
+  assert.throws(() => settlePending({...emptyCheckpoint(),binding:'v1',pending:'prior'},'v1','prior','completed',value));
+  const host = hostFor('aaaa','ws','ok'); host.newId = () => value;
+  assert.throws(() => reconcile('v1',emptyCheckpoint(),host)); assert.equal(host.counts()[2],0);
+}
+console.log(`PASS ${identities.cases.length} shared Unicode identity cases across five boundaries; lone-surrogate rejection`);
