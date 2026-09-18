@@ -25,6 +25,8 @@ def pack(source, selector, value, now, ttl, gap=None):
 
 
 def file_evidence(path, now, ttl=60, limit=65536):
+    if type(limit) is not int or limit < 0:
+        raise ValueError('limit must be a nonnegative integer')
     path = Path(path).resolve()
     try:
         if not stat.S_ISREG(path.stat().st_mode):
@@ -47,6 +49,8 @@ def file_evidence(path, now, ttl=60, limit=65536):
 
 
 def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=65536, *, named_rows=False):
+    if any(type(value) is not int or value < 0 for value in (row_limit, byte_limit)):
+        raise ValueError('query limits must be nonnegative integers')
     path = Path(path).resolve()
     selector = ['sqlite-unordered-named-rows-v1' if named_rows else 'sqlite-unordered-rows-v1', query, params]
     try:

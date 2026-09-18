@@ -98,4 +98,22 @@ class EvidenceTests(unittest.TestCase):
         alias=self.root/'alias';alias.symlink_to(self.file)
         self.assertEqual(file_evidence(alias,0).identity,file_evidence(self.file,0).identity)
 
+    def test_invalid_limits_rejected_before_io(self):
+        missing=self.root/'absent'
+        for value in (-2,True,1.5,float('nan')):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):file_evidence(missing,0,limit=value)
+                with self.assertRaises(ValueError):query_evidence(missing,'SELECT 1',(),0,row_limit=value)
+                with self.assertRaises(ValueError):query_evidence(missing,'SELECT 1',(),0,byte_limit=value)
+    def test_tightened_limit_blocks_cached_satisfaction(self):
+        from store import FileHost
+        host=FileHost(self.root/'checkpoint.json');calls=[]
+        def step(limit):
+            return host.step('v1',lambda:file_evidence(self.file,0,limit=limit),
+                lambda e:calls.append('assess') or 'satisfied',lambda *a:calls.append('act'),lambda:1,lambda:'one')
+        self.assertEqual(step(65536)[1],'satisfied')
+        self.assertEqual(step(1)[1],'evidence-gap')
+        self.assertEqual(calls,['assess'])
+        self.assertEqual(host.read().disposition,'unknown')
+
 if __name__=='__main__': unittest.main()
