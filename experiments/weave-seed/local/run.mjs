@@ -3,7 +3,7 @@ import { stepConfig, serveConfig, statusConfig, settleConfig } from './coordinat
 const project = result => ({ status: result.status, attempts: result.checkpoint.attempts, pending: result.checkpoint.pending });
 export async function main(argv = process.argv.slice(2)) {
   if(argv.length===1 && ['--help','-h','help'].includes(argv[0])) {
-    console.log('Experimental local weave (Bun):\n  check CONFIG  Offline file/executable/environment/checkpoint inspection; no provider verification\n  status CONFIG  Read-only checkpoint and lock diagnostics\n  step CONFIG  One bounded reconciliation (may invoke configured providers/actions)\n  serve CONFIG --poll-ms N --max-steps N  Bounded sequential polling\n  settle CONFIG --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE  Explicit trusted pending-effect settlement\nOutput: JSON records except this help. Check exits 0 when configured, 2 when blocked.\nUse --no-env-file with Bun. Pending effects require trusted reconciliation.');
+    console.log('Experimental local weave (Bun):\n  check CONFIG  Offline file/executable/environment/checkpoint inspection; no provider verification\n  status CONFIG  Read-only checkpoint and lock diagnostics\n  step CONFIG  One bounded reconciliation (may invoke configured providers/actions)\n  serve CONFIG --poll-ms N --max-steps N  Bounded sequential polling\n  settle CONFIG --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE  Explicit trusted pending-effect settlement\nOutput: JSON records except this help. Check exits 0 when configured, 2 when blocked.\nFor Bun source and adapter invocations, use --no-env-file. Pending effects require trusted reconciliation.');
     return;
   }
   const [command, config, ...options] = argv;

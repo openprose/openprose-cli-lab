@@ -147,7 +147,16 @@ example with paths referring to THIS copy, run:
 
   /absolute/bun --no-env-file /absolute/bundle/source/experiments/weave-seed/getting-started/create.mjs /absolute/new-subject
 
-Then invoke either bin/weave-* check/status/step with the generated config.json.
+Then run the included binaries directly (replace the absolute placeholders):
+
+  /absolute/bundle/bin/weave-bun check /absolute/new-subject/config.json
+  /absolute/bundle/bin/weave-bun step /absolute/new-subject/config.json
+  /absolute/bundle/bin/weave-rust step /absolute/new-subject/config.json
+  /absolute/bundle/bin/weave-rust serve /absolute/new-subject/config.json --poll-ms 250 --max-steps 3
+
+The first step repairs once; the second reuses the fresh result across runtimes.
+The generated subject README also shows the equivalent Bun source commands.
+Both entry points use the same configuration and checkpoint.
 For commands in the copied source guides, the repository root is bundle/source:
 
   cd /absolute/bundle/source

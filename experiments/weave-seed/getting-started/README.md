@@ -48,7 +48,7 @@ The [BYOK guide](BYOK.md) explains how to replace the fixture with an explicitly
 
 ## Native Rust coordinator
 
-The [Rust local coordinator](../rust-local/README.md) uses the same configuration and checkpoint format for native `step`, `status` and bounded `serve` on its documented Unix domain. It requires a Cargo build and cached dependencies for an offline build; it is not a preinstalled binary. The generated fixture and provider capabilities still use Bun even when Rust owns the loop. Native Rust also provides the same offline `check` status/error schema. Its reported runtime version is the Rust package version, not the compiler version. Do not infer cross-platform or provider qualification from the shared protocol.
+The [Rust local coordinator](../rust-local/README.md) uses the same configuration and checkpoint format for native `step`, `status` and bounded `serve` on its documented Unix domain. When working from a source checkout, build it with Cargo and cached dependencies for an offline build. A private compiled review bundle already includes `bin/weave-rust`; use that executable with the same commands and generated config. The generated fixture and provider capabilities still use Bun even when Rust owns the loop. Native Rust also provides the same offline `check` status/error schema. Its reported runtime version is the Rust package version, not the compiler version. Do not infer cross-platform or provider qualification from the shared protocol.
 
 ## Verification
 
