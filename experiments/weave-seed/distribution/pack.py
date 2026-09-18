@@ -127,6 +127,10 @@ def smoke(bundle, bun):
 
 README = '''# Private local review bundle
 
+For a stable private installation, follow
+source/experiments/weave-seed/distribution/INSTALL.md using the reviewed manifest digest.
+Install before generating subject configuration; upgrades use a separate destination.
+
 UNPUBLISHED review candidate, not a public release or installed Prose command.
 Current build/smoke qualification is macOS arm64 only. Check manifest.json for
 actual platform, executable/source hashes, source commit and dirty status.

@@ -26,6 +26,8 @@ Edit `source.txt`, then repeat step or serve. The next step repairs the report a
 
 These commands are an experimental sidecar. They are not `prose init`, `prose serve`, a login flow or an HTTP server. No package has been published by this walkthrough. The generated config references this checkout and the Bun executable used during setup; keep both available. Moving the checkout requires reviewing the executable paths and capability identity. This slice does not install or provision anything.
 
+For a stable installation of a private compiled bundle, use the [offline installation guide](../distribution/INSTALL.md) before generating a subject. Existing subjects retain their selected executable paths during side-by-side upgrades.
+
 ## Reading the output
 
 Successful CLI output is newline-delimited JSON. Treat each line as a complete record. A step result includes `status`, cumulative `attempts` and an unresolved `pending` attempt, if any. Status exposes checkpoint and lock diagnostics; it is not an atomic authorization to act. Serve emits step records followed by its bounded stop record. Nonzero exit and stderr indicate a failed command; preserve that failure instead of assuming work completed.

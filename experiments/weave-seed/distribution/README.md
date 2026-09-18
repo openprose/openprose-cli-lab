@@ -21,6 +21,8 @@ The builder relocates a complete copy into a new temporary directory, creates sy
 
 The binaries do not require an external Bun runtime for their own coordinator commands. Explicit capability executables remain dependencies: the synthetic fixture, Jev/native adapters and configuration helper need Bun, and native acting also needs a separately installed actual Prose CLI plus admitted harness. No kernel image or sentinel image is embedded by this packaging task. Do not claim the bundle supplies a working provider account or self-contained general actor.
 
+Use the [offline installation guide](INSTALL.md) to place a reviewed bundle in a stable private directory. Installation requires its trusted manifest digest and preserves existing installations and subject state. Generate subject configuration after installation so executable paths point to that stable location.
+
 Verify an unchanged bundle without building:
 
 ```python
