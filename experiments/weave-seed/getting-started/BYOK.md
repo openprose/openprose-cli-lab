@@ -94,3 +94,33 @@ General semantic reliability, unseen-contract qualification, cross-platform inst
 
 
 The native actor requires a fixed-image Prose CLI build. Use the [fixed-image staging guide](FIXED-IMAGE.md) to generate its manifest and hashes without editing them by hand. Before its readiness check it runs `cli doctor --json` and rejects a moving `published-on-run` source, test seams or an unexpected image digest. This prevents an action from starting with a kernel that changes between readiness and execution. The generator's outer process bound is 270 seconds, covering the image-policy and readiness checks (up to 45 seconds each) and the native process bound (165 seconds). Provider and native timeouts remain separate. This is a local build/profile restriction, not a new runtime kernel override or a semantic release qualification.
+
+## Run the configured subject through the CLI bridge
+
+After configuration, select the generated `config.json`, an installed coordinator,
+and the fixed-image Prose CLI. Generate a separate host binding; the bridge and
+coordinator each have an explicit environment allowlist. For the example setup
+above, both layers need `PATH`, `OPENAI_API_KEY` and `TYPESAFE_API_KEY`. If you
+changed the configured variable names, use those names instead. Values stay in
+your environment and do not belong in either JSON file.
+
+```sh
+bun --no-env-file /absolute/installed/source/experiments/weave-seed/getting-started/host-binding.mjs \
+  --host /absolute/installed/bin/weave-rust \
+  --config /absolute/subject/weave-local-config/config.json \
+  --output /absolute/subject/weave-host-binding.json \
+  --environment-keys '["PATH","OPENAI_API_KEY","TYPESAFE_API_KEY"]' \
+  --timeout-ms 300000 \
+  --max-output-bytes 1048576 \
+  --prose /absolute/fixed-image/prose
+```
+
+Select `weave-bun` instead to use the Bun coordinator. The 300-second bridge
+bound exceeds this generated profile's 270-second capability bound. It is a
+bound for one invocation, not a promise of completion or a dollar limit.
+The helper does not execute the host or contact a provider. Review its printed
+commands and run `check` first. A successful check validates local configuration;
+it does not establish provider authentication or native harness readiness.
+The printed `step` and `serve` commands can contact both providers and cause the
+program's permitted effects. The generated serve command remains bounded to one
+step. Follow the recovery guide if an action becomes pending.
