@@ -15,3 +15,13 @@ Research evidence belongs to openprose-expedition under imp-017-weave; user-auth
 Interrupted actions can be settled through `FileHost.settle(binding, attempt, outcome, receipt)`. The trusted host must establish `completed` or `not-applied` independently; unresolved effects remain pending. The method matches the recorded binding and attempt, atomically stores the last settlement reference, clears pending, and invalidates cached satisfaction. It neither invokes work nor replenishes attempts. The next `step` observes and assesses normally. A classifier score alone is not a settlement receipt. Receipt authenticity and an append-only audit history remain host responsibilities; the checkpoint retains only the latest settlement. This interface is an experimental local primitive, not distributed recovery or exactly-once execution.
 
 `query_evidence(..., named_rows=True)` emits one object per row with column-name keys, preserving nulls and duplicate rows. It uses the distinct `sqlite-unordered-named-rows-v1` selector identity; the default positional format is unchanged. Duplicate column names produce an evidence gap, requiring explicit unique SQL aliases. Byte bounds apply after conversion. Neither representation establishes completeness or source freshness.
+
+## Try the headless loop
+
+```sh
+python3 experiments/weave/demo.py
+```
+
+This temporary SQLite demonstration needs no credentials or network. It prints five events: initial satisfaction, reuse after an irrelevant note edit, repair after a date change, reuse on a duplicate, and abstention after approval is revoked. Each event reconstructs the local host from its saved checkpoint. Assessment and action are deliberately deterministic here; live model evidence is in the lab, not hidden in this demo. Its temporary files are removed on exit.
+
+The proposed reusable boundary is `host.step(binding, observe, assess, act, clock, new_id, max_attempts)`. A caller supplies the three capabilities; the loop controls when they run. Observe is ordinary input preparation, while assess and act can use different providers. Contract/package resolution, event subscriptions, authorization, credentials and cost accounting remain outside this reference core. No new Markdown grammar or shipped CLI command is introduced.
