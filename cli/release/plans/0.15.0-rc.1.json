@@ -617,6 +617,14 @@
       "size": 3595
     },
     {
+      "implementation": "shared",
+      "kind": "evidence",
+      "name": "SHA256SUMS",
+      "platform": "all",
+      "sha256": "f6fcfabc69ed4a893db9c3c37110bd904789703303ecd5465d14527e376bcf14",
+      "size": 1548
+    },
+    {
       "implementation": "bun",
       "kind": "evidence",
       "name": "live-bun-descriptor-bun-descriptor.json",
