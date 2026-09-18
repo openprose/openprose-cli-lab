@@ -52,3 +52,11 @@ One step can attempt at most one action. The pending attempt must be saved befor
 Use [Contributing](CONTRIBUTING.md) for human and agent changes, and [Feedback](FEEDBACK.md) for a reproducible, manually reviewed issue report. No example collects credentials, uploads evidence, or submits feedback automatically.
 
 The kernel currently has its own source repository. A future kernel-origin migration to `openprose/prose` is planned, but this seed does not perform that migration, change live URLs, or upgrade consumer pins. Use the kernel source and exact package identity already selected by your host.
+
+## Local persistence and recovery
+
+Both implementations now have experimental local hosts under the [shared host contract](HOST.md). They save checkpoints atomically and serialize access in a trusted directory. A lock left by abrupt termination or uncertain persistence requires explicit reconciliation; it is never automatically stolen.
+
+Run the Bun host checks with `bun --no-env-file experiments/weave-seed/bun/host.test.mjs`. See the [Rust host guide](rust-host/README.md) for its standalone Cargo crate and tests. The [file/process integration](integration/README.md) includes a Bun-only subprocess bridge and cross-runtime checkpoint tests. It does not yet connect a shipped CLI command to arbitrary kernel-backed programs.
+
+These additions test local restart and failure behavior. Power-loss durability, distributed storage, hostile filesystem behavior and model-based fulfillment remain separate qualification gates.

@@ -420,3 +420,11 @@ Root owns Git/integration on isolated codex/imp-017-weave. User explicitly autho
 - weave_parity owns only experiments/weave-seed/bun/, experiments/weave-seed/rust/, experiments/weave-seed/fixtures/, experiments/weave-seed/SPEC.md.
 - weave_onboarding owns only experiments/weave-seed/README.md, CONTRIBUTING.md, FEEDBACK.md, examples/, and docs/weave-v1-readiness.md.
 - Root owns this lease, integration review and all Git operations. No shared CLI runtime, package version, kernel source, or release workflow edits are assigned.
+
+## IMP-019 extended unpublished host work — September 18, 10:35 Eastern
+
+User extended work through 11:00 Eastern, with no publication. Root owns Git and shared host specification. Exact parallel leases:
+- weave_parity: experiments/weave-seed/rust-host/ only (local checkpoint host, tests and Cargo files).
+- weave_onboarding: experiments/weave-seed/bun/host.mjs and host.test.mjs only (same host contract).
+- weave_stress: read-only review; additive lab imp-017-weave/docs/EXTENDED-REVIEW.md only.
+- Root: experiments/weave-seed/HOST.md, fixtures/checkpoint-v1.json, integration/, seed README and docs/weave-v1-readiness.md; shared metadata.

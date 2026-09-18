@@ -1,0 +1,15 @@
+# Local host contract
+
+This experimental host provides serialized checkpoint access in a trusted local directory. It is not a distributed lock or an external-effect transaction. Its implementation must preserve the bounded step contract in SPEC.md.
+
+A checkpoint is UTF-8 JSON with exactly these fields: schema (integer 1), binding (string), evidence (string), disposition (unknown/satisfied/work-needed), validUntil (nonnegative safe integer), pending (null or nonempty string), attempts (nonnegative safe integer), settlement (null or object with exact string fields binding, attempt, outcome, receipt). Settlement outcome is completed or not-applied; all settlement strings must be nonempty. Reject extra fields, malformed data and invalid values; never replace corrupt state with an empty checkpoint. A missing checkpoint starts empty.
+
+A host owns a caller-selected directory exclusively by creating a lock directory named lock. Existing lock means busy; never guess whether it is stale or delete it automatically. The owner removes only its own lock when its synchronous operation finishes normally or fails before checkpoint replacement. If replacement may have occurred and the save fails, retain the lock and require trusted reconciliation; later work must not treat uncertain persistence as permission to replay. Abrupt termination can leave the lock behind; trusted operator reconciliation is required before removing it. Readers/writers use that lock for the entire step, including external callbacks. This favors uncertain-effect safety over automatic recovery.
+
+Store the checkpoint in checkpoint.json. Write a newly created temporary file, flush and sync it, atomically rename it over checkpoint.json, then sync the parent directory on supported POSIX hosts. The directory must be trusted and host-specific; this is not a defense against hostile symlink substitution or network filesystem behavior. Preserve the previous valid checkpoint when encoding fails. Do not retry an effect after any uncertain save or actor failure.
+
+Expose load/save within a locked operation, a step wrapper delegating to the existing core, and explicit settlement that does not reset attempts. All callbacks are synchronous. Reopening the host must retain pending effects and accepted state. Test separate competing processes, restart after pending persistence, invalid JSON/schema, save failure before effects, and settlement then reassessment. Report OS/runtime and limitations. No credentials or model calls are required.
+
+Checkpoint JSON rejects duplicate object keys, a leading UTF-8 BOM, malformed UTF-8, and noncanonical integer number tokens (fractional or exponent notation, negative zero). Persisted fields must use unsigned decimal integer tokens; this shared lexical boundary avoids runtime-dependent interpretation.
+
+String values must contain Unicode scalar values, not unpaired surrogate escapes. A required nonblank string must contain a character outside the union of Unicode White_Space and U+FEFF. This includes U+0085 and prevents Rust/JavaScript trimming differences from changing acceptance.

@@ -58,3 +58,9 @@ Both implementations passed the 25 shared lifecycle cases. Bun additionally pass
 No publication, version bump, merge, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.
 
 Final port hardening: 10,000 sequential transitions passed in each implementation, including exactly 2,000 bounded actions per port, changing bindings, expiry, reuse, and budget exhaustion. These use deterministic callbacks and do not establish model accuracy, crash durability, or installed-package readiness.
+
+## Extended local-host evidence
+
+The extended candidate adds Rust and Bun local checkpoint hosts. Bun passes 13 host checks; Rust passes 17 tests including its embedded core tests, plus one helper invoked by a subprocess test. Checks cover competing processes, abrupt exit, pending-action restart, explicit settlement, malformed state and uncertain checkpoint publication. Cross-runtime testing passes 100 bidirectional checkpoint round trips and 19 shared malformed-state rejections. These close a bounded local-host implementation gap, not production or power-loss qualification.
+
+A Bun-only file/process bridge now hashes explicitly selected kernel, contract and evidence bytes, and invokes bounded synchronous child commands. Its deterministic integration fixture preserves new batch-report obligations despite already-correct maintained state. The fixture uses synthetic kernel text. It does not validate the actual OpenProse kernel or supply an automatic adapter for the existing native CLI. The live integration and semantic-evaluation gates above remain open.
