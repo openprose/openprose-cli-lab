@@ -13,7 +13,8 @@ TRANSIENT = re.compile(r'\bHTTP\s+(429|500|502|503|504)\b', re.IGNORECASE)
 
 
 def command(argv):
-    return subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=180)
+    timeout = 600 if argv[1:3] == ['release', 'upload'] else 60
+    return subprocess.run(argv, stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
 
 
 def checked_json(argv):
@@ -71,6 +72,9 @@ def stage(plan, root):
                 observed = snapshot(plan)
                 p.require(name in observed, 'Upload timed out without verified completion: ' + name)
                 break
+            if result.returncode:
+                status = re.search(r'\bHTTP\s+(\d{3})\b', result.stderr + '\n' + result.stdout)
+                print(name + ': upload failed (' + (status.group(0) if status else 'no HTTP status') + '); reconciling', flush=True)
             observed = snapshot(plan)
             if name in observed:
                 print(name + ': verified uploaded', flush=True)
