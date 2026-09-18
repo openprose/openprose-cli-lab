@@ -472,3 +472,7 @@ Root assigns weave_parity exactly `cli/rust/crates/prose-cli/tests/cli.rs` to bi
 At17:40Eastern root assigns architecture_audit exactly `cli/ci/check_architecture.py` and `cli/ci/test_check_architecture.py` to implement the independently documented remediation: exact shared-file admissions, source-specific built-in imports, manifest-scoped pinned ureq admission, and structural read-call parsing with negative regressions. No runner exemption, directory wildcard or production change. Root reviews the diff and owns Git.
 
 At17:45Eastern root assigns weave_onboarding only `docs/weave-v1-readiness.md` to consolidate current readiness and material historical findings into a clear assessment; no new validation claims. Root retains final qualification disposition.
+
+## v1 readiness follow-up — September 18, evening
+
+Root retains CLI integration and Git. weave_onboarding has a documentation-only lease for `docs/agents-sdk-adapter.md` to replace machine-specific launcher setup with reproducible explicit instructions; verify offline launcher help/version only, no dependency installation or provider calls. Root owns setup-guide corrections. Public SDK compatibility audit remains read-only until a separate lease.
