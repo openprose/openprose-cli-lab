@@ -1,6 +1,5 @@
 //! Synchronous local persistence for the unpublished bounded weave experiment.
-#[path = "../../rust/lib.rs"]
-pub mod core;
+pub use openprose_weave_experimental as core;
 
 use serde::{Deserialize, Serialize};
 use std::fs::{self, File, OpenOptions};

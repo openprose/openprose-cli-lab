@@ -9,6 +9,7 @@ try {
   const options={root,kernel:'kernel.md',contracts:['program.md'],evidence:['state.json','report.md'],policy:'fixture-v1'};
   const bound=bindFiles(options);const first=bound.observe(0);assert.equal(first.gap,false);
   assert.equal(bound.observe(1).identity,first.identity);
+  assert.equal(bindFiles({...options,limit:Number.MAX_SAFE_INTEGER}).observe(1).identity,first.identity); // Large allowance must not allocate it eagerly.
   for(const path of ['kernel.md','program.md','state.json','report.md']) {
     const before=bound.observe(2);writeFileSync(join(root,path),'changed '+path);assert.notEqual(bound.observe(3).identity,before.identity);
   }

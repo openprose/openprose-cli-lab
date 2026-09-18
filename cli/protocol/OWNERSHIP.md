@@ -432,3 +432,17 @@ User extended work through 11:00 Eastern, with no publication. Root owns Git and
 IMP-014 staging recovery lease: distribution_ci owns `cli/ci/stage_upload.py` and `cli/ci/test_stage_upload.py` for bounded, sequential, digest-verified draft asset uploads and transient-error recovery. Root retains Git and actual publication operations.
 
 Extended example lease at 10:47 Eastern: weave_onboarding also owns experiments/weave-seed/bun/persistent-example.mjs and bun/HOST-EXAMPLE.md. weave_parity retains rust-host/examples/ and README within its existing lease. Examples remain deterministic and unpublished.
+
+
+## IMP-025/026 local-first implementation — September 18
+
+User authorized local implementation while deferring backend work. Branch `codex/imp-026-local` from local `feae132`; root owns Git and integration. These leases apply only in this isolated worktree and supersede older experimental leases there. No public release, kernel migration, provider calls, or run-prose changes.
+
+- weave_parity: `experiments/weave-seed/rust-binding/` only, independent native Rust file observation and its corpus/tests.
+- weave_stress: `experiments/weave-seed/local/` only, local Bun serving coordinator, tests and documentation.
+- weave_onboarding: `experiments/weave-seed/providers/` only, portable Jev process adapter and offline tests.
+- Root: seed package metadata, `rust/Cargo.toml` and lock, `SDK.md`, seed README, `integration/` and review fixtures, this entry, readiness documentation and workspace metadata. No `cli/` runtime command interception is assigned.
+
+At 14:25 Eastern the user extended local work through 16:00. Additional disjoint leases in this worktree: weave_parity owns `experiments/weave-seed/rust-local/`; weave_stress owns `experiments/weave-seed/integration/native-actor/`; weave_onboarding owns `experiments/weave-seed/getting-started/`. Root retains SDK metadata, shared docs and integration review. Login/backend implementation, publication and paid calls remain excluded.
+
+Additional local qualification leases at 14:45 Eastern: weave_parity owns the normal core dependency wiring in `experiments/weave-seed/rust-host/{Cargo.toml,Cargo.lock,src/lib.rs}`; weave_onboarding owns `local/{check.mjs,check.test.mjs,run.mjs,README.md}` and the shared `integration/run.mjs` preparation extraction; weave_stress owns `distribution/` and additive `integration/REVIEW.md`. Root owns subsequent shared configuration/binding/process hardening and final qualification. These remain isolated, unpublished local tooling changes.

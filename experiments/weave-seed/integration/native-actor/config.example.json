@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "receiptDirectory": null,
+  "executable": "/absolute/path/to/prose",
+  "executableSha256": "REPLACE_WITH_64_HEX_DIGEST",
+  "cwd": ".",
+  "kernel": "kernel/README.md",
+  "task": "program.md",
+  "expectedImageSha256": "REPLACE_WITH_DRY_RUN_IMAGE_DIGEST",
+  "harness": "agents-sdk",
+  "authProfile": "openai-api-key",
+  "model": "EXPLICIT_SUPPORTED_MODEL",
+  "environmentKeys": ["PATH", "OPENAI_API_KEY"],
+  "maxTurns": 8,
+  "nativeTimeoutMs": 120000,
+  "toolTimeoutMs": 15000,
+  "outerTimeoutMs": 150000,
+  "processTimeoutMs": 165000,
+  "readinessTimeoutMs": 45000,
+  "maxCaptureBytes": 4194304
+}

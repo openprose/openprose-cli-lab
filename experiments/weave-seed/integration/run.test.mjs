@@ -9,6 +9,10 @@ try{
  const child=join(root,'capability.mjs');writeFileSync(child,`import {readFileSync,writeFileSync} from 'node:fs';let text='';for await(const c of process.stdin)text+=c;const input=JSON.parse(text);const payload=JSON.parse(input.evidence.payload);const file=name=>payload.files.find(f=>f.path.endsWith('/'+name)).content;if(process.argv[2]==='assess')console.log(JSON.stringify({judgment:file('state.txt')==='ready'&&file('report.txt')===file('batch.txt')?'satisfied':'work-needed'}));else writeFileSync('report.txt',readFileSync('batch.txt'));`);
  const config=join(root,'config.json');writeFileSync(config,JSON.stringify({schema:1,root:'.',kernel:'kernel.md',contracts:['program.md'],evidence:['state.txt','batch.txt','report.txt'],capabilityVersion:'synthetic-report-v1',assessor:[process.execPath,child,'assess'],actor:[process.execPath,child,'act'],maxAttempts:2,checkpointDirectory:'host'}));
  assert.equal(runConfig(config).status,'satisfied');assert.equal(runConfig(config).status,'reused');
+ const original=JSON.parse(readFileSync(config,'utf8'));
+ writeFileSync(config,JSON.stringify({...original,maxOutputBytes:65536}));
+ assert.equal(runConfig(config).status,'satisfied'); // Bounds affect policy; do not reuse the previous judgment.
+ assert.equal(runConfig(config).status,'reused');
  writeFileSync(join(root,'batch.txt'),'batch-2');assert.equal(runConfig(config).status,'satisfied');assert.equal(readFileSync(join(root,'report.txt'),'utf8'),'batch-2');
  writeFileSync(join(root,'batch.txt'),'batch-3');assert.equal(runConfig(config).status,'attempt-limit');
  const parsed=JSON.parse(readFileSync(config,'utf8'));

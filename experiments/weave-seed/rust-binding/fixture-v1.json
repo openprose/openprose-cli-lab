@@ -1,0 +1,15 @@
+{
+  "schema": "weave-file-binding-fixture/1",
+  "files": {"kernel.md":"Opaque kernel\n", "contract.md":"Opaque contract: café\n", "evidence.json":"{\"state\":\"ready\"}\n", "bom.txt":"\ufeffleading BOM", "unicode.txt":"quote\" slash/ backslash\\ tabs\t newline\n \u2028 \u2029 😀"},
+  "cases": [
+    {"name":"normal","kernel":"kernel.md","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"fixture/v1","ttlMs":60000,"limit":262144,"now":10,"gap":false},
+    {"name":"bom","kernel":"kernel.md","contracts":["contract.md"],"evidence":["bom.txt"],"policy":"fixture/v1","now":0,"gap":false},
+    {"name":"unicode-order-duplicates","kernel":"kernel.md","contracts":["contract.md","./contract.md"],"evidence":["unicode.txt","bom.txt"],"policy":"é\u2028\n","now":100,"gap":false},
+    {"name":"lexical-parent","kernel":"unused/../kernel.md","contracts":["./contract.md"],"evidence":["./evidence.json"],"policy":"fixture/v1","now":10,"gap":false},
+    {"name":"missing","kernel":"absent","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"fixture/v1","now":10,"gap":true},
+    {"name":"aggregate-limit","kernel":"kernel.md","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"fixture/v1","limit":1,"now":10,"gap":true},
+    {"name":"non-file","kernel":".","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"fixture/v1","now":10,"gap":true},
+    {"name":"nel-policy","kernel":"kernel.md","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"\u0085","now":10,"gap":false},
+    {"name":"maximum-time","kernel":"kernel.md","contracts":["contract.md"],"evidence":["evidence.json"],"policy":"fixture/v1","ttlMs":1,"now":9007199254740990,"gap":false}
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "root": "/absolute/canonical/existing-subject",
+  "configDirectory": "weave-local-config",
+  "kernel": "kernel/README.md",
+  "task": "program.md",
+  "contracts": ["program.md", "std/result.md"],
+  "evidence": ["source.json", "report.md"],
+  "bun": "/absolute/path/to/bun",
+  "nativeCli": "/absolute/path/to/prose",
+  "nativeCliSha256": "REPLACE_WITH_64_LOWERCASE_HEX_DIGEST",
+  "expectedImageSha256": "REPLACE_WITH_REVIEWED_CLI_IMAGE_DIGEST",
+  "actionModel": "EXPLICIT_SUPPORTED_MODEL",
+  "actorEnvironmentKeys": ["PATH", "OPENAI_API_KEY"],
+  "assessment": {
+    "endpoint": "https://api.typesafe.ai/v1/systemone",
+    "model": "jev-1.13.0",
+    "questionFile": "/absolute/path/to/reviewed-question.json",
+    "decisionPolicy": {
+      "id": "REPLACE_WITH_REVIEWED_POLICY_ID",
+      "minProbability": 0.9,
+      "minConfidence": 0.8,
+      "minMargin": 0.5
+    },
+    "apiKeyEnv": "TYPESAFE_API_KEY"
+  },
+  "maxAttempts": 3
+}

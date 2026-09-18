@@ -1,8 +1,18 @@
 # Weave development seed
 
-Weave is an unpublished experiment in deciding when a caller's evidence needs work. This directory contains independent Rust and JavaScript loop implementations for comparison. It is not an installed SDK or a `prose weave` command. Start with the provider-free seed examples below; see [candidate readiness](../../docs/weave-v1-readiness.md) before making product or release claims.
+Weave is an unpublished experiment in deciding when a caller's evidence needs work. This directory contains independent Rust and JavaScript loop implementations for comparison. It is a locally consumable source SDK and sidecar, not a published package or a `prose weave` command. Start with the provider-free seed examples below; see [candidate readiness](../../docs/weave-v1-readiness.md) before making product or release claims.
 
 The selected OpenProse kernel and adopted contracts remain authoritative. They define the entire invocation's obligations, including required reports and steps. The loop receives an explicit binding and evidence through caller-supplied capabilities. It neither parses prose nor discovers an agreement. An assessor judges evidence against the resolved agreement; an actor attempts permitted work. The runtime controls their sequence and checks for changed or expired evidence.
+
+## Start here
+
+1. [Create and run the offline example](getting-started/README.md). One setup command creates a private example directory and prints the exact commands to inspect, repair and watch it. No credentials or network are used.
+2. [Configure your own program and providers](getting-started/BYOK.md). Keep the selected kernel, contracts and evidence explicit. The local profile uses a Jev assessor and the existing Agents SDK action route with the caller's keys; it requires no OpenProse account.
+3. [Embed the SDK](SDK.md) in a Bun or Rust application. The core is independent of provider, storage and command-line choices.
+
+The [Bun coordinator](local/README.md) and [native Rust coordinator](rust-local/README.md) expose bounded local steps, persisted status and serving. Ordinary code observes selected files; changed content or expired acceptance triggers assessment. Work is attempted only after an actionable assessment, then the evidence is read and assessed again. Unchanged fresh acceptance avoids both provider calls.
+
+These are unpublished sidecars and source packages. Existing top-level Prose language requests remain unchanged. Login, hosted deployment and publication are planned separately and are not needed for local execution. The initial actor profile is Agents SDK with an OpenAI API key; other providers have not been qualified through this adapter.
 
 ## First local run
 
@@ -47,6 +57,10 @@ Evidence must cover every obligation being assessed. If an invocation owes a new
 
 One step can attempt at most one action. The pending attempt must be saved before the effect. Normal actor return is followed by fresh observation and assessment; it is not fulfillment. An interrupted or uncertain action requires host recovery before replay. Attempt limits are cumulative for the checkpoint, and settlement does not replenish them. External effects are not transactional with the checkpoint, and no exactly-once guarantee is made.
 
+## Build a private review bundle
+
+[Bundle tooling](distribution/README.md) builds standalone `weave-bun` and `weave-rust` sidecars from copied source, inventories their bytes, and tests both after relocation. It performs no publication or installation. Current artifact qualification is macOS arm64; provider adapters remain explicit dependencies.
+
 ## Develop or report a problem
 
 Use [Contributing](CONTRIBUTING.md) for human and agent changes, and [Feedback](FEEDBACK.md) for a reproducible, manually reviewed issue report. No example collects credentials, uploads evidence, or submits feedback automatically.
@@ -57,7 +71,7 @@ The kernel currently has its own source repository. A future kernel-origin migra
 
 Both implementations now have experimental local hosts under the [shared host contract](HOST.md). They save checkpoints atomically and serialize access in a trusted directory. A lock left by abrupt termination or uncertain persistence requires explicit reconciliation; it is never automatically stolen.
 
-Run the Bun host checks with `bun --no-env-file experiments/weave-seed/bun/host.test.mjs`. See the [Rust host guide](rust-host/README.md) for its standalone Cargo crate and tests. The [file/process integration](integration/README.md) includes a Bun-only subprocess bridge and cross-runtime checkpoint tests. It does not yet connect a shipped CLI command to arbitrary kernel-backed programs.
+Run the Bun host checks with `bun --no-env-file experiments/weave-seed/bun/host.test.mjs`. See the [Rust host guide](rust-host/README.md) for its standalone Cargo crate and tests. The [file/process integration](integration/README.md) includes a Bun subprocess bridge and cross-runtime checkpoint tests; the [native Rust coordinator](rust-local/README.md) supplies the corresponding native process route. It does not yet connect a shipped CLI command to arbitrary kernel-backed programs.
 
 These additions test local restart and failure behavior. Power-loss durability, distributed storage, hostile filesystem behavior and model-based fulfillment remain separate qualification gates.
 

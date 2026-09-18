@@ -1,0 +1,9 @@
+[package]
+name = "openprose-weave-experimental"
+version = "0.0.0"
+edition = "2021"
+publish = false
+description = "Unpublished provider-neutral bounded maintenance loop"
+
+[lib]
+path = "lib.rs"

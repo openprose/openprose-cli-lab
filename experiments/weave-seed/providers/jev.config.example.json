@@ -1,0 +1,22 @@
+{
+  "schema": "openprose.jev-process/1",
+  "endpoint": "https://api.typesafe.ai/v1/systemone",
+  "model": "jev-1.13.0",
+  "apiKeyEnv": "TYPESAFE_API_KEY",
+  "questionFile": "jev.question.example.json",
+  "decisionPolicy": {
+    "id": "example-unvalidated-thresholds-v1",
+    "minProbability": 0.9,
+    "minConfidence": 0.8,
+    "minMargin": 0.5
+  },
+  "limits": {
+    "timeoutMs": 20000,
+    "maxInputBytes": 1048576,
+    "maxRequestBytes": 262144,
+    "maxResponseBytes": 65536,
+    "maxInputTokens": 65536,
+    "maxOutputTokens": 1024
+  },
+  "receiptDirectory": null
+}

@@ -16,6 +16,9 @@ try {
  assert.throws(()=>processCapabilities({assessor:['relative'],actor:['relative'],cwd:root}));
  const hang=join(root,'hang.mjs');writeFileSync(hang,'setInterval(()=>{},1000)');
  const bounded=processCapabilities({assessor:[process.execPath,hang],actor:[process.execPath,hang],cwd:root,timeoutMs:50});assert.throws(()=>bounded.assess(evidence),/failed or timed out/);
+ const noisy=join(root,'noisy.mjs');writeFileSync(noisy,`process.stdout.write('x'.repeat(80));process.stderr.write('y'.repeat(80));`);
+ const combined=processCapabilities({assessor:[process.execPath,noisy],actor:[process.execPath,noisy],cwd:root,maxOutputBytes:100});assert.throws(()=>combined.act(evidence,'noisy-attempt'),/failed or timed out/);
+ assert.throws(()=>processCapabilities({assessor:[process.execPath,'bad\0argument'],actor:[process.execPath,noisy],cwd:root}));
  const duplicate=join(root,'duplicate.mjs');writeFileSync(duplicate,`console.log('{"judgment":"unknown","judgment":"satisfied"}')`);
  assert.throws(()=>processCapabilities({assessor:[process.execPath,duplicate],actor:[process.execPath,duplicate],cwd:root}).assess(evidence),/invalid assessor/);
  writeFileSync(hang,"process.on('SIGTERM',()=>{});setInterval(()=>{},1000)");

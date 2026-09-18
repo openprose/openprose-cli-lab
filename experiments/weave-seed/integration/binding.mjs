@@ -24,10 +24,16 @@ export function bindFiles({ root, kernel, contracts, evidence, policy, ttlMs = 6
         try {
           const info = fstatSync(fd);
           if (!info.isFile() || info.size > limit-total) throw Error('source limit or non-file');
-          const buffer = Buffer.alloc(limit-total+1);
-          let length = 0, count;
-          while (length < buffer.length && (count = readSync(fd, buffer, length, buffer.length-length, null)) > 0) length += count;
-          bytes = buffer.subarray(0,length);
+          // Allocate for actual input, not an arbitrarily large configured allowance.
+          const chunks = []; let length = 0;
+          for (;;) {
+            const buffer = Buffer.alloc(Math.min(65536, limit-total+1-length));
+            const count = readSync(fd, buffer, 0, buffer.length, null);
+            if (!count) break;
+            chunks.push(buffer.subarray(0,count)); length += count;
+            if (length > limit-total) throw Error('aggregate source limit');
+          }
+          bytes = Buffer.concat(chunks,length);
         } finally { closeSync(fd); }
         total += bytes.length;
         if (total > limit) throw Error('aggregate source limit');
