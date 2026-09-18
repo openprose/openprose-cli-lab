@@ -35,7 +35,7 @@ rustc --edition=2021 --test experiments/weave-seed/rust/lib.rs -o "$WEAVE_TEST_D
 "$WEAVE_TEST_DIR/tests"
 ```
 
-The measured results are 25 shared lifecycle cases in each implementation, with additional save-failure and settlement checks. Rust reports three test functions containing those checks. Bun also checks mutable observation snapshots and rejection of asynchronous callback results. See [the validation record](../../docs/weave-v1-readiness.md#checks-actually-performed) for scope and versions.
+The measured results are 25 shared lifecycle cases in each implementation, with additional save-failure and settlement checks. Rust reports four test functions containing those checks and a 10,000-step sequential stress run. Bun also runs 10,000 sequential transitions. Both check cumulative actions, reuse, changing bindings, expiry, and budget exhaustion. Bun also checks mutable observation snapshots and rejection of asynchronous callback results. See [the validation record](../../docs/weave-v1-readiness.md#checks-actually-performed) for scope and versions.
 
 Read the [walkthrough](examples/README.md) to understand the evidence and action boundary. Then read the [seed specification](SPEC.md) for the Rust and JavaScript capability interfaces and parity fixtures. The [Python reference](../weave/README.md) also includes a local checkpoint host and file/SQLite observers; their presence does not establish equivalent host services in the seeds.
 

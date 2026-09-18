@@ -69,3 +69,40 @@ fn settlement_is_explicit_and_does_not_replenish_budget() {
     }
     assert_eq!(pending.pending.as_deref(), Some("prior"));
 }
+#[test]
+fn ten_thousand_sequential_world_transitions() {
+    struct World { state: String, now: u64, actions: u64, assessments: u64, saved: Option<Checkpoint> }
+    impl Host for World {
+        fn observe(&mut self) -> Result<Evidence, String> { Ok(Evidence { identity: self.state.clone(), payload: self.state.clone(), observed_at: self.now, valid_until: self.now + 2, gap: false }) }
+        fn assess(&mut self, e: &Evidence) -> Result<Judgment, String> {
+            self.assessments += 1;
+            Ok(match e.payload.as_str() { "good" => Judgment::Satisfied, "bad" => Judgment::WorkNeeded, _ => Judgment::Unknown })
+        }
+        fn act(&mut self, e: &Evidence, attempt: &str) -> Result<(), String> {
+            assert_eq!(self.saved.as_ref().unwrap().pending.as_deref(), Some(attempt)); assert_eq!(e.payload, "bad");
+            self.actions += 1; self.state = "good".into(); Ok(())
+        }
+        fn save(&mut self, cp: &Checkpoint) -> Result<(), String> { self.saved = Some(cp.clone()); Ok(()) }
+        fn clock(&mut self) -> u64 { self.now }
+        fn new_id(&mut self) -> String { format!("stress-{}", self.actions + 1) }
+    }
+    let mut host = World { state: "good".into(), now: 10, actions: 0, assessments: 0, saved: None };
+    let mut cp = Checkpoint::default();
+    for i in 0..10000 {
+        let mode = i % 7;
+        host.state = match mode { 0 | 4 => "bad", 2 | 5 => "unknown", _ => "good" }.into();
+        if mode == 6 {host.now += 3;}
+        let binding = if i % 11 == 0 {"v2"} else {"v1"};
+        let before = cp.clone(); let input = host.state.clone(); let actions = host.actions; let assessments = host.assessments;
+        let can_reuse = before.binding == binding && before.evidence == input && before.disposition == Judgment::Satisfied && host.now < before.valid_until;
+        let (next, status) = reconcile(binding, &cp, &mut host, 2000).unwrap(); cp = next;
+        let expected_actions = u64::from(input == "bad" && before.attempts < 2000);
+        assert_eq!(host.actions - actions, expected_actions); assert_eq!(cp.attempts, host.actions); assert_eq!(cp.pending, None);
+        assert_eq!(status == "reused", can_reuse);
+        assert_eq!(host.assessments - assessments, if can_reuse {0} else if expected_actions == 1 {2} else {1});
+        let expected = if input == "unknown" {Judgment::Unknown} else if input == "bad" && expected_actions == 0 {Judgment::WorkNeeded} else {Judgment::Satisfied};
+        assert_eq!(cp.disposition, expected);
+        assert_eq!(status, if can_reuse {"reused"} else if input == "unknown" {"unknown"} else if input == "bad" && expected_actions == 0 {"attempt-limit"} else {"satisfied"});
+    }
+    assert_eq!(host.actions, 2000);
+}

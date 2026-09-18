@@ -56,3 +56,5 @@ Both implementations passed the 25 shared lifecycle cases. Bun additionally pass
 | Kernel origin | Plan any future `openprose/prose` origin migration separately, preserving exact identities, links, package selections, and compatibility. No live URL or consumer pin changes occur here. |
 
 No publication, version bump, merge, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.
+
+Final port hardening: 10,000 sequential transitions passed in each implementation, including exactly 2,000 bounded actions per port, changing bindings, expiry, reuse, and budget exhaustion. These use deterministic callbacks and do not establish model accuracy, crash durability, or installed-package readiness.

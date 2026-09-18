@@ -60,3 +60,34 @@ for (const settlement of [{}, {binding:'v1',attempt:'prior',outcome:'unknown',re
   assert.throws(() => reconcile('v1', {...emptyCheckpoint(), settlement}, hostFor('aa','s','ok')), /invalid settlement record/);
 }
 console.log('PASS mutable observer snapshots, synchronous callback enforcement, and checkpoint settlement validation');
+// Deterministic sequential stress: independent world truth, cumulative budget.
+let world = 'good', now = 10, actions = 0, assessments = 0, latestSaved = null;
+let checkpoint = emptyCheckpoint();
+const stressHost = {
+  observe: () => ({ identity: world, payload: world, observedAt: now, validUntil: now + 2, gap: false }),
+  assess(e) { assessments++; return e.payload === 'good' ? 'satisfied' : e.payload === 'bad' ? 'work-needed' : 'unknown'; },
+  act(e, attempt) { assert.equal(latestSaved.pending, attempt); assert.equal(e.payload, 'bad'); actions++; world = 'good'; },
+  save(cp) { latestSaved = structuredClone(cp); },
+  clock: () => now,
+  newId: () => `stress-${actions + 1}`,
+};
+for (let i = 0; i < 10000; i++) {
+  const mode = i % 7;
+  world = mode === 0 || mode === 4 ? 'bad' : mode === 2 || mode === 5 ? 'unknown' : 'good';
+  if (mode === 6) now += 3;
+  const binding = i % 11 === 0 ? 'v2' : 'v1';
+  const before = structuredClone(checkpoint), inputWorld = world, beforeActions = actions, beforeAssessments = assessments;
+  const canReuse = before.binding === binding && before.evidence === inputWorld && before.disposition === 'satisfied' && now < before.validUntil;
+  const result = reconcile(binding, checkpoint, stressHost, 2000);
+  checkpoint = result.checkpoint;
+  const expectedActions = inputWorld === 'bad' && before.attempts < 2000 ? 1 : 0;
+  assert.equal(actions - beforeActions, expectedActions);
+  assert.equal(checkpoint.attempts, actions);
+  assert.equal(checkpoint.pending, null);
+  assert.equal(result.status === 'reused', canReuse);
+  assert.equal(assessments - beforeAssessments, canReuse ? 0 : expectedActions ? 2 : 1);
+  assert.equal(checkpoint.disposition, inputWorld === 'unknown' ? 'unknown' : inputWorld === 'bad' && !expectedActions ? 'work-needed' : 'satisfied');
+  assert.equal(result.status, canReuse ? 'reused' : inputWorld === 'unknown' ? 'unknown' : inputWorld === 'bad' && !expectedActions ? 'attempt-limit' : 'satisfied');
+}
+assert.equal(actions, 2000);
+console.log('PASS 10000 sequential world transitions; 2000 cumulative actions; binding/expiry/reuse/budget assertions');
