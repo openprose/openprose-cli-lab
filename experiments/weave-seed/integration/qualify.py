@@ -77,8 +77,10 @@ def main():
             check(path, [bun, 'test', '--no-env-file', prefix+path])
         check('Bun/Rust observer parity', [bun, '--no-env-file', prefix+'rust-binding/conformance.mjs', str(target/'debug/weave-file-binding-experiment')])
         check('Bun/Rust checkpoint interchange', [bun, '--no-env-file', prefix+'integration/interchange.test.mjs', str(target/'debug/weave-local-host-experiment')])
-        for path in ('rust-local/conformance.mjs', 'rust-local/check-parity.mjs', 'integration/local-parity.test.mjs', 'integration/config-parity.test.mjs', 'integration/full-loop.test.mjs', 'getting-started/generated-loop.test.mjs'):
+        for path in ('rust-local/conformance.mjs', 'rust-local/check-parity.mjs', 'integration/local-parity.test.mjs', 'integration/config-parity.test.mjs', 'integration/full-loop.test.mjs'):
             check(path, [bun, '--no-env-file', prefix+path, str(target/'debug/weave-rust-local')])
+        env['WEAVE_RUST_LOCAL'] = str(target/'debug/weave-rust-local')
+        check('Generated Bun/Rust configuration loop', [bun, 'test', '--no-env-file', prefix+'getting-started/generated-loop.test.mjs'])
         check('Independent copied Rust SDK', [sys.executable, prefix+'rust-local/consumer-check.py', '--cargo', cargo])
         check('Private bundle tooling', [sys.executable, '-m', 'unittest', 'discover', '-s', prefix+'distribution', '-p', 'test_pack.py', '-q'])
     unchanged = source_digest == snapshot()
