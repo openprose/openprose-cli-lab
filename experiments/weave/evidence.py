@@ -35,7 +35,7 @@ def file_evidence(path, now, ttl=60, limit=65536):
         return pack(str(path), 'utf8-file-v1', None, now, ttl, type(error).__name__)
 
 
-def query_evidence(path, query, params, now, ttl=60, row_limit=1000):
+def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=65536):
     path = Path(path).resolve()
     selector = ['sqlite-unordered-rows-v1', query, params]
     try:
@@ -58,6 +58,8 @@ def query_evidence(path, query, params, now, ttl=60, row_limit=1000):
             # Order-sensitive contracts require an explicitly different selector.
             rows = sorted(rows, key=lambda row: json.dumps(row, ensure_ascii=False))
             value = {'columns': columns, 'rows': rows}
+            if len(json.dumps(value, ensure_ascii=False).encode()) > byte_limit:
+                raise ValueError('result byte limit')
             return pack(str(path), selector, value, now, ttl)
     except (sqlite3.Error, ValueError, TypeError) as error:
         return pack(str(path), selector, None, now, ttl, type(error).__name__)

@@ -55,6 +55,7 @@ class EvidenceTests(unittest.TestCase):
     def test_size_limits_are_gaps_not_truncation(self):
         self.assertIsNotNone(file_evidence(self.file,0,limit=2).gap)
         self.assertIsNotNone(self.query(row_limit=0).gap)
+        self.assertIsNotNone(self.query(byte_limit=2).gap)
     def test_sql_error_is_gap(self):
         self.assertIsNotNone(self.query('SELECT absent FROM releases').gap)
 
