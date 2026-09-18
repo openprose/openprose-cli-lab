@@ -1282,7 +1282,8 @@
         "{{CONFIG}}"
       ],
       "host": {
-        "behavior": "write-until-stopped"
+        "stdoutHex": "41420a",
+        "sleepMs": 5000
       },
       "control": {
         "closeWrapperStdout": true
@@ -1291,6 +1292,77 @@
         "exitCode": 125,
         "stderrSuffixAscii": "WEAVE_HOST_IO_FAILED\n",
         "directChildReaped": true
+      }
+    },
+    {
+      "id": "unread-wrapper-stdout",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 500,
+        "maxOutputBytes": 2097152
+      },
+      "host": {
+        "behavior": "saturate-stdout-then-sleep"
+      },
+      "control": {
+        "holdWrapperStdoutUntilExit": true
+      },
+      "expected": {
+        "spawned": true,
+        "outcomeOneOf": [
+          {
+            "exitCode": 124,
+            "stderrSuffixAscii": "WEAVE_HOST_TIMEOUT\n"
+          },
+          {
+            "exitCode": 125,
+            "stderrSuffixAscii": "WEAVE_HOST_IO_FAILED\n"
+          }
+        ],
+        "maxElapsedMs": 3000,
+        "directChildReaped": true
+      }
+    },
+    {
+      "id": "unread-wrapper-stderr",
+      "argv": [
+        "cli",
+        "weave",
+        "--host-binding",
+        "{{BINDING}}",
+        "step",
+        "{{CONFIG}}"
+      ],
+      "bindingPatch": {
+        "timeoutMs": 500,
+        "maxOutputBytes": 2097152
+      },
+      "host": {
+        "behavior": "saturate-stderr-then-sleep"
+      },
+      "control": {
+        "holdWrapperStderrUntilExit": true
+      },
+      "expected": {
+        "spawned": true,
+        "outcomeOneOf": [
+          {
+            "exitCode": 124
+          },
+          {
+            "exitCode": 125
+          }
+        ],
+        "maxElapsedMs": 3000,
+        "directChildReaped": true,
+        "diagnosticUnobservableIfBlocked": true
       }
     }
   ]

@@ -1,3 +1,4 @@
+import { runWeaveHost, writeHostBytes, stopHostOutput } from "./core/weave-host";
 import { PUBLISHED_KERNEL_STARTUP } from "./core/build";
 import { publishedKernel } from "./core/kernel-startup";
 import {nativeOutputLimits} from "./adapters/output-budget";
@@ -62,6 +63,9 @@ export interface CliDependencies {
   homeDir?: string;
   clock: { now(): string; monotonicMs(): number };
   ids: { invocationId(): string };
+  writeStdoutBytes?(bytes: Uint8Array): void | Promise<void>;
+  writeStderrBytes?(bytes: Uint8Array): void | Promise<void>;
+  stopHostOutput?(): void;
   writeStdout(text: string): void;
   writeStderr(text: string): void;
   imageBundle?: RuntimeImageBundle;
@@ -84,6 +88,7 @@ export async function runCli(args: readonly string[], dependencies: CliDependenc
   const invocationId = dependencies.ids.invocationId();
   try {
     const parsed = parseEntrypoint(args);
+    if (parsed.kind === "weave") return await runWeaveHost(parsed.argv, parsed.global, dependencies);
     if (parsed.kind === "help") {
       dependencies.writeStdout(runnerHelp);
       return 0;
@@ -2000,6 +2005,9 @@ export function defaultDependencies(): CliDependencies {
     },
     ids: { invocationId: () => uuidV7() },
     cancellationSignal: cancellation.signal,
+    stopHostOutput,
+    writeStdoutBytes: (bytes) => writeHostBytes(1, bytes),
+    writeStderrBytes: (bytes) => writeHostBytes(2, bytes),
     writeStdout: (text) => process.stdout.write(text),
     writeStderr: (text) => process.stderr.write(text),
   };

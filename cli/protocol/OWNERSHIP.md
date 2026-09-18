@@ -460,3 +460,5 @@ Root accepts the corpus-first host bridge contract in `cli/protocol/decisions/im
 - weave_stress: `cli/bun/src/core/args.ts`, `cli/bun/src/core/types.ts`, `cli/bun/src/cli.ts`, new `cli/bun/src/core/weave-host.ts`, and new `cli/bun/test/weave-host.test.ts`.
 - weave_onboarding: new `cli/shared/tests/weave_host_process.py` and its fixture-only helper file `cli/shared/tests/weave_host_fixture.py`; independent black-box corpus consumer.
 All roles preserve opaque language routing and existing commands. No backend, provider calls, publication, version bump or release changes. Shared schema, architectural guard or cross-lease needs return to root.
+
+Root additionally owns `cli/rust/crates/prose-cli/Cargo.toml` and `cli/rust/Cargo.lock` for bridge use of already-approved workspace sha2, rustix (fs feature), and signal-hook dependencies. No new registry package is introduced.

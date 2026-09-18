@@ -1,3 +1,4 @@
+mod weave_host;
 use prose_runner_core::error::{ErrorCode, RunnerError};
 use prose_runner_core::image::RuntimeImage;
 use prose_runner_core::invocation::{Action, RunnerCommand};
@@ -218,6 +219,10 @@ fn image_too_large(reason: impl Into<String>) -> RunnerError {
 }
 
 fn main() -> ExitCode {
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    if let Some((globals, tail)) = prose_runner_core::invocation::weave_route(&args) {
+        return ExitCode::from(weave_host::run(globals, tail));
+    }
     let cancellation = CancellationToken::default();
     let _signal_guard = match SignalCancellationGuard::install(&cancellation) {
         Ok(guard) => guard,

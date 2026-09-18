@@ -108,6 +108,7 @@ export function parseEntrypoint(args: readonly string[]): ParsedEntrypoint {
 }
 
 function parseOperation(global: GlobalFlags, args: readonly string[]): ParsedEntrypoint {
+  if (args[0] === "weave") return { kind: "weave", global, argv: [...args.slice(1)] };
   if (knownRunnerHelpPath(args)) return { kind: "help", global };
   if (args[0] === "harness" && args[1] === "use") {
     return parseHarnessUse(global, args.slice(2));

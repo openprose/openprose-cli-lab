@@ -87,7 +87,7 @@ Before spawn, install cancellation observation without a signal race. SIGINT and
 SIGTERM request termination of the active owned process group. Timeout, output
 limit or forwarding/read failure do the same. Send SIGTERM first; allow at most
 1000 additional ms, then SIGKILL and reap the direct child. Explicit cancellation
-returns 130 for SIGINT or 143 for SIGTERM. First observed failure wins; never send
+returns 130 for SIGINT or 143 for SIGTERM. First observed failure wins; signal arrival order before runtime observation is not guaranteed. If both signal flags are pending at the first observation, a polling implementation selects SIGINT. Once observed, cancellation identity cannot change. Never send
 a group signal after direct-child exit/reaping (PID reuse risk). Stop draining at
 the bound/deadline, close pipes and avoid orphaned reader tasks. If a child already
 exited but another process holds pipes, close them and report the applicable bound
@@ -106,7 +106,7 @@ failure. The operator uses the host's existing explicit recovery contract.
 For an admitted weave route, failures write exactly the following ASCII code plus
 LF to stderr, and no wrapper-authored stdout. Previously forwarded child bytes
 remain visible; wrapper diagnostics never include paths, argv, binding contents,
-environment names/values or child exception text. Child-authored streams are not
+environment names/values or child exception text. If wrapper stderr itself is blocked or closed, diagnostic delivery is best effort with a 100 ms bound; the exit code remains authoritative for wrapper failure. The runtime must not hang to print a diagnostic. Child-authored streams are not
 redacted; callers must select a trusted host that implements its own output policy.
 
 | Category | Exit |

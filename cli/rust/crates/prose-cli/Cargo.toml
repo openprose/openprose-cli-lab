@@ -18,9 +18,11 @@ test-seams = ["prose-runner-core/test-seams"]
 prose-runner-core = { path = "../prose-runner-core" }
 serde.workspace = true
 serde_json.workspace = true
+sha2.workspace = true
+rustix = { workspace = true, features = ["fs"] }
+signal-hook.workspace = true
 
 [dev-dependencies]
-rustix.workspace = true
 tempfile.workspace = true
 
 [lints]

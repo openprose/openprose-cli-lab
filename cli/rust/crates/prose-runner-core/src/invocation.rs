@@ -179,6 +179,28 @@ pub fn parse_invocation(
     })
 }
 
+/// Recognizes only the reserved weave route, preserving the ordinary parser's
+/// prefix freeze and early identity/help behavior. A true flag means prohibited
+/// globals were supplied. Invalid prefixes remain owned by `parse_invocation`.
+#[must_use]
+pub fn weave_route(args: &[String]) -> Option<(bool, &[String])> {
+    let mut index = 0;
+    let mut globals = GlobalFlags::default();
+    while let Some(token) = args.get(index) {
+        if matches!(token.as_str(), "--" | "--help" | "--version") { return None; }
+        if matches!(token.as_str(), "--dry-run" | "--no-color" | "--verbose") { index += 1; continue; }
+        if let Some((name, value)) = split_option(token) {
+            set_value_option(&mut globals, name, value).ok()?; index += 1; continue;
+        }
+        if is_value_option(token) {
+            set_value_option(&mut globals, token, args.get(index + 1)?).ok()?; index += 2; continue;
+        }
+        return (token == "cli" && args.get(index + 1).is_some_and(|v| v == "weave"))
+            .then(|| (index != 0, &args[index + 2..]));
+    }
+    None
+}
+
 fn forward(mut opaque: Vec<String>) -> Action {
     let mut argv = Vec::with_capacity(opaque.len() + 1);
     argv.push("prose".to_owned());
@@ -716,4 +738,27 @@ fn native_output_flag_is_single_valued(){
  let p=parse_invocation(vec!["--native-output-bytes=134217728","task"].into_iter().map(str::to_owned)).unwrap();
  assert_eq!(p.globals.native_output_bytes.as_deref(),Some("134217728"));
  assert!(parse_invocation(vec!["--native-output-bytes","1048576","--native-output-bytes","2097152","task"].into_iter().map(str::to_owned)).is_err());
+}
+
+#[cfg(test)]
+mod weave_routing_tests {
+    use super::*;
+    #[test]
+    fn opaque_paths_preserved() {
+        // Shared corpus language-routing-47/48.
+        for input in [vec!["weave","step","/config"],vec!["init","--host-binding","/binding"],vec!["--","cli","weave","step","/config"]] {
+            let args:Vec<String>=input.iter().map(ToString::to_string).collect();
+            assert!(weave_route(&args).is_none());
+            let parsed=parse_invocation(args.clone()).unwrap();
+            let mut expected=vec!["prose".to_owned()];expected.extend(args.into_iter().skip(usize::from(input[0]=="--")));
+            assert_eq!(parsed.action,Action::Forward{argv:expected});
+        }
+    }
+    #[test]
+    fn recognized_route_rejects_globals_without_stealing_help_or_bad_prefix() {
+        let args=|v:Vec<&str>|v.into_iter().map(str::to_owned).collect::<Vec<_>>();
+        assert_eq!(weave_route(&args(vec!["cli","weave","--help"])),Some((false,args(vec!["--help"]).as_slice())));
+        assert!(weave_route(&args(vec!["--dry-run","cli","weave","step"])).unwrap().0);
+        for v in [vec!["--help","cli","weave"],vec!["--model","a","--model","b","cli","weave"],vec!["unknown","cli","weave"]] {assert!(weave_route(&args(v)).is_none());}
+    }
 }

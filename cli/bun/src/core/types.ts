@@ -72,6 +72,7 @@ export type RunnerOperation =
   | "auth-logout";
 
 export type ParsedEntrypoint =
+  | { kind: "weave"; global: GlobalFlags; argv: string[] }
   | { kind: "help"; global: GlobalFlags }
   | { kind: "version"; global: GlobalFlags }
   | { kind: "operation"; global: GlobalFlags; operation: RunnerOperation; json: boolean; value?: string }
