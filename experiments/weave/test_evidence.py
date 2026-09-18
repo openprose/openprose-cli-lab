@@ -1,3 +1,4 @@
+import json
 import sqlite3
 import tempfile
 import unittest
@@ -58,5 +59,28 @@ class EvidenceTests(unittest.TestCase):
         self.assertIsNotNone(self.query(byte_limit=2).gap)
     def test_sql_error_is_gap(self):
         self.assertIsNotNone(self.query('SELECT absent FROM releases').gap)
+
+    def test_named_rows_preserve_values_and_version_identity(self):
+        positional=self.query();named=self.query(named_rows=True)
+        self.assertIsNone(named.gap)
+        self.assertEqual(json.loads(named.payload)['rows'],[{'id':1,'date':'September 20'}])
+        self.assertNotEqual(positional.identity,named.identity)
+    def test_named_rows_reject_duplicate_aliases(self):
+        sql='SELECT id AS value,date AS value FROM releases'
+        self.assertIsNotNone(self.query(sql,named_rows=True).gap)
+        self.assertIsNone(self.query(sql).gap)
+    def test_named_rows_keep_nulls_and_duplicates(self):
+        self.write("INSERT INTO releases VALUES (1,NULL,'draft')")
+        self.write("INSERT INTO releases VALUES (1,NULL,'draft')")
+        rows=json.loads(self.query(named_rows=True).payload)['rows']
+        self.assertEqual(rows.count({'id':1,'date':None}),2)
+    def test_named_rows_bound_expanded_payload(self):
+        sql='SELECT id AS extremely_long_column_name FROM releases'
+        self.assertIsNotNone(self.query(sql,named_rows=True,byte_limit=5).gap)
+    def test_named_rows_ignore_physical_order(self):
+        self.write("INSERT INTO releases VALUES (2,'September 22','draft')")
+        old=self.query(named_rows=True)
+        self.write('CREATE INDEX reverse ON releases(id DESC)')
+        self.assertEqual(old.identity,self.query(named_rows=True).identity)
 
 if __name__=='__main__': unittest.main()

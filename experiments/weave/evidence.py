@@ -35,9 +35,9 @@ def file_evidence(path, now, ttl=60, limit=65536):
         return pack(str(path), 'utf8-file-v1', None, now, ttl, type(error).__name__)
 
 
-def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=65536):
+def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=65536, *, named_rows=False):
     path = Path(path).resolve()
-    selector = ['sqlite-unordered-rows-v1', query, params]
+    selector = ['sqlite-unordered-named-rows-v1' if named_rows else 'sqlite-unordered-rows-v1', query, params]
     try:
         # No create-if-missing behavior, no writes, no extension loading.
         with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True) as db:
@@ -57,6 +57,10 @@ def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=
             # Lab convention: result is a multiset. Preserve duplicates, ignore order.
             # Order-sensitive contracts require an explicitly different selector.
             rows = sorted(rows, key=lambda row: json.dumps(row, ensure_ascii=False))
+            if named_rows:
+                if len(set(columns)) != len(columns):
+                    raise ValueError('duplicate column names')
+                rows = [dict(zip(columns, row)) for row in rows]
             value = {'columns': columns, 'rows': rows}
             if len(json.dumps(value, ensure_ascii=False).encode()) > byte_limit:
                 raise ValueError('result byte limit')
