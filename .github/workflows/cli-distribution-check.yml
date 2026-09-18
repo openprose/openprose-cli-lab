@@ -63,6 +63,7 @@ jobs:
           python3 -m unittest discover -s cli/ci -p test_distribution_plan.py
           python3 -m unittest discover -s cli/ci -p test_npm_identity.py
           python3 -m unittest discover -s cli/ci -p test_publication.py
+          python3 -m unittest discover -s cli/ci -p test_stage_upload.py
           python3 -m unittest discover -s cli/ci -p test_assemble_kernel_rc.py
           python3 -m unittest discover -s cli/ci -p test_kernel_rc_evidence.py
           python3 -m unittest discover -s cli/ci -p test_sign_macos.py

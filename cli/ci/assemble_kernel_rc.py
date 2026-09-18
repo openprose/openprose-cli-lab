@@ -83,6 +83,14 @@ def assemble(roots, output, evidence, live_smoke=None):
     output.mkdir(parents=True)
     for name, (path, _) in inventory.items():
         shutil.copyfile(path, output / name)
+    # The shipped installation guide names this aggregate checksum file. Keep
+    # archive bytes unchanged and bind the checksum file as release evidence.
+    checksum_path = output / 'SHA256SUMS'
+    archives = sorted((record for _, record in inventory.values()
+                       if record['kind'] in ('standalone', 'npm')), key=lambda item: item['name'])
+    pub.require(len(archives) == 13 and checksum_path.name not in inventory, 'Expected thirteen install archives')
+    checksum_path.write_bytes(''.join(item['sha256'] + '  ' + item['name'] + '\n' for item in archives).encode('ascii'))
+    inventory[checksum_path.name] = (checksum_path, {'name': checksum_path.name, 'sha256': pub.digest(checksum_path), 'size': checksum_path.stat().st_size, 'kind': 'evidence', 'platform': 'all', 'implementation': 'shared'})
     live = pub.read_json(live_smoke) if live_smoke else {'status': 'not-run'}
     preflight = {'schema': 'openprose.kernel-rc-release-evidence/1', 'version': version, 'sourceSha': source, 'status': 'pass' if live_smoke else 'incomplete', 'failures': [] if live_smoke else ['Exact-source live smoke remains required'], 'imageSource': 'published-on-run', 'embeddedDiagnosticImage': diagnostic, 'kernelPolicy': policy, 'platforms': reports, 'liveSmoke': live}
     if live_smoke:

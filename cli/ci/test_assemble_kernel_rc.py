@@ -86,6 +86,19 @@ class AssemblyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Kernel qualification'):
             p.load_plan(self.root/'assembly/publication-plan.json')
 
+    def test_aggregate_checksums_bind_only_all_install_archives(self):
+        output = self.root / 'checksums'
+        plan = a.assemble(self.roots, output, self.evidence)
+        archives = sorted((item for item in plan['artifacts'] if item['kind'] in ('standalone', 'npm')), key=lambda item: item['name'])
+        expected = ''.join(p.digest(output / item['name']) + '  ' + item['name'] + '\n' for item in archives).encode('ascii')
+        self.assertEqual(len(archives), 13)
+        self.assertEqual((output / 'SHA256SUMS').read_bytes(), expected)
+        record = next(item for item in plan['artifacts'] if item['name'] == 'SHA256SUMS')
+        self.assertEqual(record, {'name': 'SHA256SUMS', 'sha256': hashlib.sha256(expected).hexdigest(), 'size': len(expected), 'kind': 'evidence', 'platform': 'all', 'implementation': 'shared'})
+        reversed_output = self.root / 'reversed-checksums'
+        a.assemble(list(reversed(self.roots)), reversed_output, self.evidence)
+        self.assertEqual((reversed_output / 'SHA256SUMS').read_bytes(), expected)
+
     def test_damaged_generated_package_refused(self):
         next((self.roots[0]/'package').glob('*.tgz')).write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError, 'evidence bytes changed'):
