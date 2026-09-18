@@ -217,6 +217,7 @@ class ArchitectureBoundaryTest(unittest.TestCase):
             'load(resolve(argv[0], "a,b)"))',
             'Bun.file(resolve(argv[0]))',
             'load(/x,y/.test("z") ? "fixture" : argv[2])',
+            'load(`${`prefix,`}${argv[2]}`)',
             'load(/[),]/.test("z") ? "fixture" : argv[2])',
             'load(identity<string, string>(argv[2]))',
             'load(/x,y/.test("z") ? "fixture" :\n argv[2])',

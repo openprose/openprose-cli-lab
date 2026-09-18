@@ -1287,7 +1287,10 @@ def _first_call_argument(code: str, opening: int, *, rust: bool) -> str:
             if end is not None:
                 cursor = end
                 continue
-        if char in ({'"', "`", "'"} if not rust else {'"'}):
+        if not rust and char == "`":
+            # Nested template interpolation requires a full JS parser.
+            return code[start:]
+        if char in ({'"', "'"} if not rust else {'"'}):
             literal = _escaped_literal(code, cursor, char)
             if literal is None:
                 return code[start:]
