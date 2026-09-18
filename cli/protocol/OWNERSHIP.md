@@ -476,3 +476,5 @@ At17:45Eastern root assigns weave_onboarding only `docs/weave-v1-readiness.md` t
 ## v1 readiness follow-up — September 18, evening
 
 Root retains CLI integration and Git. weave_onboarding has a documentation-only lease for `docs/agents-sdk-adapter.md` to replace machine-specific launcher setup with reproducible explicit instructions; verify offline launcher help/version only, no dependency installation or provider calls. Root owns setup-guide corrections. Public SDK compatibility audit remains read-only until a separate lease.
+
+At19:20Eastern root assigns weave_parity the narrow public-core identity correction: `experiments/weave-seed/SPEC.md`, new `fixtures/core-identity.json`, `bun/index.mjs`, `bun/conformance.mjs`, `rust/lib.rs`, and a narrowly scoped Rust identity regression test if required (exact path reported before editing). Shared cases/spec precede implementation. Align with the existing persisted-host whitespace predicate; no API rename or broad refactor. Root owns Git and final qualification.
