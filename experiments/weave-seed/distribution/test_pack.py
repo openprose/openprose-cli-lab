@@ -1,4 +1,7 @@
 import json
+import re
+import subprocess
+import sys
 from pathlib import Path
 import tempfile
 import unittest
@@ -54,5 +57,34 @@ class PackTests(unittest.TestCase):
             with patch('pack.run',side_effect=fake_run):
                 results=pack.smoke(bundle,Path('/absolute/bun'))
             self.assertEqual(len(results),2);self.assertTrue(all(r['sourceMapping']=='relocated bundle only' for r in results))
+
+    def test_supporting_allowlist_is_exact_and_rejects_symlinked_sources(self):
+        with tempfile.TemporaryDirectory() as temp:
+            repository=Path(temp)/'repository';repository.mkdir()
+            for relative in pack.SUPPORTING_FILES:
+                path=repository/relative;path.parent.mkdir(parents=True,exist_ok=True);path.write_text('support fixture')
+            private=repository/'cli/private.json';private.write_text('must not copy')
+            output=Path(temp)/'copy';pack.copy_supporting_files(output,repository)
+            self.assertEqual(set(str(p.relative_to(output)) for p in output.rglob('*') if p.is_file()),set(pack.SUPPORTING_FILES))
+            source=repository/pack.SUPPORTING_FILES[0];source.unlink();source.symlink_to(private)
+            with self.assertRaises(ValueError):pack.copy_supporting_files(Path(temp)/'rejected',repository)
+
+    def test_copied_primary_docs_resolve_and_python_quick_start_runs(self):
+        with tempfile.TemporaryDirectory() as temp:
+            source=Path(temp)/'source'
+            seed=source/'experiments/weave-seed'
+            pack.copy_sources(seed)
+            pack.copy_supporting_files(source)
+            for relative in ['README.md','CONTRIBUTING.md','FEEDBACK.md','examples/README.md','getting-started/README.md','getting-started/BYOK.md','SDK.md']:
+                document=seed/relative
+                for target in re.findall(r'\]\(([^)]+)\)',document.read_text()):
+                    if '://' not in target and not target.startswith('#'):
+                        self.assertTrue((document.parent/target.split('#')[0]).exists(),f'{relative}: {target}')
+            result=subprocess.run([sys.executable,'-B','experiments/weave/demo.py'],cwd=source,env={},capture_output=True,text=True,timeout=10,check=True)
+            self.assertIn('satisfied',result.stdout)
+            self.assertIn('unknown',result.stdout)
+            self.assertFalse((source/'cli/rust').exists())
+            self.assertFalse((source/'harnesses').exists())
+            self.assertIn('cd /absolute/bundle/source',pack.README)
 
 if __name__=='__main__':unittest.main()

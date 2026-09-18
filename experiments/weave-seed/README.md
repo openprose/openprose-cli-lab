@@ -34,7 +34,7 @@ python3 experiments/weave/demo.py
 python3 -m unittest discover -s experiments/weave -p 'test_*.py' -q
 ```
 
-The demonstration creates a temporary SQLite database and checkpoint, then removes them on exit. It needs no credentials, network, or model. Expect five events with statuses `satisfied`, `reused`, `satisfied`, `reused`, and `unknown`. The totals are four assessments and one action. The approval-revoked event abstains. The current reference suite contains 48 tests. These deterministic checks establish local mechanics, not semantic classifier reliability.
+The demonstration creates a temporary SQLite database and checkpoint, then removes them on exit. It needs no credentials, network, or model. Expect five events with statuses `satisfied`, `reused`, `satisfied`, `reused`, and `unknown`. The totals are four assessments and one action. The approval-revoked event abstains. The current reference suite contains 49 tests. These deterministic checks establish local mechanics, not semantic classifier reliability.
 
 Run both seeds against their shared lifecycle fixtures:
 
@@ -55,7 +55,7 @@ A host must resolve the contract, select evidence, enforce permissions, serializ
 
 Evidence must cover every obligation being assessed. If an invocation owes a new report for each batch, unchanged maintained state alone cannot justify skipping that report. A digest identifies selected content; it does not prove source authority, completeness, or freshness. Evidence gaps and `unknown` assessments do not authorize action.
 
-One step can attempt at most one action. The pending attempt must be saved before the effect. Normal actor return is followed by fresh observation and assessment; it is not fulfillment. An interrupted or uncertain action requires host recovery before replay. Attempt limits are cumulative for the checkpoint, and settlement does not replenish them. External effects are not transactional with the checkpoint, and no exactly-once guarantee is made.
+One step can attempt at most one action. The pending attempt must be saved before the effect. Normal actor return is followed by fresh observation and assessment; it is not fulfillment. An interrupted or uncertain action requires [explicit recovery](local/RECOVERY.md) before replay. Attempt limits are cumulative for the checkpoint, and settlement does not replenish them. External effects are not transactional with the checkpoint, and no exactly-once guarantee is made.
 
 ## Build a private review bundle
 

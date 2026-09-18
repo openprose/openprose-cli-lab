@@ -13,7 +13,7 @@ bun --no-env-file experiments/weave-seed/local/run.mjs serve /absolute/config.js
 bun --no-env-file experiments/weave-seed/local/coordinator.test.mjs
 ```
 
-`stepConfig`, `statusConfig`, `acquireOwner` and asynchronous `serveConfig` are exported from `coordinator.mjs`. Serve requires explicit bounds: poll milliseconds 1–3600000 and steps 1–1000000. It accepts an AbortSignal and optional onStep callback. Callbacks are trusted embedding code. The coordinator returns a summary; it does not retain an unbounded history. CLI output is JSON per completed step and one stop record, diagnostics go to stderr, and thrown errors yield nonzero exit.
+`stepConfig`, `statusConfig`, `settleConfig`, `acquireOwner` and asynchronous `serveConfig` are exported from `coordinator.mjs`. Serve requires explicit bounds: poll milliseconds 1–3600000 and steps 1–1000000. It accepts an AbortSignal and optional onStep callback. Callbacks are trusted embedding code. The coordinator returns a summary; it does not retain an unbounded history. CLI output is JSON per completed step and one stop record, diagnostics go to stderr, and thrown errors yield nonzero exit.
 
 ## Offline configuration check
 
@@ -57,10 +57,24 @@ Assessor configuration/question file contents and other semantic policy inputs *
 
 The service lock is advisory between these coordinator entry points. Direct calls to the older integration runConfig/FileHost bypass it, so all cooperating local controllers must use the coordinator for service-level exclusion. There is no distributed lease, stale-owner fencing or hostile-filesystem protection.
 
-Every poll performs the existing bounded file observation. Unchanged fresh satisfaction avoids model/process calls; expiry triggers reassessment. Gaps and unknown never authorize action. An action error preserves pending; serve stops with pending instead of retrying. Restart exposes recovery-needed without replay. Assessor/save/configuration errors propagate; the service lock is released on orderly exit, while any underlying uncertain-durability host lock remains intact. No budget reset, settlement shortcut or automatic stale-lock recovery is added. Recovery requires trusted explicit investigation and the existing host settlement contract.
+Every poll performs the existing bounded file observation. Unchanged fresh satisfaction avoids model/process calls; expiry triggers reassessment. Gaps and unknown never authorize action. An action error preserves pending; serve stops with pending instead of retrying. Restart exposes recovery-needed without replay. Assessor/save/configuration errors propagate; the service lock is released on orderly exit, while any underlying uncertain-durability host lock remains intact. No budget reset, settlement shortcut or automatic stale-lock recovery is added. Recovery requires trusted explicit investigation and the existing host settlement contract; follow [the recovery guide](RECOVERY.md).
 
 SIGINT/SIGTERM request cancellation and interrupt idle waits. Current child capabilities use synchronous spawnSync, so signals cannot reliably preempt a running step in JavaScript; the configured child timeout remains the available bound. It kills the direct child, not every descendant, and external effects may already have happened. Hard process termination may leave service/host locks for trusted reconciliation. No promise of instantaneous cancellation, whole-process-tree containment, atomic multi-file snapshots, power-loss recovery or provider spend enforcement is made.
 
 ## Validation
 
 The tests use real temporary files and subprocesses, an empty child environment and no network/provider credentials. Checks cover readonly status/corruption, repair and fresh reuse without calls, cumulative restart budgets, separate-process duplicate ownership, service ownership across idle polls, actual CLI SIGTERM during idle, expiry reassessment, source mutation, missing evidence, effect-then-failure pending/restart, abort cleanup, retained existing locks, configuration mutation, propagated assessor errors, invalid bounds and forbidden literal environment. These are coordinator mechanics tests, not model-backed semantic or installed-product qualification.
+
+## Explicit settlement after investigation
+
+```sh
+bun --no-env-file experiments/weave-seed/local/run.mjs settle /absolute/config.json \
+  --binding EXACT_STORED_BINDING --attempt EXACT_PENDING_ATTEMPT \
+  --outcome completed --receipt REVIEWED_RECEIPT_REFERENCE
+```
+
+The fixed-order outcome is `completed` or `not-applied`, chosen by the trusted operator after investigating the actual effect. Neither outcome is inferred from a timeout or actor exit. `settleConfig(path, binding, attempt, outcome, receipt)` returns the updated checkpoint; CLI output is `{ "status": "settled", "attempts": N, "pending": null }`. The function acquires the service-owner lock, then the existing checkpoint host lock, and delegates exact binding/attempt/outcome/nonblank-receipt validation to FileHost. It clears pending and cached satisfaction, retains attempts, and records the settlement. A subsequent execution must observe and assess again.
+
+Recovery reads only configuration schema/checkpointDirectory and the stored checkpoint; it requires no source availability, provider keys or valid actor/assessor executable. It invokes no capability or provider. Mismatched identities, repeated settlement, blank receipt and any existing owner/host lock fail without resetting state. This is not an unlock command: a stale or uncertain-durability lock still requires separate trusted reconciliation under [RECOVERY.md](RECOVERY.md). Settlement is a trusted assertion with a receipt reference, not automatic receipt authentication or proof of fulfillment.
+
+Run the five additional provider-free settlement checks with `bun --no-env-file experiments/weave-seed/local/settlement.test.mjs`. They verify both outcomes, exact-byte preservation on rejection, unchanged budgets, missing environment/source independence, service/host lock refusal, and actual CLI fixed-order parsing with an empty environment.

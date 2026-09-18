@@ -4,7 +4,7 @@ import { resolve, dirname, join } from 'node:path';
 import { createHash } from 'node:crypto';
 import { runConfig } from '../integration/run.mjs';
 import { readConfigBytes, parseConfigBytes } from '../integration/config.mjs';
-import { decodeCheckpoint } from '../bun/host.mjs';
+import { decodeCheckpoint, FileHost } from '../bun/host.mjs';
 
 function selection(path) {
   const configPath = resolve(path), bytes = readConfigBytes(configPath);
@@ -41,12 +41,22 @@ export function acquireOwner(path) {
       if (selection(selected.configPath).digest !== selected.digest) throw Error('configuration changed during service; stop and review before restart');
       return runConfig(selected.configPath);
     },
+    settle(binding, attempt, outcome, receipt) {
+      check();
+      if (selection(selected.configPath).digest !== selected.digest) throw Error('configuration changed during service; stop and review before restart');
+      return new FileHost(selected.directory).settle(binding, attempt, outcome, receipt);
+    },
     release() { check(); rmdirSync(lock); active = false; },
   });
 }
 export function stepConfig(path) {
   const owner = acquireOwner(path);
   try { return owner.step(); } finally { owner.release(); }
+}
+/** Explicit trusted settlement; no evidence observation, provider call, or budget reset. */
+export function settleConfig(path, binding, attempt, outcome, receipt) {
+  const owner = acquireOwner(path);
+  try { return owner.settle(binding, attempt, outcome, receipt); } finally { owner.release(); }
 }
 function pause(ms, signal) {
   if (signal?.aborted) return Promise.resolve();

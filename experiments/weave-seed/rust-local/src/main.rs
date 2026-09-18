@@ -5,7 +5,7 @@ fn emit(value:&serde_json::Value)->Result<(),String> { let mut out=std::io::stdo
 fn run()->Result<(),String> {
     let args:Vec<String>=std::env::args().skip(1).collect();
     if args.len()==1 && ["--help","-h"].contains(&args[0].as_str()) {
-        println!("usage: weave-rust-local check CONFIG | step CONFIG | status CONFIG | serve CONFIG --poll-ms N --max-steps N\nNative experimental Unix coordinator. No provider is selected implicitly.");
+        println!("usage: weave-rust-local check CONFIG | step CONFIG | status CONFIG | serve CONFIG --poll-ms N --max-steps N | settle CONFIG --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE\nNative experimental Unix coordinator. No provider is selected implicitly.");
         return Ok(());
     }
     match args.as_slice() {
@@ -13,6 +13,11 @@ fn run()->Result<(),String> {
             let result=weave_rust_local::check_config(path);emit(&result)?;
             if result["status"]!="configured" {std::process::exit(2);}
             Ok(())
+        },
+        [command,path,binding_flag,binding,attempt_flag,attempt,outcome_flag,outcome,receipt_flag,receipt]
+            if command=="settle" && binding_flag=="--binding" && attempt_flag=="--attempt" && outcome_flag=="--outcome" && receipt_flag=="--receipt"=>{
+            let checkpoint=weave_rust_local::settle_config(path,binding,attempt,outcome,receipt)?;
+            emit(&serde_json::json!({"status":"settled","attempts":checkpoint.attempts,"pending":checkpoint.pending}))
         },
         [command,path] if command=="status"=>emit(&weave_rust_local::status_config(path)?),
         [command,path] if command=="step"=>emit(&weave_rust_local::step_config(path)?.projection()),
@@ -23,7 +28,7 @@ fn run()->Result<(),String> {
             let result=weave_rust_local::serve_config(path,ms,steps,&CANCELLED,|r,_|emit(&r.projection()))?;
             emit(&serde_json::json!({"stopped":result.stopped,"steps":result.steps}))
         },
-        _=>Err("usage: weave-rust-local check CONFIG | step CONFIG | status CONFIG | serve CONFIG --poll-ms N --max-steps N".into()),
+        _=>Err("usage: weave-rust-local check CONFIG | step CONFIG | status CONFIG | serve CONFIG --poll-ms N --max-steps N | settle CONFIG --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE".into()),
     }
 }
 fn main(){if let Err(error)=run(){eprintln!("{error}");std::process::exit(1);}}

@@ -14,7 +14,7 @@ The seed has a private `package.json` with these exports:
 | `@openprose/weave-experimental/host` | Trusted local checkpoint persistence. |
 | `@openprose/weave-experimental/binding` | Bounded selected-file observation and content identity. |
 | `@openprose/weave-experimental/process` | Explicit subprocess assessment and action capabilities. |
-| `@openprose/weave-experimental/local` | `stepConfig`, `statusConfig`, and bounded `serveConfig`. |
+| `@openprose/weave-experimental/local` | `stepConfig`, `statusConfig`, `settleConfig`, and bounded `serveConfig`. |
 
 Use a local path dependency on this directory or copy its source package into a private consumer project. There is no registry installation command yet. The [small callback example](examples/local.mjs) demonstrates the core API; replace its relative import with the package name when using a dependency. The [local coordinator](local/README.md) shows durable configuration-based execution.
 
@@ -39,7 +39,7 @@ A binding identifies the selected agreement, evidence selector and assessment/ac
 
 The host must supply the actual effective agreement and evidence needed to judge it. It must also grant and enforce allowed effects. Neither a file hash nor a classifier's positive answer proves complete contract compliance. Missing evidence produces a gap or unknown result, not permission to act.
 
-Attempts are cumulative for a checkpoint. Before action, the host durably saves a pending attempt. After normal return, the core observes and assesses again. An uncertain action remains pending and is not replayed on restart. Explicit settlement requires investigation and a receipt; it does not restore the attempt budget or reverse an external effect.
+Attempts are cumulative for a checkpoint. Before action, the host durably saves a pending attempt. After normal return, the core observes and assesses again. An uncertain action remains pending and is not replayed on restart. Explicit settlement requires investigation and a receipt; it does not restore the attempt budget or reverse an external effect. The local sidecars expose the same operation through the [recovery workflow](local/RECOVERY.md).
 
 See [SPEC](SPEC.md) and [HOST](HOST.md) for exact lifecycle and persistence rules. Local advisory locks are not distributed ownership. Local sequential file reads are not an atomic world snapshot. Capability code and its dependencies must remain fixed or receive a new `capabilityVersion`; referenced policy files must be selected evidence so their content changes invalidate reuse.
 

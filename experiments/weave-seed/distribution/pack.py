@@ -16,6 +16,20 @@ DIRECTORIES = {'bun', 'local', 'integration', 'providers', 'getting-started', 'r
 TOP_FILES = {'README.md', 'HOST.md', 'SPEC.md', 'SDK.md', 'CONTRIBUTING.md', 'FEEDBACK.md', 'package.json', 'qualify.py'}
 SUFFIXES = {'.mjs', '.js', '.ts', '.rs', '.md', '.json', '.toml', '.lock', '.tsv', '.py'}
 EXCLUDED = {'target', 'node_modules', 'results', 'receipts', 'dist', 'build', '__pycache__'}
+# Exact supporting files for the copied seed's existing links and Python quick start.
+# No recursive CLI/harness code selection and no generated evidence or credentials.
+SUPPORTING_FILES = (
+    'docs/weave-v1-readiness.md', 'docs/kernel-startup.md',
+    'docs/api-credentials.md', 'docs/native-profiles.md',
+    'cli/AGENTS.md', 'cli/CONTRIBUTING.md',
+    'experiments/weave/README.md', 'experiments/weave/CASES.md',
+    'experiments/weave/demo.py', 'experiments/weave/engine.py',
+    'experiments/weave/evidence.py', 'experiments/weave/store.py',
+    'experiments/weave/test_checkpoint_validation.py',
+    'experiments/weave/test_engine.py', 'experiments/weave/test_evidence.py',
+    'experiments/weave/test_recovery.py', 'experiments/weave/test_store.py',
+)
+
 
 def sha(path):
     digest = hashlib.sha256()
@@ -45,6 +59,19 @@ def copy_sources(destination, seed=SEED):
         output = destination / relative
         output.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(seed / relative, output)
+
+def copy_supporting_files(destination, repository=REPOSITORY):
+    """Copy only named reference docs and the deterministic Python reference."""
+    for relative in SUPPORTING_FILES:
+        source = repository / relative
+        if any((repository / Path(*Path(relative).parts[:i])).is_symlink()
+               for i in range(1, len(Path(relative).parts) + 1)):
+            raise ValueError('supporting source must not be a symlink')
+        if not source.is_file() or source.stat().st_size > 4 * 1024 * 1024:
+            raise ValueError('required supporting source unavailable or oversized')
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
 
 def run(argv, *, cwd=None, timeout=300, environment=None):
     return subprocess.run([str(a) for a in argv], cwd=cwd, env=environment, check=True,
@@ -111,7 +138,9 @@ The copied synthetic fixtures, Jev/native actor adapters and configuration helpe
 require an explicitly installed Bun. Native acting additionally requires a
 separate actual Prose CLI and admitted Agents SDK harness. No login service,
 public package install, provider calls, sentinel image, PATH edit or network
-publication is included. source/ contains allowlisted seed source plus LICENSE.
+publication is included. source/ contains allowlisted seed source, the deterministic
+Python reference, selected supporting documentation and LICENSE. Native CLI
+implementation and harness installation sources are not included.
 
 Start with bin/weave-bun --help or bin/weave-rust --help. To create an offline
 example with paths referring to THIS copy, run:
@@ -119,6 +148,12 @@ example with paths referring to THIS copy, run:
   /absolute/bun --no-env-file /absolute/bundle/source/experiments/weave-seed/getting-started/create.mjs /absolute/new-subject
 
 Then invoke either bin/weave-* check/status/step with the generated config.json.
+For commands in the copied source guides, the repository root is bundle/source:
+
+  cd /absolute/bundle/source
+
+Those guides use paths starting experiments/weave-seed/ or experiments/weave/.
+The standalone binaries remain one directory above, at ../bin/weave-*.
 Do not use example paths generated before relocating the bundle; generate a
 fresh subject afterwards. See source/experiments/weave-seed/getting-started/README.md and
 source/experiments/weave-seed/getting-started/BYOK.md for source/runtime requirements and explicit user
@@ -145,6 +180,7 @@ def pack(bun, cargo, output):
     try:
         source = output / 'source/experiments/weave-seed'; source.mkdir(parents=True)
         copy_sources(source)
+        copy_supporting_files(output / 'source')
         shutil.copyfile(REPOSITORY / 'LICENSE', output / 'LICENSE')
         shutil.copyfile(REPOSITORY / 'LICENSE', output / 'source/LICENSE')
         (output / 'README.md').write_text(README)

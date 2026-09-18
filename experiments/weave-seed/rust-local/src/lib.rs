@@ -253,6 +253,15 @@ impl Owner {
         let (checkpoint,status) = host.step(prepared.bound.binding(), &mut Bridge { prepared:&prepared,cancelled }, prepared.max_attempts)?;
         Ok(StepResult { checkpoint,status })
     }
+    fn settle(&self, binding: &str, attempt: &str, outcome: &str, receipt: &str) -> Result<core::Checkpoint> {
+        self.check()?;
+        let current = select(&self.selected.path)?;
+        if current.bytes != self.selected.bytes {
+            return Err("configuration changed during service; stop and review before restart".into());
+        }
+        // Recovery uses recorded checkpoint identity, not today's evidence/policy/credentials.
+        LocalHost::new(&self.selected.directory).settle(binding, attempt, outcome, receipt)
+    }
     pub fn release(&mut self) -> Result<()> { self.check()?; fs::remove_dir(&self.lock).map_err(|e| e.to_string())?; self.active=false; Ok(()) }
 }
 impl Drop for Owner { fn drop(&mut self) { if self.active && identity(&self.lock).ok()==Some(self.identity) { let _=fs::remove_dir(&self.lock); } } }
@@ -261,6 +270,18 @@ pub fn step_config(path: impl AsRef<Path>) -> Result<StepResult> {
     let result = owner.step();
     let release = owner.release();
     match (result,release) { (Ok(value),Ok(()))=>Ok(value), (Err(e),Ok(())) | (Ok(_),Err(e))=>Err(e), (Err(e),Err(r))=>Err(format!("{e}; {r}")) }
+}
+/// Explicit trusted settlement, serialized with local services and host checkpoint operations.
+/// Does not infer an outcome, observe sources, launch a capability or replenish attempts.
+pub fn settle_config(path: impl AsRef<Path>, binding: &str, attempt: &str, outcome: &str, receipt: &str) -> Result<core::Checkpoint> {
+    let mut owner = acquire_owner(path)?;
+    let result = owner.settle(binding, attempt, outcome, receipt);
+    let released = owner.release();
+    match (result, released) {
+        (Ok(checkpoint), Ok(())) => Ok(checkpoint),
+        (Err(error), Ok(())) | (Ok(_), Err(error)) => Err(error),
+        (Err(error), Err(release)) => Err(format!("{error}; {release}")),
+    }
 }
 #[derive(Debug)]
 pub struct ServeResult { pub steps:u64, pub stopped:&'static str, pub last:Option<StepResult> }

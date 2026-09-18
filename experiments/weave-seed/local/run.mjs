@@ -1,9 +1,9 @@
 import { checkConfig } from './check.mjs';
-import { stepConfig, serveConfig, statusConfig } from './coordinator.mjs';
+import { stepConfig, serveConfig, statusConfig, settleConfig } from './coordinator.mjs';
 const project = result => ({ status: result.status, attempts: result.checkpoint.attempts, pending: result.checkpoint.pending });
 export async function main(argv = process.argv.slice(2)) {
   if(argv.length===1 && ['--help','-h','help'].includes(argv[0])) {
-    console.log('Experimental local weave (Bun):\n  check CONFIG  Offline file/executable/environment/checkpoint inspection; no provider verification\n  status CONFIG  Read-only checkpoint and lock diagnostics\n  step CONFIG  One bounded reconciliation (may invoke configured providers/actions)\n  serve CONFIG --poll-ms N --max-steps N  Bounded sequential polling\nOutput: JSON records except this help. Check exits 0 when configured, 2 when blocked.\nUse --no-env-file with Bun. Pending effects require trusted reconciliation.');
+    console.log('Experimental local weave (Bun):\n  check CONFIG  Offline file/executable/environment/checkpoint inspection; no provider verification\n  status CONFIG  Read-only checkpoint and lock diagnostics\n  step CONFIG  One bounded reconciliation (may invoke configured providers/actions)\n  serve CONFIG --poll-ms N --max-steps N  Bounded sequential polling\n  settle CONFIG --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE  Explicit trusted pending-effect settlement\nOutput: JSON records except this help. Check exits 0 when configured, 2 when blocked.\nUse --no-env-file with Bun. Pending effects require trusted reconciliation.');
     return;
   }
   const [command, config, ...options] = argv;
@@ -13,6 +13,11 @@ export async function main(argv = process.argv.slice(2)) {
   if (!config) throw Error('usage: check CONFIG | step CONFIG | status CONFIG | serve CONFIG --poll-ms N --max-steps N (or --help)');
   if (command === 'status' && !options.length) return console.log(JSON.stringify(statusConfig(config)));
   if (command === 'step' && !options.length) return console.log(JSON.stringify(project(stepConfig(config))));
+  if (command === 'settle') {
+    if (options.length !== 8 || options[0] !== '--binding' || options[2] !== '--attempt' || options[4] !== '--outcome' || options[6] !== '--receipt' || !['completed', 'not-applied'].includes(options[5])) throw Error('explicit settle --binding VALUE --attempt VALUE --outcome completed|not-applied --receipt VALUE required');
+    const checkpoint = settleConfig(config, options[1], options[3], options[5], options[7]);
+    return console.log(JSON.stringify(project({status: 'settled', checkpoint})));
+  }
   if (command !== 'serve' || options.length !== 4 || options[0] !== '--poll-ms' || options[2] !== '--max-steps' || ![options[1], options[3]].every(v => /^[1-9][0-9]*$/.test(v))) throw Error('explicit serve --poll-ms N --max-steps N required');
   const cancellation = new AbortController();
   const stop = () => cancellation.abort();

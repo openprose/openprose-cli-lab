@@ -142,3 +142,49 @@ fn cli(command:&str,path:&Path,extra:&[&str])->std::process::Output{Command::new
 #[test] fn nul_command_argument_is_configuration_error_before_effects(){
     let mut f=Fixture::new();f.config["actor"][1]="bad\0argument".into();f.save();assert_eq!(weave_rust_local::check_config(&f.path)["configuration"],"invalid");assert!(step_config(&f.path).is_err());assert!(f.calls().is_empty());assert!(!f.root.join("host/checkpoint.json").exists());
 }
+#[test] fn settlement_preserves_attempts_invalidates_and_reassesses_without_replay(){
+    let mut f=Fixture::new();f.mode("actor","fail");let pending=step_config(&f.path).unwrap().checkpoint;
+    let calls=f.calls();let attempt=pending.pending.as_deref().unwrap();
+    let cp=weave_rust_local::settle_config(&f.path,&pending.binding,attempt,"completed","operator checked actual report").unwrap();
+    assert_eq!(cp.attempts,pending.attempts);assert!(cp.pending.is_none());assert_eq!(cp.disposition,weave_local_host_experiment::core::Judgment::Unknown);assert_eq!(cp.valid_until,0);
+    let receipt=cp.settlement.as_ref().unwrap();assert_eq!(receipt.binding,pending.binding);assert_eq!(receipt.attempt,attempt);assert_eq!(receipt.outcome,"completed");assert_eq!(receipt.receipt,"operator checked actual report");assert_eq!(f.calls(),calls);assert!(!f.lock().exists());
+    let next=step_config(&f.path).unwrap();assert_eq!(next.status,"satisfied");assert_eq!(next.checkpoint.attempts,pending.attempts);assert_eq!(f.calls().lines().filter(|line|*line=="fail").count(),1);assert_eq!(f.calls().lines().filter(|line|*line=="assess").count(),2);
+}
+#[test] fn settlement_requires_exact_identity_valid_receipt_and_pending_preserving_bytes(){
+    let mut f=Fixture::new();f.mode("actor","fail");let pending=step_config(&f.path).unwrap().checkpoint;let attempt=pending.pending.as_deref().unwrap();
+    let path=f.root.join("host/checkpoint.json");let original=fs::read(&path).unwrap();let calls=f.calls();
+    for (binding,id,outcome,receipt) in [
+        ("wrong",attempt,"completed","receipt"),
+        (pending.binding.as_str(),"wrong","completed","receipt"),
+        (pending.binding.as_str(),attempt,"assumed","receipt"),
+        (pending.binding.as_str(),attempt,"completed",""),
+        (pending.binding.as_str(),attempt,"completed"," \t\n"),
+        (pending.binding.as_str(),attempt,"completed","\u{feff}"),
+    ] {
+        assert!(weave_rust_local::settle_config(&f.path,binding,id,outcome,receipt).is_err());assert_eq!(fs::read(&path).unwrap(),original);assert_eq!(f.calls(),calls);assert!(!f.lock().exists());
+    }
+    weave_rust_local::settle_config(&f.path,&pending.binding,attempt,"not-applied","trusted reconciliation").unwrap();let settled=fs::read(&path).unwrap();
+    assert!(weave_rust_local::settle_config(&f.path,&pending.binding,attempt,"not-applied","duplicate").is_err());assert_eq!(fs::read(&path).unwrap(),settled);assert_eq!(f.calls(),calls);
+}
+#[test] fn settlement_needs_no_environment_sources_or_current_capability_configuration(){
+    let mut f=Fixture::new();f.mode("actor","fail");let pending=step_config(&f.path).unwrap().checkpoint;let calls=f.calls();
+    fs::remove_file(f.root.join("kernel.md")).unwrap();fs::remove_file(f.root.join("source.txt")).unwrap();
+    // Only the locator is required for explicit recovery. Credentials and adapters are irrelevant.
+    fs::write(&f.path,json!({"schema":1,"checkpointDirectory":"host","environmentKeys":["UNAVAILABLE_SETTLEMENT_KEY"],"actor":null}).to_string()).unwrap();
+    let output=cli("settle",&f.path,&["--binding",&pending.binding,"--attempt",pending.pending.as_deref().unwrap(),"--outcome","completed","--receipt","reviewed-local-effects"]);
+    assert!(output.status.success(),"{}",String::from_utf8_lossy(&output.stderr));assert!(output.stderr.is_empty());assert_eq!(serde_json::from_slice::<Value>(&output.stdout).unwrap(),json!({"status":"settled","attempts":1,"pending":null}));assert_eq!(f.calls(),calls);
+}
+#[test] fn settlement_refuses_both_lock_kinds_without_deleting_or_changing_state(){
+    let mut f=Fixture::new();f.mode("actor","fail");let pending=step_config(&f.path).unwrap().checkpoint;let original=fs::read(f.root.join("host/checkpoint.json")).unwrap();let calls=f.calls();
+    for name in ["service.lock","lock"] {
+        let path=f.root.join("host").join(name);fs::create_dir(&path).unwrap();
+        assert!(weave_rust_local::settle_config(&f.path,&pending.binding,pending.pending.as_deref().unwrap(),"completed","receipt").is_err());assert!(path.is_dir());assert_eq!(fs::read(f.root.join("host/checkpoint.json")).unwrap(),original);assert_eq!(f.calls(),calls);fs::remove_dir(path).unwrap();
+    }
+    let wrong_order=cli("settle",&f.path,&["--attempt",pending.pending.as_deref().unwrap(),"--binding",&pending.binding,"--outcome","completed","--receipt","receipt"]);assert!(!wrong_order.status.success());assert!(wrong_order.stdout.is_empty());assert_eq!(fs::read(f.root.join("host/checkpoint.json")).unwrap(),original);
+}
+#[test] fn not_applied_settlement_never_replenishes_exhausted_budget(){
+    let mut f=Fixture::new();f.config["maxAttempts"]=1.into();f.save();f.mode("actor","fail-before-effect");let pending=step_config(&f.path).unwrap().checkpoint;
+    assert_eq!(fs::read_to_string(f.root.join("report.txt")).unwrap(),"");
+    let cp=weave_rust_local::settle_config(&f.path,&pending.binding,pending.pending.as_deref().unwrap(),"not-applied","fixture failed before effect").unwrap();assert_eq!(cp.attempts,1);
+    let result=step_config(&f.path).unwrap();assert_eq!(result.status,"attempt-limit");assert_eq!(result.checkpoint.attempts,1);assert_eq!(f.calls().lines().filter(|l|*l=="fail-before-effect").count(),1);
+}

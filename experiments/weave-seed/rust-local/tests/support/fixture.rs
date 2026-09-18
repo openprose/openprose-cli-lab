@@ -7,6 +7,7 @@ fn main() {
     let mut input=String::new();std::io::stdin().read_to_string(&mut input).unwrap();
     let input:serde_json::Value=serde_json::from_str(&input).unwrap();assert_eq!(input["schema"],"openprose.weave-input/1");
     fs::OpenOptions::new().create(true).append(true).open("calls.log").unwrap().write_all(format!("{mode}\n").as_bytes()).unwrap();
+    if mode=="fail-before-effect" { std::process::exit(1); }
     if mode=="fork-pipes" {
         std::process::Command::new(std::env::current_exe().unwrap()).arg("hold-pipes").spawn().unwrap();
         return;
