@@ -27,6 +27,9 @@ def main():
     prefix = 'experiments/weave-seed/'
     env = {k: os.environ[k] for k in ('PATH', 'HOME', 'TMPDIR', 'CARGO_HOME', 'RUSTUP_HOME') if k in os.environ}
     env['WEAVE_CARGO'] = cargo
+    # Qualification also runs against an inventoried copied bundle. Do not leave
+    # Python import caches beside its source files.
+    env['PYTHONDONTWRITEBYTECODE'] = '1'
     rows = []
     def check(name, command, timeout=180):
         start = time.monotonic()
