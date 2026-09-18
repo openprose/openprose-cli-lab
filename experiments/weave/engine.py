@@ -1,6 +1,7 @@
 """Experimental capability-injected reconcile; never parses contracts."""
 from dataclasses import dataclass, asdict
 from typing import Optional
+import math
 
 @dataclass
 class Checkpoint:
@@ -12,9 +13,29 @@ class Checkpoint:
     attempts: int = 0
     settlement: Optional[dict] = None
 
+    def __post_init__(self):
+        if not isinstance(self.binding,str) or not isinstance(self.evidence,str):
+            raise ValueError('invalid checkpoint identity')
+        if self.disposition not in ('unknown','satisfied','work-needed'):
+            raise ValueError('invalid checkpoint disposition')
+        if type(self.attempts) is not int or self.attempts < 0:
+            raise ValueError('invalid checkpoint attempts')
+        if type(self.valid_until) not in (int,float) or not math.isfinite(self.valid_until):
+            raise ValueError('invalid checkpoint expiry')
+        if self.pending is not None and (not isinstance(self.pending,str) or not self.pending.strip()):
+            raise ValueError('invalid pending attempt')
+        if self.settlement is not None:
+            r=self.settlement
+            if (not isinstance(r,dict) or set(r)!= {'attempt','binding','outcome','receipt'}
+                or any(not isinstance(r[k],str) or not r[k].strip() for k in r)
+                or r['outcome'] not in ('completed','not-applied')):
+                raise ValueError('invalid settlement record')
+
 
 def reconcile(binding, checkpoint, observe, assess, act, save, clock, new_id, max_attempts=1):
     """Host serializes calls and supplies durable save. At most one action per call."""
+    if type(max_attempts) is not int or max_attempts < 0:
+        raise ValueError('invalid attempt limit')
     cp=Checkpoint(**asdict(checkpoint))
     if cp.pending:
         return cp, 'recovery-needed'
@@ -42,7 +63,10 @@ def reconcile(binding, checkpoint, observe, assess, act, save, clock, new_id, ma
     if stale:return cp,'stale-assessment'
     if result!='work-needed':return cp,result
     if cp.attempts>=max_attempts:return cp,'attempt-limit'
-    cp.pending=new_id();cp.attempts+=1;save(cp)
+    attempt=new_id()
+    if not isinstance(attempt,str) or not attempt.strip():
+        raise ValueError('invalid new attempt identity')
+    cp.pending=attempt;cp.attempts+=1;save(cp)
     try:act(first,cp.pending)
     except Exception:
         # The caller must reconcile uncertain external effects before replay.
