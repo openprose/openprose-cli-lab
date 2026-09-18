@@ -236,6 +236,23 @@ fn sentinel_prose() -> &'static Path {
                 .env_remove("OPENPROSE_REQUIRE_RELEASE_IMAGE");
             if cfg!(feature = "test-seams") {
                 build.args(["--features", "prose-cli/test-seams"]);
+            } else {
+                // Ordinary fixture expectations describe the fixed echo image,
+                // not the production default's moving published-kernel route.
+                // The test-seams branch retains its default sentinel image.
+                build
+                    .env(
+                        "OPENPROSE_IMAGE_SOURCE_DIR",
+                        cli_root.join("shared/image/echo-v0"),
+                    )
+                    .env(
+                        "OPENPROSE_IMAGE_BUNDLE",
+                        cli_root.join("shared/image/embedded/current.bundle.bin"),
+                    )
+                    .env(
+                        "OPENPROSE_IMAGE_BUNDLE_CHECKSUM",
+                        cli_root.join("shared/image/embedded/current.bundle.sha256"),
+                    );
             }
             if !cfg!(debug_assertions) {
                 build.arg("--release");
@@ -4164,6 +4181,19 @@ fn default_dry_run_identifies_the_hosted_adapter_without_fallback() {
     assert_eq!(report["configuration"][8]["redacted"], true);
 }
 
+// docs/kernel-startup.md, "Fixed inputs and tests", distinguishes ordinary
+// compiled Codex append from the retained test-seam framing profile. The frozen
+// codex-exec-json-developer.v1.json and codex-exec-json.v1.json recipes specify
+// strict and degraded placement respectively. Do not derive these expectations
+// from observed runner output or cfg(test) of this integration-test executable.
+fn expected_native_placement() -> (&'static str, &'static str) {
+    if cfg!(feature = "test-seams") {
+        ("user-prefix-framed", "degraded")
+    } else {
+        ("developer", "strict")
+    }
+}
+
 #[test]
 fn blocked_adapter_dry_run_reports_recipe_facts_without_spawning() {
     let cases = [
@@ -4171,8 +4201,8 @@ fn blocked_adapter_dry_run_reports_recipe_facts_without_spawning() {
             "codex",
             "exec-json",
             "codex/exec-json",
-            "user-prefix-framed",
-            "degraded",
+            expected_native_placement().0,
+            expected_native_placement().1,
             "unsupported",
             "HARNESS_UNAVAILABLE",
         ),
@@ -4648,7 +4678,7 @@ fn runner_diagnostics_and_identity_stay_local() {
     assert_eq!(report["selectedHarness"], "codex");
     assert_eq!(report["selectedTransport"], "exec-json");
     assert_eq!(report["selectedAdapterId"], "codex/exec-json");
-    assert_eq!(report["promptPlacement"], "user-prefix-framed");
+    assert_eq!(report["promptPlacement"], expected_native_placement().0);
     assert_eq!(report["isolation"], "unsupported");
     assert_eq!(report["billingOwner"], "user-provider");
     assert_eq!(report["authCategory"], "harness-managed");
