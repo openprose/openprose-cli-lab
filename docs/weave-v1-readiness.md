@@ -4,7 +4,7 @@ Status: unpublished experiment, September 18, 2026. This is a readiness assessme
 
 ## Source and evidence boundary
 
-The inspected CLI baseline is `22c14915cad5ab6eadb5f70b7c7177b89e6abe5b`. Candidate files are additions on its development branch until the lead records a new commit. The inspected kernel is `7dc90670b4ccd862b7d0939a75d8b819b03a2b1b` in its separately owned source repository. Kernel and contract semantics remain authoritative; the seeds do not parse or automatically bind Markdown.
+The Python reference baseline is `22c14915cad5ab6eadb5f70b7c7177b89e6abe5b`. The extended Rust/Bun candidate is local commit `979e785417b593d4961559386445afac79e1cfca`; all 12 commands in the final source-level validation passed against that clean revision. The inspected kernel is `7dc90670b4ccd862b7d0939a75d8b819b03a2b1b` in its separately owned source repository. Kernel and contract semantics remain authoritative; the seeds do not parse or automatically bind Markdown.
 
 The candidate now includes inspected upstream CLI main `332c511` through local merge `ba55296`. The ownership-record conflict was resolved by preserving both sets of leases. Twelve upstream upload-control tests and five assembly tests pass; these use fixtures and mocks, not actual uploads. New seed code remains isolated from the shipped CLI, so this does not qualify a new installed release.
 
@@ -55,7 +55,7 @@ Both implementations passed the 25 shared lifecycle cases. Bun additionally pass
 | Feedback | Establish maintainer ownership and triage for manually submitted reports; validate the synthetic reproduction workflow. No automatic evidence collection or upload is introduced. |
 | Kernel origin | Plan any future `openprose/prose` origin migration separately, preserving exact identities, links, package selections, and compatibility. No live URL or consumer pin changes occur here. |
 
-No publication, version bump, merge, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.
+No publication, version bump, merge into the release branch, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.
 
 Final port hardening: 10,000 sequential transitions passed in each implementation, including exactly 2,000 bounded actions per port, changing bindings, expiry, reuse, and budget exhaustion. These use deterministic callbacks and do not establish model accuracy, crash durability, or installed-package readiness.
 
