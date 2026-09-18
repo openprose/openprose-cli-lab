@@ -6,6 +6,8 @@ The selected OpenProse kernel and adopted contracts remain authoritative. They d
 
 ## Start here
 
+For a private compiled bundle, first follow [offline installation](distribution/INSTALL.md). Its receipt exposes the installed setup helpers. The [host-binding helper](getting-started/README.md#generate-an-explicit-prose-cli-weave-host-binding) connects an explicitly selected Prose CLI to either coordinator and prints both argument arrays and copyable POSIX commands. The experimental command is `prose cli weave`; top-level language commands are unchanged.
+
 1. [Create and run the offline example](getting-started/README.md). One setup command creates a private example directory and prints the exact commands to inspect, repair and watch it. No credentials or network are used.
 2. [Configure your own program and providers](getting-started/BYOK.md). Keep the selected kernel, contracts and evidence explicit. The local profile uses a Jev assessor and the existing Agents SDK action route with the caller's keys; it requires no OpenProse account.
 3. [Embed the SDK](SDK.md) in a Bun or Rust application. The core is independent of provider, storage and command-line choices.

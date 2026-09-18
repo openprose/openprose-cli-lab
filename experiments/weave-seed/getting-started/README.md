@@ -101,7 +101,7 @@ bun --no-env-file experiments/weave-seed/getting-started/host-binding.mjs \
 
 All seven options are required. Their order may vary; duplicates, unknown options, equals forms and noncanonical decimal numbers are rejected. The output's parent must exist and the output file must be new; existing files, directories and symlinks are never replaced. Setup writes a private mode-0600 file with exactly the bridge binding schema and a SHA-256 of the complete selected host executable. The host must be an executable regular file of at most 512 MiB. Executable symlinks resolve to their canonical target. The supplied absolute config path is preserved, because changing a symlink-parent spelling can change config-relative source resolution. Setup checks that it names an existing regular file but does not parse or validate the coordinator config.
 
-The result is one JSON record with `status: "binding-created-not-executed"`, `hostExecuted: false`, `cliProbed: false`, and `providerVerified: false`. Its `commands` are argument arrays for `check`, `status`, `step`, and `serve`. Review them before running anything; serve's generated example uses a 1000 ms poll and **one** maximum step. For example, after reviewing the generated paths:
+The result is one JSON record with `status: "binding-created-not-executed"`, `hostExecuted: false`, `cliProbed: false`, and `providerVerified: false`. Its `commands` are authoritative argument arrays, and `shellCommands` contains individually quoted, copyable POSIX-shell equivalents for `check`, `status`, `step`, and `serve`. Review them before running anything; serve's generated example uses a 1000 ms poll and **one** maximum step. For example, after reviewing the generated paths:
 
 ```sh
 /absolute/selected-prose-cli cli weave \
@@ -115,7 +115,7 @@ The bridge timeout must be 1..86400000 ms and the combined child stdout/stderr b
 
 The digest proves which selected bytes were recorded, not who published them. Trusted parent-path resolution, shebang interpreters and concurrent filesystem replacement remain outside this helper's attestation. The bridge rechecks the host digest before launch. A changed host requires an explicitly reviewed **new** binding file; setup does not update an old binding or migrate a configuration/checkpoint. A failed write can leave an unaccepted partial output: inspect it and choose a fresh path rather than running it. File fsync alone is not a universal power-loss guarantee.
 
-This helper is standalone: it can be copied to another directory and run with explicit absolute inputs, without importing the source checkout. Run its eight offline test groups with:
+This helper is standalone: it can be copied to another directory and run with explicit absolute inputs, without importing the source checkout. Run its nine offline test groups with:
 
 ```sh
 bun --no-env-file test experiments/weave-seed/getting-started/host-binding.test.mjs

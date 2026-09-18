@@ -224,7 +224,9 @@ def install(bundle, expected, destination):
         'manifestSha256':expected,'platform':manifest['platform'],
         'installation':str(target),'payload':str(payload),'sourceRoot':str(payload/'source'),
         'executables':{name: str(payload/name) for name in sorted(EXECUTABLES)},
-        'helpers':{name:str(payload/'source/experiments/weave-seed/getting-started'/name) for name in ['create.mjs','configure.mjs']},
+        'helpers':{name:str(payload/'source/experiments/weave-seed/getting-started'/name)
+                   for name in ['create.mjs','configure.mjs','host-binding.mjs']
+                   if 'source/experiments/weave-seed/getting-started/'+name in manifest['files']},
         'providerVerified':False,'executablesLaunched':False,'pathModified':False,
         'upgradePolicy':'side-by-side; existing configurations and checkpoint state are not modified'}
     receipt = target / 'installation.json'

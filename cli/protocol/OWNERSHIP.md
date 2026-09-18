@@ -464,3 +464,7 @@ All roles preserve opaque language routing and existing commands. No backend, pr
 Root additionally owns `cli/rust/crates/prose-cli/Cargo.toml` and `cli/rust/Cargo.lock` for bridge use of already-approved workspace sha2, rustix (fs feature), and signal-hook dependencies. No new registry package is introduced.
 
 At16:50Eastern root assigns weave_stress `experiments/weave-seed/getting-started/host-binding.mjs`, `host-binding.test.mjs`, and an additive host-binding section in `getting-started/README.md`. This independent helper writes a fresh explicit host binding and prints command arrays; it performs no host/provider execution or existing configuration/state mutation. Root owns integration and qualification.
+
+## IMP-030 final onboarding and test-profile repair — September 18, 17:20 Eastern
+
+Root assigns weave_parity exactly `cli/rust/crates/prose-cli/tests/cli.rs` to bind the ordinary helper to the explicit echo fixture image, preserving assertions and the test-seams branch; run all 52 ordinary CLI tests. Production defaults remain unchanged. weave_onboarding owns `experiments/weave-seed/distribution/install.py`, `test_install.py`, `INSTALL.md` to expose the bundled host-binding helper path when available and clarify the installed bridge flow; preserve older-bundle compatibility. Root owns `getting-started/host-binding.mjs`, its test and README for safe copyable POSIX command examples beside authoritative argv arrays. No provider/backend/publication changes.

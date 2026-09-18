@@ -46,6 +46,29 @@ The synthetic example needs an installed Bun for its fixture processes, while th
 
 For commands in copied source guides, use `payload/source` as the repository root. Keep subject files, checkpoint directories and private receipts outside the installation payload; changing the payload invalidates its manifest inventory. PATH remains unchanged; call the absolute paths or manage your own reviewed launcher separately.
 
+## Use an explicitly selected CLI bridge
+
+Newer receipts include `helpers["host-binding.mjs"]` when that helper is present in the verified bundle inventory. Older bundles still install and report their original helpers; this installer does not add a bridge helper to them. The native `prose` CLI is a separate explicit installation. Select a reviewed CLI that supports `cli weave`; the helper does not probe its version or run it.
+
+After creating the synthetic subject above, create a fresh binding outside the installation payload:
+
+```sh
+/absolute/bun --no-env-file \
+  /absolute/new-private-installation/payload/source/experiments/weave-seed/getting-started/host-binding.mjs \
+  --host /absolute/new-private-installation/payload/bin/weave-bun \
+  --config /absolute/new-subject/config.json \
+  --output /absolute/new-subject/host-binding.json \
+  --environment-keys '[]' \
+  --timeout-ms 300000 \
+  --max-output-bytes 1048576 \
+  --prose /absolute/reviewed-prose
+/absolute/reviewed-prose cli weave \
+  --host-binding /absolute/new-subject/host-binding.json \
+  check /absolute/new-subject/config.json
+```
+
+The helper hashes the selected installed coordinator and prints check, status, step and finite serve commands. It creates the binding without starting the CLI, coordinator or provider. The empty environment selection is for the offline synthetic example. For BYOK work, review the required environment names and budgets in the [setup guide](../getting-started/BYOK.md). Follow the [host-binding walkthrough](../getting-started/README.md) for the bridge flow. A successful bridge check reports configuration diagnostics; it does not establish provider access or semantic correctness.
+
 ## Side-by-side upgrades and removal
 
 Install a newly reviewed bundle with its own trusted digest into another fresh directory. The installer has no mutable `current` alias and never rewrites an existing subject's argv, source bindings, checkpoints, pending effects or attempt count. Old configurations keep referencing the old installation. This avoids silently changing capabilities during an active invocation.
@@ -61,4 +84,4 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
   -s experiments/weave-seed/distribution -p test_install.py -v
 ```
 
-Seven self-contained tests cover exact independent copies and private modes, side-by-side state preservation, manifest/platform/path failures, corruption/missing/extra files, symlinks/FIFOs, existing destinations, interrupted copies, source mutation during copying, and a standalone copied installer's help. They do not launch an installed fixture or assert compatibility of real binaries. A separate installed-artifact journey must run from the installed copy with the source bundle unavailable before reporting that qualification.
+Eight self-contained tests cover exact independent copies and private modes, side-by-side state preservation, manifest/platform/path failures, corruption/missing/extra files, symlinks/FIFOs, existing destinations, interrupted copies, source mutation during copying, a standalone copied installer's help, and optional verified bridge-helper paths for old and new bundles without executing them. They do not launch an installed fixture or assert compatibility of real binaries. A separate installed-artifact journey must run from the installed copy with the source bundle unavailable before reporting that qualification.

@@ -6,6 +6,9 @@ import { createHash } from 'node:crypto';
 const fail=()=>{throw Error('HOST_BINDING_SETUP_REJECTED');};
 const MAX_EXECUTABLE_BYTES=536870912;
 const required=['host','config','output','environmentKeys','timeoutMs','maxOutputBytes','prose'];
+// Argument arrays remain authoritative. These strings are presentation for
+// POSIX-compatible shells only, with every argument quoted independently.
+export function posixCommand(argv){return argv.map(value=>"'"+value.replaceAll("'","'\"'\"'")+"'").join(' ');}
 function scalar(text){
  for(let i=0;i<text.length;i++){
   const c=text.charCodeAt(i);
@@ -46,7 +49,8 @@ export function createHostBinding(options){
   const fd=openSync(target,constants.O_WRONLY|constants.O_CREAT|constants.O_EXCL,0o600);
   try{let offset=0;while(offset<bytes.length){const count=writeSync(fd,bytes,offset,bytes.length-offset);if(count<=0)fail();offset+=count;}fsyncSync(fd);}finally{closeSync(fd);}
   const command=(...args)=>[runner.path,'cli','weave','--host-binding',target,...args];
-  return {schema:'openprose.weave-host-setup/1',status:'binding-created-not-executed',binding:target,host:selected.path,hostSha256:selected.sha256,config,hostExecuted:false,cliProbed:false,providerVerified:false,commands:{check:command('check',config),status:command('status',config),step:command('step',config),serve:command('serve',config,'--poll-ms','1000','--max-steps','1')}};
+  const commands={check:command('check',config),status:command('status',config),step:command('step',config),serve:command('serve',config,'--poll-ms','1000','--max-steps','1')};
+  return {schema:'openprose.weave-host-setup/1',status:'binding-created-not-executed',binding:target,host:selected.path,hostSha256:selected.sha256,config,hostExecuted:false,cliProbed:false,providerVerified:false,commands,shell:'posix',shellCommands:Object.fromEntries(Object.entries(commands).map(([name,argv])=>[name,posixCommand(argv)]))};
  }catch{fail();}
 }
 export function parseHostBindingArguments(args){

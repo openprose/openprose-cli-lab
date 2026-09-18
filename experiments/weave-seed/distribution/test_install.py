@@ -48,6 +48,31 @@ class InstallTests(unittest.TestCase):
             self.assertFalse(first['executablesLaunched']);self.assertFalse(first['pathModified'])
             self.assertNotEqual(first['payload'],second['payload'])
 
+    def test_optional_verified_host_binding_helper_preserves_older_bundle_receipt(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);bundle,manifest,digest=self.fixture(root)
+            with patch('subprocess.Popen',side_effect=AssertionError('installer launched a process')), patch('os.system',side_effect=AssertionError('installer launched a shell')):
+                old=installer.install(bundle,digest,root/'old')
+                self.assertEqual(set(old['helpers']),{'create.mjs','configure.mjs'})
+                name='source/experiments/weave-seed/getting-started/host-binding.mjs'
+                helper=bundle/name;helper.write_bytes(b'throw new Error("must never execute during install");\n')
+                # Presence without verified inventory membership remains an error.
+                with self.assertRaises(ValueError):installer.install(bundle,digest,root/'unlisted')
+                self.assertFalse((root/'unlisted').exists())
+                manifest['files'][name]={'bytes':helper.stat().st_size,'sha256':installer.sha(helper.read_bytes())}
+                digest=self.save(bundle,manifest)
+                new=installer.install(bundle,digest,root/'new')
+                installed=Path(new['helpers']['host-binding.mjs'])
+                self.assertEqual(installed,(root/'new/payload'/name).resolve())
+                self.assertEqual(installed.read_bytes(),helper.read_bytes())
+                self.assertEqual(installed.stat().st_mode&0o777,0o600)
+                self.assertFalse(new['executablesLaunched'])
+                self.assertEqual(json.loads((root/'new/installation.json').read_text()),new)
+                self.assertEqual(json.loads((root/'old/installation.json').read_text()),old)
+                helper.write_bytes(b'changed')
+                with self.assertRaises(ValueError):installer.install(bundle,digest,root/'corrupt')
+                self.assertFalse((root/'corrupt').exists())
+
     def test_wrong_hash_platform_schema_inventory_and_unsafe_paths(self):
         cases=[lambda m:m.update(schema='unknown'),lambda m:m.update(platform={'system':'Linux','machine':'x86_64'}),
                lambda m:m['files'].pop('bin/weave-rust'),lambda m:m['files'].update({'../escape':{'bytes':0,'sha256':installer.sha(b'')}}),
