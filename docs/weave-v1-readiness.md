@@ -1,0 +1,58 @@
+# Weave candidate readiness
+
+Status: unpublished experiment, September 18, 2026. This is a readiness assessment, not a v1 release declaration. The candidate adds independent loop seeds and onboarding beside the Python reference; it does not add a public CLI command or package.
+
+## Source and evidence boundary
+
+The inspected CLI baseline is `22c14915cad5ab6eadb5f70b7c7177b89e6abe5b`. Candidate files are additions on its development branch until the lead records a new commit. The inspected kernel is `7dc90670b4ccd862b7d0939a75d8b819b03a2b1b` in its separately owned source repository. Kernel and contract semantics remain authoritative; the seeds do not parse or automatically bind Markdown.
+
+This CLI branch predates later CLI release and packaging work. Reconcile the candidate with the current CLI release base and repeat affected integration checks before proposing product integration. An old baseline's passing checks do not qualify newer release artifacts.
+
+## Checks actually performed
+
+From the CLI repository root, the onboarding review ran:
+
+```sh
+python3 experiments/weave/demo.py
+python3 -m unittest discover -s experiments/weave -p 'test_*.py' -q
+```
+
+With Python 3.9.6 on macOS, the demonstration produced the documented five statuses, four assessments, and one action; all 48 reference tests passed. The example uses temporary local state, synthetic data, and deterministic assessment/action. No provider was called. This does not establish semantic classifier reliability, source authenticity, or production service safety.
+
+The onboarding review also executed the two seed examples on actual Bun 1.3.5 and Rust 1.98.1 (`48a229cea`, September 1, 2026), with each runtime executable selected explicitly because neither was on the shell's default `PATH`. The portable equivalents below assume those same installed runtimes on `PATH`:
+
+```sh
+bun experiments/weave-seed/examples/local.mjs
+WEAVE_EXAMPLE_DIR=$(mktemp -d)
+rustc --edition=2021 experiments/weave-seed/examples/local.rs -o "$WEAVE_EXAMPLE_DIR/local"
+"$WEAVE_EXAMPLE_DIR/local"
+```
+
+Both examples passed assertions for `satisfied`, then `reused`, with exactly one action. Their host saves are in memory, and they do not establish persistence or crash recovery. A Node run alone must not be described as a Bun runtime check.
+
+The final seed checks were also run with the same actual Bun and Rust versions:
+
+```sh
+bun experiments/weave-seed/bun/conformance.mjs
+WEAVE_TEST_DIR=$(mktemp -d)
+rustc --edition=2021 --test experiments/weave-seed/rust/lib.rs -o "$WEAVE_TEST_DIR/tests"
+"$WEAVE_TEST_DIR/tests"
+```
+
+Both implementations passed the 25 shared lifecycle cases. Bun additionally passed four save-failure cases, settlement acceptance/rejection, checkpoint immutability and settlement validation, mutable-observer snapshot checks, and synchronous-callback enforcement. Rust reported three passing test functions covering the shared corpus, save failures, and settlement. These are source-level deterministic checks on macOS ARM64, not installed-package, cross-platform, or live-model qualification. The documentation review resolved 27 local Markdown links without missing targets.
+
+## Gates still required for v1
+
+| Area | Required evidence or decision |
+|---|---|
+| Semantic assessment | Independent labels and adversarial evaluation of complete real agreements, including source authority, missing evidence, reporting duties, and abstention. Deterministic fixtures do not establish model accuracy or calibration. |
+| Complete invocation | An end-to-end integration must preserve per-invocation reports and required verification even when maintained state is unchanged. Artifact existence does not prove a claimed read occurred. |
+| Host persistence and recovery | Specify and test durable storage, serialization, interruption, external-effect reconciliation, receipts, and repeated recovery. A callback loop alone is not a production host. |
+| Permissions and costs | Define enforceable effect permissions, credential ownership, scheduling, attempt limits, timeouts, and provider-specific budgets. Contract declarations alone cannot enforce these. |
+| Integration and compatibility | Reconcile the current CLI release base; verify an explicit kernel/evidence binding and the agreed output convention without introducing a prose parser or replacing the existing generative runner. |
+| Runtime and distribution | Complete target-platform and runtime qualification, API review, packaging, upgrade behavior, dependency/security review, and release authorization. A source-level test is not an installed-package test. |
+| Onboarding | Run a fresh developer/agent trial of the instructions and the kernel-backed example; independently inspect its artifacts and reported operations. The new prose example has not had a live model run in this phase. |
+| Feedback | Establish maintainer ownership and triage for manually submitted reports; validate the synthetic reproduction workflow. No automatic evidence collection or upload is introduced. |
+| Kernel origin | Plan any future `openprose/prose` origin migration separately, preserving exact identities, links, package selections, and compatibility. No live URL or consumer pin changes occur here. |
+
+No publication, version bump, merge, or origin migration follows from this assessment. The [seed overview](../experiments/weave-seed/README.md), [contribution guide](../experiments/weave-seed/CONTRIBUTING.md), and [feedback template](../experiments/weave-seed/FEEDBACK.md) are the entry points for bounded continuation.

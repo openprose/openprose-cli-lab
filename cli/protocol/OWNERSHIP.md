@@ -412,3 +412,11 @@ IMP-014 npm bootstrap lease: distribution_ci owns `cli/ci/publication.py`, `cli/
 ## IMP-017 isolated weave experiment — September 17, 2026
 
 User-assigned lead: Codex session 01a0af60-f059-7e50-bf2e-6ae7dfabf7ee, branch codex/imp-017-weave; lead owns Git operations. Exact scope: `experiments/weave/` (new isolated headless research library, explicit capability bindings, deterministic evidence, offline lifecycle fixtures/tests and documentation) and this additive ownership entry. No edits to runner transport, language parsing, package manifests, release tooling, existing shared schemas or IMP-014 paths. Prototype-only Python implementation; not a shipped Bun/Rust command or runtime semantic change. Library behavior is specified by experimental black-box cases before implementation. Lab evidence belongs in openprose-expedition under IMP-017.
+
+## IMP-018/019/020 unpublished weave candidate — September 18
+
+Root owns Git/integration on isolated codex/imp-017-weave. User explicitly authorized parallel work through 09:00 Eastern; no publication or repository migration. Initial high-volume hardening gate precedes implementation.
+
+- weave_parity owns only experiments/weave-seed/bun/, experiments/weave-seed/rust/, experiments/weave-seed/fixtures/, experiments/weave-seed/SPEC.md.
+- weave_onboarding owns only experiments/weave-seed/README.md, CONTRIBUTING.md, FEEDBACK.md, examples/, and docs/weave-v1-readiness.md.
+- Root owns this lease, integration review and all Git operations. No shared CLI runtime, package version, kernel source, or release workflow edits are assigned.

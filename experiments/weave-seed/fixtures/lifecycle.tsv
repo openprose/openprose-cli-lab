@@ -1,0 +1,26 @@
+# name	initial	observations	assessments	action	limit	status	disposition	attempts	pending	observes	assesses	acts	saves
+satisfied	empty	aa	s	ok	1	satisfied	satisfied	0	-	2	1	0	1
+unknown	empty	aa	u	ok	1	unknown	unknown	0	-	2	1	0	1
+cached	cached	a	-	ok	1	reused	satisfied	0	-	1	0	0	0
+expired	expired	aa	s	ok	1	satisfied	satisfied	0	-	2	1	0	1
+binding-changed	rebound	aa	s	ok	1	satisfied	satisfied	0	-	2	1	0	1
+identity-changed	cached	bb	u	ok	1	unknown	unknown	0	-	2	1	0	1
+pending	pending	-	-	ok	1	recovery-needed	unknown	1	prior	0	0	0	0
+gap	empty	g	-	ok	1	evidence-gap	unknown	0	-	1	0	0	1
+future	empty	f	-	ok	1	evidence-gap	unknown	0	-	1	0	0	1
+expired-evidence	empty	x	-	ok	1	evidence-gap	unknown	0	-	1	0	0	1
+cached-gap	cached	g	-	ok	1	evidence-gap	unknown	0	-	1	0	0	1
+assessment-race	empty	ab	s	ok	1	stale-assessment	unknown	0	-	2	1	0	1
+assessment-gap	empty	ag	w	ok	1	stale-assessment	unknown	0	-	2	1	0	1
+assessment-future	empty	af	w	ok	1	stale-assessment	unknown	0	-	2	1	0	1
+assessment-expiry	empty	ax	s	ok	1	stale-assessment	unknown	0	-	2	1	0	1
+zero-budget	empty	aa	w	ok	0	attempt-limit	work-needed	0	-	2	1	0	1
+exhausted	exhausted	aa	w	ok	1	attempt-limit	work-needed	1	-	2	1	0	1
+repair	empty	aabb	ws	ok	1	satisfied	satisfied	1	-	4	2	1	4
+failed-repair	empty	aaaa	ww	ok	1	work-needed	work-needed	1	-	4	2	1	4
+post-action-unknown	empty	aabb	wu	ok	1	unknown	unknown	1	-	4	2	1	4
+uncertain-effect	empty	aa	w	fail	1	action-outcome-unknown	work-needed	1	attempt-1	2	1	1	2
+post-action-gap	empty	aag	w	ok	1	evidence-gap	unknown	1	-	3	1	1	3
+post-action-race	empty	aaba	ws	ok	1	stale-assessment	unknown	1	-	4	2	1	4
+post-action-expiry	empty	aabx	ws	ok	1	stale-assessment	unknown	1	-	4	2	1	4
+raised-budget	exhausted	aabb	ws	ok	2	satisfied	satisfied	2	-	4	2	1	4
