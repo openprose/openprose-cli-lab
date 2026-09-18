@@ -1,4 +1,7 @@
 import json
+import os
+import subprocess
+import sys
 import sqlite3
 import tempfile
 import unittest
@@ -82,5 +85,17 @@ class EvidenceTests(unittest.TestCase):
         old=self.query(named_rows=True)
         self.write('CREATE INDEX reverse ON releases(id DESC)')
         self.assertEqual(old.identity,self.query(named_rows=True).identity)
+
+    def test_fifo_rejected_without_waiting_for_writer(self):
+        fifo=self.root/'fifo';os.mkfifo(fifo)
+        result=subprocess.run([sys.executable,'-c',
+            "from evidence import file_evidence; import sys; assert file_evidence(sys.argv[1],0).gap is not None",str(fifo)],
+            cwd=Path(__file__).parent,capture_output=True,timeout=3)
+        self.assertEqual(result.returncode,0,result.stderr)
+    def test_directory_rejected(self):
+        self.assertIsNotNone(file_evidence(self.root,0).gap)
+    def test_regular_file_symlink_uses_resolved_identity(self):
+        alias=self.root/'alias';alias.symlink_to(self.file)
+        self.assertEqual(file_evidence(alias,0).identity,file_evidence(self.file,0).identity)
 
 if __name__=='__main__': unittest.main()

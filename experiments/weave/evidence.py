@@ -3,6 +3,8 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import os
+import stat
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -25,8 +27,17 @@ def pack(source, selector, value, now, ttl, gap=None):
 def file_evidence(path, now, ttl=60, limit=65536):
     path = Path(path).resolve()
     try:
-        with path.open('rb') as stream:
-            raw = stream.read(limit + 1)
+        if not stat.S_ISREG(path.stat().st_mode):
+            raise ValueError('regular file required')
+        # Nonblocking open also covers a replacement with a FIFO after stat.
+        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+        try:
+            if not stat.S_ISREG(os.fstat(fd).st_mode):
+                raise ValueError('regular file required')
+            with os.fdopen(fd, 'rb', closefd=False) as stream:
+                raw = stream.read(limit + 1)
+        finally:
+            os.close(fd)
         if len(raw) > limit:
             raise ValueError('oversize')
         value = raw.decode('utf-8')
