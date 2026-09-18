@@ -1,4 +1,5 @@
 """Run with python3 experiments/weave/demo.py. No credentials or network needed."""
+from contextlib import closing
 import json
 import sqlite3
 import tempfile
@@ -13,7 +14,7 @@ def demo():
     with tempfile.TemporaryDirectory(prefix='prose-weave-demo-') as directory:
         root=Path(directory);database=root/'state.sqlite';checkpoint=root/'checkpoint.json'
         def execute(sql):
-            with sqlite3.connect(database) as db:db.execute(sql)
+            with closing(sqlite3.connect(database)) as db, db:db.execute(sql)
         execute('CREATE TABLE brief (desired TEXT, actual TEXT, approved INTEGER, note TEXT)')
         execute("INSERT INTO brief VALUES ('Monday','Monday',1,'draft')")
         counts={'assessments':0,'actions':0}

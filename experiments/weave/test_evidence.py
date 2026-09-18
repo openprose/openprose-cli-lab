@@ -1,3 +1,4 @@
+from contextlib import closing
 import json
 import os
 import subprocess
@@ -6,6 +7,7 @@ import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 from evidence import file_evidence, query_evidence, can_reuse
 
 class EvidenceTests(unittest.TestCase):
@@ -19,7 +21,7 @@ class EvidenceTests(unittest.TestCase):
         self.write('CREATE TABLE releases(id INTEGER, date TEXT, note TEXT)')
         self.write("INSERT INTO releases VALUES (1, 'September 20', 'draft')")
     def write(self, sql):
-        with sqlite3.connect(self.db) as db: db.execute(sql)
+        with closing(sqlite3.connect(self.db)) as db, db: db.execute(sql)
     def query(self, sql='SELECT id,date FROM releases', **kw):
         return query_evidence(self.db, sql, (), now=10, **kw)
     def test_file_change_invalidates(self):
@@ -49,6 +51,21 @@ class EvidenceTests(unittest.TestCase):
         self.assertNotEqual(old.identity,self.query().identity)
     def test_query_change_invalidates_even_same_result(self):
         self.assertNotEqual(self.query().identity,self.query('SELECT id,date FROM releases WHERE id=1').identity)
+    def test_query_releases_connection_after_success_and_failure(self):
+        connect = sqlite3.connect
+        opened = []
+        def track(*args, **kwargs):
+            connection = connect(*args, **kwargs)
+            opened.append(connection)
+            return connection
+        with patch('evidence.sqlite3.connect', side_effect=track):
+            self.assertIsNone(self.query().gap)
+            self.assertIsNotNone(self.query('SELECT absent FROM releases').gap)
+        self.assertEqual(len(opened), 2)
+        for connection in opened:
+            with self.assertRaises(sqlite3.ProgrammingError):
+                connection.execute('SELECT 1')
+
     def test_query_rejects_writes(self):
         before=self.query(); self.assertIsNotNone(self.query('DELETE FROM releases').gap)
         self.assertEqual(before.identity,self.query().identity)

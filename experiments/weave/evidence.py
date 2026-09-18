@@ -1,5 +1,6 @@
 """Lab prototype: bounded deterministic evidence, with no model calls."""
 from __future__ import annotations
+from contextlib import closing
 import hashlib
 import json
 import sqlite3
@@ -55,7 +56,7 @@ def query_evidence(path, query, params, now, ttl=60, row_limit=1000, byte_limit=
     selector = ['sqlite-unordered-named-rows-v1' if named_rows else 'sqlite-unordered-rows-v1', query, params]
     try:
         # No create-if-missing behavior, no writes, no extension loading.
-        with sqlite3.connect(path.as_uri() + '?mode=ro', uri=True) as db:
+        with closing(sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)) as db, db:
             db.execute('PRAGMA query_only=ON')
             ticks = [0]
             def stop():
