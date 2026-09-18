@@ -8,7 +8,10 @@ from pathlib import Path
 from engine import Checkpoint,reconcile,settle_pending
 
 class FileHost:
-    def __init__(self,path):self.path=Path(path)
+    def __init__(self,path):
+        self.path=Path(path)
+        if self.path.suffix in ('.lock','.tmp'):
+            raise ValueError('checkpoint path conflicts with reserved sidecar suffix')
     @contextlib.contextmanager
     def locked(self):
         self.path.parent.mkdir(parents=True,exist_ok=True)

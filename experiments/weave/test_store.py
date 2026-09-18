@@ -24,4 +24,20 @@ class StoreTests(unittest.TestCase):
  def test_corrupt_checkpoint_fails_before_action(self):
   self.p.write_text('bad')
   with self.assertRaises(json.JSONDecodeError):FileHost(self.p).read()
+ def test_reserved_sidecar_checkpoint_names_rejected(self):
+  for suffix in ('.lock','.tmp'):
+   path=self.p.with_suffix(suffix)
+   with self.assertRaises(ValueError):FileHost(path)
+   self.assertFalse(path.exists())
+ def test_save_does_not_replace_locked_inode(self):
+  import os
+  from engine import Checkpoint
+  host=FileHost(self.p)
+  with host.locked():
+   before=os.stat(self.p.with_suffix('.lock')).st_ino
+   host.save(Checkpoint())
+   self.assertEqual(os.stat(self.p.with_suffix('.lock')).st_ino,before)
+   with self.assertRaises(BlockingIOError):
+    with FileHost(self.p).locked():pass
+
 if __name__=='__main__':unittest.main()
