@@ -1299,6 +1299,13 @@ def _first_call_argument(code: str, opening: int, *, rust: bool) -> str:
             if character:
                 cursor += character.end()
                 continue
+        if char == "<" or (not rust and char == "/"):
+            # Generic/type arguments and JS regex literals have delimiters this
+            # intentionally small scanner cannot distinguish from expressions.
+            # Never truncate at a comma or parenthesis inside ambiguous syntax:
+            # conservatively retain the rest of this scope for taint checking.
+            # Simple paths still exclude unrelated later arguments/struct fields.
+            return code[start:]
         if char in "([{":
             depth += 1
         elif char in ")]}":

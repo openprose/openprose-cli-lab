@@ -184,6 +184,9 @@ class ArchitectureBoundaryTest(unittest.TestCase):
         source = root / "cli/rust/crates/example/src/lib.rs"
         for read in [
             'std::fs::read(&forwarded[0])',
+            'std::fs::read(identity::<u8,u16>(&forwarded[0]))',
+            'std::fs::read(identity::<Vec<(u8,u16)>,u32>(&forwarded[0]))',
+            'std::fs::read(<Pair<u8,u16> as Resolve>::path(&forwarded[0]))',
             'std::fs::read_to_string(resolve(&forwarded[0], "a,b)"))',
             'std::fs::File::open(Path::new(&forwarded[0]))',
             'Input::open(Path::new(&forwarded[0]))',
@@ -210,7 +213,14 @@ class ArchitectureBoundaryTest(unittest.TestCase):
             'const argv = process.argv;\n'
             'await load("fixture", argv);\n', "utf-8")
         self.assertEqual([], check_repository(root))
-        for expression in ['load(resolve(argv[0], "a,b)"))', 'Bun.file(resolve(argv[0]))']:
+        for expression in [
+            'load(resolve(argv[0], "a,b)"))',
+            'Bun.file(resolve(argv[0]))',
+            'load(/x,y/.test("z") ? "fixture" : argv[2])',
+            'load(/[),]/.test("z") ? "fixture" : argv[2])',
+            'load(identity<string, string>(argv[2]))',
+            'load(/x,y/.test("z") ? "fixture" :\n argv[2])',
+        ]:
             source.write_text(
                 'import { readFile as load } from "node:fs/promises";\n'
                 'const argv = process.argv;\n'
